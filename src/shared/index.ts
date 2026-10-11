@@ -26,7 +26,6 @@ export {
   IconoExclamacion,
   IconoHistorial,
   IconoIdentificacion,
-  IconoIngresar,
   IconoInicio,
   IconoPausa,
   IconoReloj,

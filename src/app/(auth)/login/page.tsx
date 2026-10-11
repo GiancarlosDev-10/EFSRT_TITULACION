@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { AvisoDominio, PantallaIngreso } from "@/modules/auth";
+import { AvisoCuentaNoHabilitada, PantallaIngreso } from "@/modules/auth";
 import { RUTAS_ALUMNO, VistaPreviaSeguimiento } from "@/modules/tramitacion";
 
 export const metadata = { title: "Ingresar — EFSRT Seguimiento" };
@@ -18,8 +18,8 @@ export default function PaginaIngreso({ searchParams }: PageProps<"/login">) {
   );
 }
 
-/** El login real redirigirá a /login?error=dominio si la cuenta no es institucional. */
+/** El login real redirigirá a /login?error=cuenta si la cuenta no está habilitada. */
 async function AvisoSegunUrl({ searchParams }: Pick<PageProps<"/login">, "searchParams">) {
   const { error } = await searchParams;
-  return error === "dominio" ? <AvisoDominio /> : null;
+  return error === "cuenta" ? <AvisoCuentaNoHabilitada /> : null;
 }
