@@ -42,8 +42,8 @@ const ESTILOS: Record<Variante, Estilos> = {
     inactivo: "font-medium text-on-ink hover:bg-ink-raised",
   },
   inferior: {
-    nav: "sticky bottom-0 flex border-t border-line bg-white px-3 pt-1.5 pb-[max(env(safe-area-inset-bottom),1.25rem)]",
-    item: "flex flex-1",
+    nav: "sticky bottom-0 flex justify-center border-t border-line bg-white px-3 pt-1.5 pb-[max(env(safe-area-inset-bottom),1.25rem)]",
+    item: "flex max-w-40 flex-1",
     enlace: "flex min-h-11 flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px]",
     texto: "",
     activo: "font-semibold text-navy",

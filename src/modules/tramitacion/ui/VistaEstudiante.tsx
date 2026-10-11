@@ -35,7 +35,7 @@ type Props = {
 export function SeguimientoMovil({ seguimiento, ahora, encabezado }: Props) {
   const avisos = avisosDeObservacion(seguimiento, ahora);
   return (
-    <div className="flex flex-col gap-5 lg:hidden">
+    <div className="mx-auto flex w-full max-w-lg flex-col gap-5 lg:hidden">
       {encabezado}
       <section className="flex flex-col gap-3">
         <TituloSeccion>Mis expedientes</TituloSeccion>
