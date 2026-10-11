@@ -38,30 +38,50 @@
   --color-on-ink: #c9cfe3; /* texto secundario sobre fondo oscuro */
   --color-on-ink-muted: #aeb6cf; /* rótulos sobre fondo oscuro */
 
-  /* Animaciones del marcador del mapa del recorrido. */
+  /* Animaciones del marcador del mapa del recorrido. Solo mueven o escalan:
+     el centrado lo hacen las utilidades translate-*, que en Tailwind 4 usan la
+     propiedad `translate` y se sumarían a un `transform: translate(...)`. */
   --animate-flotar: flotar 2.2s ease-in-out infinite;
   --animate-pulso: pulso 1.8s ease-out infinite;
 
   @keyframes flotar {
     0%,
     100% {
-      transform: translate(-50%, -100%);
+      transform: translateY(0);
     }
     50% {
-      transform: translate(-50%, calc(-100% - 8px));
+      transform: translateY(-8px);
     }
   }
 
   @keyframes pulso {
     0% {
-      transform: translate(-50%, -50%) scale(0.6);
+      transform: scale(0.6);
       opacity: 0.7;
     }
     100% {
-      transform: translate(-50%, -50%) scale(1.8);
+      transform: scale(1.8);
       opacity: 0;
     }
   }
+}
+
+/* Indicador de foco del teclado (accesibilidad), con el color del sistema. */
+:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Barra de desplazamiento oculta: la página sigue desplazándose con la rueda,
+   el teclado y el gesto táctil. */
+html {
+  scrollbar-width: none;
+}
+html::-webkit-scrollbar {
+  display: none;
 }
 
 /* Fuentes cargadas con next/font en app/layout.tsx.

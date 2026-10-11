@@ -1,6 +1,15 @@
-import { PaginaProvisional } from "@/shared";
+import { Suspense } from "react";
+import { CargandoSeguimiento, ContenidoSeguimiento, MarcoSeguimiento } from "./_componentes/ContenidoSeguimiento";
 
-// Provisional hasta la Fase 5.
-export default function PaginaSeguimientos() {
-  return <PaginaProvisional perfil="Seguimiento" ruta="/alumno/seguimiento" />;
+export const metadata = { title: "Seguimiento — EFSRT" };
+
+/** Pestaña "Seguimiento": muestra el módulo predeterminado (observado o más reciente). */
+export default function PaginaSeguimiento() {
+  return (
+    <MarcoSeguimiento>
+      <Suspense fallback={<CargandoSeguimiento />}>
+        <ContenidoSeguimiento modulo={null} />
+      </Suspense>
+    </MarcoSeguimiento>
+  );
 }

@@ -26,12 +26,12 @@ export const PILDORA_SOBRE_OSCURO: Record<TonoExpediente, string> = {
   "sin-expediente": "bg-ink-line text-on-ink",
 };
 
-/** Punto de color del selector de módulo. */
-export const PUNTO: Record<TonoExpediente, string> = {
-  "en-curso": "bg-navy",
-  observado: "bg-warn",
-  listo: "bg-ok",
-  "sin-expediente": "bg-pending",
+/** Punto de color sobre la barra lateral oscura. */
+export const PUNTO_SOBRE_OSCURO: Record<TonoExpediente, string> = {
+  "en-curso": "bg-on-ink",
+  observado: "bg-warn-bright",
+  listo: "bg-ok-bright",
+  "sin-expediente": "border border-on-ink-muted",
 };
 
 /** Segmento de la barra de avance (celular). */

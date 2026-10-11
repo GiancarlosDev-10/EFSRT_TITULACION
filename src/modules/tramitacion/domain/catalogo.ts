@@ -7,15 +7,21 @@
 
 type DefinicionDependencia = {
   nombre: string;
+  /** Para espacios reducidos (p. ej. la barra de pasos en celular). */
+  nombreCorto: string;
   /** Para frases como "Entrega tu corrección {conPreposicion}". "Docente Supervisor" no se adapta al género. */
   conPreposicion: string;
 };
 
 export const DEPENDENCIAS = {
-  "mesa-partes": { nombre: "Mesa de Partes", conPreposicion: "a Mesa de Partes" },
-  coordinacion: { nombre: "Coordinación de Carrera", conPreposicion: "a la Coordinación de tu carrera" },
-  docente: { nombre: "Docente Supervisor", conPreposicion: "al Docente Supervisor" },
-  bienestar: { nombre: "Bienestar y Empleabilidad", conPreposicion: "a Bienestar y Empleabilidad" },
+  "mesa-partes": { nombre: "Mesa de Partes", nombreCorto: "Mesa de Partes", conPreposicion: "a Mesa de Partes" },
+  coordinacion: {
+    nombre: "Coordinación de Carrera",
+    nombreCorto: "Coordinación",
+    conPreposicion: "a la Coordinación de tu carrera",
+  },
+  docente: { nombre: "Docente Supervisor", nombreCorto: "Docente", conPreposicion: "al Docente Supervisor" },
+  bienestar: { nombre: "Bienestar y Empleabilidad", nombreCorto: "Bienestar", conPreposicion: "a Bienestar y Empleabilidad" },
 } as const satisfies Record<string, DefinicionDependencia>;
 
 export type Dependencia = keyof typeof DEPENDENCIAS;

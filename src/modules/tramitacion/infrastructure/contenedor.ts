@@ -2,6 +2,7 @@
 // Para pasar a Supabase se cambia el repositorio aquí y nada más.
 // "server-only": si un componente del navegador lo importa, el build falla.
 import "server-only";
+import { cache } from "react";
 import { crearBusEnMemoria } from "@/shared";
 import type { ExpedienteCambioDeEstado } from "../domain";
 import {
@@ -22,7 +23,8 @@ const dependencias: DependenciasTramitacion = {
   ids: { nuevoId: () => crypto.randomUUID() },
 };
 
-export const obtenerSeguimientoDelEstudiante = crearObtenerSeguimientoDelEstudiante(dependencias);
+// cache: el layout y la página lo piden en la misma petición; se consulta una sola vez.
+export const obtenerSeguimientoDelEstudiante = cache(crearObtenerSeguimientoDelEstudiante(dependencias));
 export const registrarRecepcion = crearRegistrarRecepcion(dependencias);
 export const registrarCambioEstado = crearRegistrarCambioEstado(dependencias);
 

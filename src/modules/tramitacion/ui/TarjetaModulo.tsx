@@ -1,13 +1,20 @@
 import Link from "next/link";
-import { IconoChevronDerecha, IconoUbicacion } from "@/shared";
+import { IconoAlerta, IconoChevronDerecha, IconoUbicacion } from "@/shared";
 import type { SeguimientoModulo } from "../application";
 import { SEGMENTO } from "./estilos";
 import { PildoraEstado } from "./PildoraEstado";
-import { etiquetaDeModulo, progresoDeExpediente, tonoDeExpediente } from "./presentacion";
+import { etiquetaDeModulo, progresoDeExpediente, tonoDeExpediente, type AvisoObservacion } from "./presentacion";
 import { RUTAS_ALUMNO } from "./rutas";
 
+type Props = {
+  seguimiento: SeguimientoModulo;
+  ahora: Date;
+  /** Observación vigente del módulo, si la hay: la tarjeta se destaca. */
+  aviso?: AvisoObservacion;
+};
+
 /** Tarjeta de un módulo en "Mis expedientes" (celular). */
-export function TarjetaModulo({ seguimiento, ahora }: { seguimiento: SeguimientoModulo; ahora: Date }) {
+export function TarjetaModulo({ seguimiento, ahora, aviso }: Props) {
   const { modulo, expediente } = seguimiento;
   const tono = tonoDeExpediente(expediente);
   const encabezado = (
@@ -37,15 +44,31 @@ export function TarjetaModulo({ seguimiento, ahora }: { seguimiento: Seguimiento
   const progreso = progresoDeExpediente(expediente, ahora);
   const destino = tono === "listo" ? RUTAS_ALUMNO.constancia(modulo) : RUTAS_ALUMNO.seguimiento(modulo);
   return (
-    <Link href={destino} className="flex flex-col gap-3 rounded-[20px] border border-line bg-white p-4 hover:border-pending">
+    <Link
+      href={destino}
+      className={`flex flex-col gap-3 rounded-[20px] bg-white p-4 ${
+        aviso ? "border-2 border-warn-bright" : "border border-line hover:border-pending"
+      }`}
+    >
       {encabezado}
-      <div className="flex items-center gap-2.5 rounded-xl bg-bg px-3 py-2.5">
-        <IconoUbicacion tamano={18} className={tono === "listo" ? "text-ok" : "text-navy"} />
-        <span className="text-[13px]">
-          <span className="text-muted">{progreso.ubicacion.prefijo}</span>{" "}
-          <b className="font-semibold">{progreso.ubicacion.lugar}</b>
-        </span>
-      </div>
+      {aviso ? (
+        // Observación vigente (D28): reemplaza al aviso global del inicio.
+        <div className="flex flex-col gap-2 rounded-xl bg-warn-bg px-3 py-2.5 text-warn-on-soft">
+          <span className="flex items-start gap-2 text-[13px] font-semibold text-warn-deep">
+            <IconoAlerta tamano={16} className="mt-0.5 shrink-0" />
+            <span className="line-clamp-2">“{aviso.motivo}”</span>
+          </span>
+          <span className="text-xs font-semibold">{aviso.entrega}</span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2.5 rounded-xl bg-bg px-3 py-2.5">
+          <IconoUbicacion tamano={18} className={tono === "listo" ? "text-ok" : "text-navy"} />
+          <span className="text-[13px]">
+            <span className="text-muted">{progreso.ubicacion.prefijo}</span>{" "}
+            <b className="font-semibold">{progreso.ubicacion.lugar}</b>
+          </span>
+        </div>
+      )}
       <div className="flex gap-1" aria-hidden="true">
         {progreso.segmentos.map((situacion, i) => (
           <div key={i} className={`h-1.5 flex-1 rounded-full ${SEGMENTO[situacion]}`} />

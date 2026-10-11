@@ -2,10 +2,12 @@ import {
   ESTADO_INICIAL,
   ESTADOS,
   LONGITUD_MAXIMA_MOTIVO,
+  MODULOS,
   TRANSICIONES,
   type CodigoEstado,
   type DefinicionEstado,
   type Dependencia,
+  type Modulo,
 } from "./catalogo";
 import { exito, fallo, type Resultado } from "./resultado";
 
@@ -14,6 +16,11 @@ export type ErrorTransicion =
   | "DEPENDENCIA_NO_AUTORIZADA"
   | "MOTIVO_REQUERIDO"
   | "MOTIVO_DEMASIADO_LARGO";
+
+/** Valida un valor externo (p. ej. de la URL); si es válido, TypeScript lo trata como `Modulo`. */
+export function esModulo(valor: unknown): valor is Modulo {
+  return MODULOS.some((modulo) => modulo === valor);
+}
 
 /** Dependencia donde se encuentra el expediente en ese estado. */
 export function ubicacionDe(estado: CodigoEstado): Dependencia {

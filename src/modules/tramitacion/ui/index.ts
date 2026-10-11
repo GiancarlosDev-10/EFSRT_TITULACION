@@ -1,2 +1,4 @@
+export { subitemsDeModulos } from "./navegacion";
 export { RUTAS_ALUMNO } from "./rutas";
-export { AvisosDeObservacion, SeguimientoEscritorio, SeguimientoMovil } from "./VistaEstudiante";
+export { SeguimientoDeModulo } from "./SeguimientoDeModulo";
+export { SeguimientoEscritorio, SeguimientoMovil } from "./VistaEstudiante";

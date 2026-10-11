@@ -1,4 +1,4 @@
-/** "Lucía Ramos" → "LR" */
+/** "Giancarlos Ormeño" → "GO" */
 function iniciales(nombre: string): string {
   return nombre
     .split(/\s+/)

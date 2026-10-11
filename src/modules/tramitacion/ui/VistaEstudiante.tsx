@@ -1,17 +1,16 @@
 // Composiciones de /alumno (D26): el mismo seguimiento se muestra como
 // tarjetas en celular y como panel con tracker y mapa en PC.
 import type { ReactNode } from "react";
+import { TituloSeccion } from "@/shared";
 import type { Modulo } from "../domain";
 import type { SeguimientoModulo } from "../application";
-import { AvisoObservacion } from "./AvisoObservacion";
 import { MapaRecorrido } from "./MapaRecorrido";
-import { PanelSeguimiento } from "./PanelSeguimiento";
 import {
   avisosDeObservacion,
   etapaInicial,
   etapasDe,
-  etiquetaDeModulo,
   moduloInicial,
+  ordenParaInicio,
   resumenDeEtapa,
   tonoDeExpediente,
   ubicacionDeModulo,
@@ -22,23 +21,31 @@ import { TarjetaUbicacion } from "./TarjetaUbicacion";
 import { TrackerDependencias } from "./TrackerDependencias";
 import { UltimosMovimientos } from "./UltimosMovimientos";
 
-type Props = { seguimiento: SeguimientoModulo[]; ahora: Date };
+type Props = {
+  seguimiento: SeguimientoModulo[];
+  ahora: Date;
+  /** Saludo ya armado por la página. */
+  encabezado: ReactNode;
+};
 
-/** Un aviso por cada módulo con una observación vigente. */
-export function AvisosDeObservacion({ seguimiento, ahora }: Props) {
-  return avisosDeObservacion(seguimiento, ahora).map((aviso) => (
-    <AvisoObservacion key={aviso.expedienteId} aviso={aviso} />
-  ));
-}
-
-/** Celular: tarjetas por módulo y últimos movimientos. */
-export function SeguimientoMovil({ seguimiento, ahora }: Props) {
+/**
+ * Celular: saludo, tarjetas por módulo y últimos movimientos. Un módulo
+ * observado va primero y con su tarjeta destacada (D28).
+ */
+export function SeguimientoMovil({ seguimiento, ahora, encabezado }: Props) {
+  const avisos = avisosDeObservacion(seguimiento, ahora);
   return (
     <div className="flex flex-col gap-5 lg:hidden">
+      {encabezado}
       <section className="flex flex-col gap-3">
-        <h2 className="font-display text-[17px] font-extrabold">Mis expedientes</h2>
-        {seguimiento.map((modulo) => (
-          <TarjetaModulo key={modulo.modulo} seguimiento={modulo} ahora={ahora} />
+        <TituloSeccion>Mis expedientes</TituloSeccion>
+        {ordenParaInicio(seguimiento).map((modulo) => (
+          <TarjetaModulo
+            key={modulo.modulo}
+            seguimiento={modulo}
+            ahora={ahora}
+            aviso={avisos.find((aviso) => aviso.modulo === modulo.modulo)}
+          />
         ))}
       </section>
       <UltimosMovimientos movimientos={ultimosMovimientos(seguimiento, ahora)} />
@@ -46,54 +53,46 @@ export function SeguimientoMovil({ seguimiento, ahora }: Props) {
   );
 }
 
-/** PC: selector de módulo, tarjeta de ubicación, tracker y mapa. */
-export function SeguimientoEscritorio({ seguimiento, ahora }: Props) {
-  const paneles = Object.fromEntries(
-    seguimiento.map((modulo) => {
-      const { expediente } = modulo;
-      const etapas = etapasDe(expediente);
-      const posicion = expediente ? etapas.findIndex((e) => e.dependencia === expediente.ubicacion.dependencia) : null;
-      return [
-        modulo.modulo,
-        {
-          columna: (
-            <>
-              <TarjetaUbicacion ubicacion={ubicacionDeModulo(modulo, ahora)} />
-              <TrackerDependencias
-                etapas={etapas}
-                hayExpediente={expediente !== null}
-                abierta={etapaInicial(expediente)}
-                ahora={ahora}
-              />
-            </>
-          ),
-          mapa: (
-            <MapaRecorrido
-              etapas={etapas.map((etapa) => ({
-                nombre: etapa.nombre,
-                situacion: etapa.situacion,
-                resumen: resumenDeEtapa(etapa, ahora),
-              }))}
-              tono={tonoDeExpediente(expediente)}
-              posicion={posicion}
-            />
-          ),
-        },
-      ];
-    }),
-  ) as Record<Modulo, { columna: ReactNode; mapa: ReactNode }>;
+/**
+ * PC: saludo y, debajo, el módulo elegido en la barra lateral (D29): tarjeta de
+ * ubicación (con su observación vigente, si la hay), tracker y mapa. Las
+ * observaciones de otros módulos se ven en la barra lateral (D28).
+ */
+export function SeguimientoEscritorio({ seguimiento, ahora, encabezado, modulo }: Props & { modulo: Modulo | null }) {
+  const elegido = modulo ?? moduloInicial(seguimiento);
+  const seguimientoModulo = seguimiento.find((m) => m.modulo === elegido) ?? seguimiento[0];
+  const { expediente } = seguimientoModulo;
+  const etapas = etapasDe(expediente);
+  const posicion = expediente ? etapas.findIndex((e) => e.dependencia === expediente.ubicacion.dependencia) : null;
+  const aviso = avisosDeObservacion([seguimientoModulo], ahora)[0];
 
   return (
-    <div className="hidden lg:block">
-      <PanelSeguimiento
-        opciones={seguimiento.map((modulo) => ({
-          modulo: modulo.modulo,
-          etiqueta: etiquetaDeModulo(modulo),
-          tono: tonoDeExpediente(modulo.expediente),
-        }))}
-        inicial={moduloInicial(seguimiento)}
-        paneles={paneles}
-      />
+    <div className="hidden flex-col gap-6 lg:flex">
+      {encabezado}
+
+      {/* key: al cambiar de módulo se reinician el tracker y la animación del mapa. */}
+      <div key={elegido} className="flex items-start gap-6">
+        <div className="flex w-[330px] shrink-0 flex-col gap-3.5">
+          <TarjetaUbicacion ubicacion={ubicacionDeModulo(seguimientoModulo, ahora)} aviso={aviso} />
+          <TrackerDependencias
+            etapas={etapas}
+            hayExpediente={expediente !== null}
+            abierta={etapaInicial(expediente)}
+            ahora={ahora}
+          />
+        </div>
+        <div className="min-w-0 grow">
+          <MapaRecorrido
+            etapas={etapas.map((etapa) => ({
+              nombre: etapa.nombre,
+              situacion: etapa.situacion,
+              resumen: resumenDeEtapa(etapa, ahora),
+            }))}
+            tono={tonoDeExpediente(expediente)}
+            posicion={posicion}
+          />
+        </div>
+      </div>
     </div>
   );
 }

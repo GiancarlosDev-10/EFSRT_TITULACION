@@ -79,6 +79,23 @@ export function IconoChevronDerecha(props: PropsIcono) {
   );
 }
 
+export function IconoVolver(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <path d="M19 12H5" />
+      <path d="m12 19-7-7 7-7" />
+    </Icono>
+  );
+}
+
+export function IconoCarpeta(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+    </Icono>
+  );
+}
+
 export function IconoInicio(props: PropsIcono) {
   return (
     <Icono {...props}>
@@ -111,6 +128,15 @@ export function IconoReproducir({ tamano = 14, className }: PropsIcono) {
   return (
     <svg width={tamano} height={tamano} viewBox="0 0 24 24" aria-hidden="true" className={`fill-current ${className ?? ""}`}>
       <path d="M7 4v16l13-8z" />
+    </svg>
+  );
+}
+
+export function IconoPausa({ tamano = 14, className }: PropsIcono) {
+  return (
+    <svg width={tamano} height={tamano} viewBox="0 0 24 24" aria-hidden="true" className={`fill-current ${className ?? ""}`}>
+      <rect x="6" y="5" width="4" height="14" rx="1" />
+      <rect x="14" y="5" width="4" height="14" rx="1" />
     </svg>
   );
 }

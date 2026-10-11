@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { CODIGOS_ESTADO, LONGITUD_MAXIMA_MOTIVO, type CodigoEstado, type Dependencia } from "./catalogo";
 import {
+  esModulo,
   estaPermitida,
   indicacionDe,
   transicionesDisponibles,
@@ -99,6 +100,11 @@ describe("validarTransicion: motivo", () => {
 });
 
 describe("consultas", () => {
+  test("esModulo valida valores externos", () => {
+    expect(["I", "II", "III"].every(esModulo)).toBe(true);
+    for (const valor of ["IV", "i", "", undefined, ["II"], 2]) expect(esModulo(valor)).toBe(false);
+  });
+
   test("solo las observaciones tienen indicación", () => {
     for (const codigo of CODIGOS_ESTADO) {
       expect(indicacionDe(codigo) !== null).toBe(["02", "04", "08"].includes(codigo));

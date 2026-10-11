@@ -2,8 +2,11 @@
 // Funciones puras: el componente MapaRecorrido solo pinta lo que calcula este archivo.
 import type { SituacionEtapa } from "../application";
 
+// Zona visible del lienzo: se recorta el espacio superior que el prototipo
+// reservaba para etiquetas y tarjetas, para que el plano entre en el primer vistazo.
 export const ANCHO = 620;
-export const ALTO = 500;
+export const RECORTE_SUPERIOR = 100;
+export const ALTO = 375;
 
 const UNIDAD = 24;
 const ORIGEN_X = 310;
@@ -22,7 +25,10 @@ function puntos(lista: Punto3D[]): string {
 
 /** Posición en porcentaje del lienzo, para elementos HTML superpuestos (escala con el ancho). */
 export function enPorcentaje([x, y]: [number, number]): { left: string; top: string } {
-  return { left: `${((x / ANCHO) * 100).toFixed(2)}%`, top: `${((y / ALTO) * 100).toFixed(2)}%` };
+  return {
+    left: `${((x / ANCHO) * 100).toFixed(2)}%`,
+    top: `${(((y - RECORTE_SUPERIOR) / ALTO) * 100).toFixed(2)}%`,
+  };
 }
 
 // ---- Colores: derivados de los tokens del tema, sin hex (D25) --------------

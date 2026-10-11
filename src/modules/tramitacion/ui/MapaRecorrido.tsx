@@ -2,8 +2,10 @@
 
 // Mapa isométrico ilustrativo del recorrido (PC). Es de cliente por la
 // animación "Ver recorrido"; la geometría y los colores vienen de mapa.ts.
-import { useEffect, useRef, useState } from "react";
-import { IconoReproducir } from "@/shared";
+// Los edificios se identifican con números (los mismos del tracker) y una
+// lista al pie, para que ninguna etiqueta se superponga (D27).
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { IconoPausa, IconoReproducir } from "@/shared";
 import type { SituacionEtapa } from "../application";
 import {
   ALTO,
@@ -13,6 +15,7 @@ import {
   COLORES_EDIFICIO,
   COLORES_ESCENA,
   IDS_EDIFICIOS,
+  RECORTE_SUPERIOR,
   SUELO,
   enPorcentaje,
   estadoDeEdificio,
@@ -25,8 +28,8 @@ import type { TonoExpediente } from "./presentacion";
 
 const PASO_MS = 1100;
 
-const ETIQUETA: Record<EstadoEdificio | "inicio", string> = {
-  pendiente: "border border-line bg-white text-text-soft",
+const INSIGNIA: Record<EstadoEdificio | "inicio", string> = {
+  pendiente: "border border-pending bg-white text-text-soft",
   actual: "border border-navy bg-navy text-white",
   conforme: "border border-ok-soft bg-white text-ok",
   observado: "border border-warn bg-warn text-white",
@@ -48,6 +51,36 @@ const LEYENDA = [
   { texto: "Pendiente", color: COLORES_EDIFICIO.pendiente.derecha },
 ];
 
+const simbolo = (id: IdEdificio) => (id === "tesoreria" ? "T" : String(id + 1));
+
+function Pin({ relleno, tamano = 44 }: { relleno: string; tamano?: number }) {
+  return (
+    <svg width={(tamano * 24) / 31} height={tamano} viewBox="0 0 24 31" aria-hidden="true">
+      <path d="M12 0C5.4 0 0 5.2 0 11.7 0 20.4 12 31 12 31s12-10.6 12-19.3C24 5.2 18.6 0 12 0z" className={relleno} />
+      <circle cx="12" cy="11.5" r="4.6" className="fill-white" />
+    </svg>
+  );
+}
+
+type PropsInsignia = {
+  id: IdEdificio;
+  estilo: string;
+  pequena?: boolean;
+  className?: string;
+  style?: CSSProperties;
+};
+
+function Insignia({ id, estilo, pequena = false, className = "", style }: PropsInsignia) {
+  return (
+    <span
+      style={style}
+      className={`flex shrink-0 items-center justify-center rounded-full font-display font-bold ${pequena ? "size-5 text-[10px]" : "size-6 text-[11px]"} ${estilo} ${className}`}
+    >
+      {simbolo(id)}
+    </span>
+  );
+}
+
 type Props = {
   etapas: { nombre: string; situacion: SituacionEtapa; resumen: string }[];
   tono: TonoExpediente;
@@ -57,6 +90,7 @@ type Props = {
 
 export function MapaRecorrido({ etapas, tono, posicion }: Props) {
   const [paso, setPaso] = useState<number | null>(null);
+  const [pausado, setPausado] = useState(false);
   const temporizadores = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const detener = () => {
@@ -65,31 +99,55 @@ export function MapaRecorrido({ etapas, tono, posicion }: Props) {
   };
   useEffect(() => detener, []);
 
-  const verRecorrido = () => {
+  /** Recorre las etapas desde `inicio` hasta la actual y luego vuelve al reposo. */
+  const reproducirDesde = (inicio: number) => {
     if (posicion === null) return;
     detener();
-    setPaso(0);
-    for (let i = 1; i <= posicion; i++) {
-      temporizadores.current.push(setTimeout(() => setPaso(i), i * PASO_MS));
+    setPausado(false);
+    if (inicio > posicion) {
+      setPaso(null);
+      return;
     }
-    temporizadores.current.push(setTimeout(() => setPaso(null), (posicion + 1) * PASO_MS));
+    setPaso(inicio);
+    for (let i = inicio + 1; i <= posicion; i++) {
+      temporizadores.current.push(setTimeout(() => setPaso(i), (i - inicio) * PASO_MS));
+    }
+    temporizadores.current.push(setTimeout(() => setPaso(null), (posicion - inicio + 1) * PASO_MS));
   };
+
+  const pausar = () => {
+    detener();
+    setPausado(true);
+  };
+
+  // Un solo botón: Ver recorrido → Pausar → Continuar → … → Ver recorrido.
+  const boton =
+    paso === null
+      ? { texto: "Ver recorrido", icono: <IconoReproducir />, accion: () => reproducirDesde(0) }
+      : pausado
+        ? { texto: "Continuar", icono: <IconoReproducir />, accion: () => reproducirDesde(paso + 1) }
+        : { texto: "Pausar", icono: <IconoPausa />, accion: pausar };
 
   const situaciones = etapas.map((etapa) => etapa.situacion);
   const listo = tono === "listo";
   const estadoDe = (id: IdEdificio) => estadoDeEdificio(id, situaciones, posicion, listo);
-  const marcador = paso ?? posicion;
-  const animando = paso !== null;
+  const estiloDe = (id: IdEdificio) => INSIGNIA[id === 0 && posicion === null ? "inicio" : estadoDe(id)];
+  const nombreDe = (id: IdEdificio) =>
+    id === "tesoreria"
+      ? "Tesorería"
+      : id === 0 && posicion === null
+        ? `${etapas[0].nombre} · aquí empieza`
+        : etapas[id].nombre;
 
-  const colorMarcador = MARCADOR[animando ? "navy" : listo ? "ok" : tono === "observado" ? "warn" : "navy"];
-  const textoMarcador =
-    marcador === null
-      ? ""
-      : animando
-        ? `Paso ${marcador + 1} · ${etapas[marcador].resumen}`
-        : listo
-          ? "Recoge aquí tu constancia"
-          : "Tu expediente está aquí";
+  const marcador = paso ?? posicion;
+  const colorMarcador = MARCADOR[paso !== null ? "navy" : listo ? "ok" : tono === "observado" ? "warn" : "navy"];
+  // Cartel bajo el mapa: siempre dice dónde está el pin.
+  const mensaje =
+    paso !== null
+      ? `Paso ${paso + 1} de ${etapas.length} · ${etapas[paso].nombre} · ${etapas[paso].resumen}${pausado ? " · En pausa" : ""}`
+      : posicion === null
+        ? "Aún no hay expediente: el recorrido empezará en Mesa de Partes cuando entregues tu carpeta."
+        : `${listo ? "Recoge tu constancia en" : "Tu expediente está en"} ${etapas[posicion].nombre} · ${etapas[posicion].resumen}`;
 
   return (
     <section
@@ -98,6 +156,12 @@ export function MapaRecorrido({ etapas, tono, posicion }: Props) {
     >
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="grow font-display text-[17px] font-extrabold">Mapa del recorrido</h2>
+        {posicion !== null && (
+          <span className="flex items-center gap-1.5 text-[11px] text-text-soft">
+            <Pin relleno={colorMarcador.relleno} tamano={13} />
+            Tu expediente
+          </span>
+        )}
         {LEYENDA.map(({ texto, color }) => (
           <span key={texto} className="flex items-center gap-1.5 text-[11px] text-text-soft">
             <span className="size-2.5 rounded-[3px]" style={{ background: color }} />
@@ -107,17 +171,21 @@ export function MapaRecorrido({ etapas, tono, posicion }: Props) {
         {posicion !== null && posicion > 0 && (
           <button
             type="button"
-            onClick={verRecorrido}
+            onClick={boton.accion}
             className="flex min-h-9 items-center gap-1.5 rounded-[10px] border border-pending bg-white px-3 text-xs font-semibold text-navy hover:bg-navy-tint"
           >
-            <IconoReproducir />
-            Ver recorrido
+            {boton.icono}
+            {boton.texto}
           </button>
         )}
       </div>
 
-      <div className="relative mx-auto aspect-[620/500] w-full max-w-[620px]">
-        <svg viewBox={`0 0 ${ANCHO} ${ALTO}`} aria-hidden="true" className="absolute inset-0 size-full">
+      <div className="relative mx-auto w-full max-w-[620px]" style={{ aspectRatio: `${ANCHO} / ${ALTO}` }}>
+        <svg
+          viewBox={`0 ${RECORTE_SUPERIOR} ${ANCHO} ${ALTO}`}
+          aria-hidden="true"
+          className="absolute inset-0 size-full overflow-visible"
+        >
           <polygon points={SUELO.frente} style={{ fill: COLORES_ESCENA.sueloFrente }} />
           <polygon points={SUELO.derecha} style={{ fill: COLORES_ESCENA.sueloDerecha }} />
           <polygon points={SUELO.techo} style={{ fill: COLORES_ESCENA.sueloTecho, stroke: COLORES_ESCENA.sueloBorde }} />
@@ -159,63 +227,55 @@ export function MapaRecorrido({ etapas, tono, posicion }: Props) {
           })}
         </svg>
 
-        {/* Etiquetas sobre los techos; el edificio con el marcador no lleva etiqueta. */}
-        {IDS_EDIFICIOS.filter((id) => id !== marcador).map((id) => {
-          const inicio = id === 0 && posicion === null;
-          const nombre =
-            id === "tesoreria"
-              ? "Tesorería · fuera del sistema"
-              : inicio
-                ? `${etapas[0].nombre} · aquí empieza`
-                : etapas[id].nombre;
-          return (
-            <div
-              key={id}
-              style={enPorcentaje(techoDe(id, 0.15))}
-              className={`absolute -translate-x-1/2 -translate-y-[calc(100%+4px)] rounded-[10px] px-2.5 py-[5px] text-[11px] font-semibold whitespace-nowrap shadow-md shadow-ink/10 ${ETIQUETA[inicio ? "inicio" : estadoDe(id)]}`}
-            >
-              {nombre}
-            </div>
-          );
-        })}
-
         {marcador !== null && (
-          <>
-            <div
-              style={enPorcentaje(techoDe(marcador))}
-              className={`absolute hidden size-[26px] rounded-full transition-[left,top] duration-900 ease-in-out motion-safe:block motion-safe:animate-pulso ${colorMarcador.fondo}`}
-            />
-            <div
-              style={enPorcentaje(techoDe(marcador))}
-              className="absolute flex -translate-x-1/2 -translate-y-full flex-col items-center gap-1 transition-[left,top] duration-900 ease-in-out motion-safe:animate-flotar motion-reduce:transition-none"
-            >
-              <span
-                aria-live="polite"
-                className="flex flex-col items-center gap-px rounded-xl bg-ink px-3.5 py-[7px] whitespace-nowrap text-white shadow-lg shadow-ink/25"
-              >
-                <span className="text-[13px] font-semibold">{etapas[marcador].nombre}</span>
-                <span className="text-[11px] text-on-ink">{textoMarcador}</span>
-              </span>
-              <svg width="34" height="44" viewBox="0 0 24 31" aria-hidden="true">
-                <path
-                  d="M12 0C5.4 0 0 5.2 0 11.7 0 20.4 12 31 12 31s12-10.6 12-19.3C24 5.2 18.6 0 12 0z"
-                  className={colorMarcador.relleno}
-                />
-                <circle cx="12" cy="11.5" r="4.6" className="fill-white" />
-              </svg>
-            </div>
-          </>
+          <div
+            style={enPorcentaje(techoDe(marcador))}
+            className={`absolute hidden size-[26px] -translate-x-1/2 -translate-y-1/2 rounded-full transition-[left,top] duration-900 ease-in-out motion-safe:block motion-safe:animate-pulso ${colorMarcador.fondo}`}
+          />
         )}
 
-        {posicion === null && (
-          <div className="absolute top-[18px] left-1/2 max-w-[380px] -translate-x-1/2 rounded-xl bg-ink px-4 py-2.5 text-center text-[13px] leading-snug text-white">
-            Aún no hay expediente. El recorrido empezará en <b>Mesa de Partes</b> cuando entregues tu carpeta.
+        {/* Número de cada edificio, en el centro del techo. */}
+        {IDS_EDIFICIOS.map((id) => (
+          <Insignia
+            key={id}
+            id={id}
+            estilo={estiloDe(id)}
+            className="absolute -translate-x-1/2 -translate-y-1/2 shadow-md shadow-ink/15"
+            style={enPorcentaje(techoDe(id))}
+          />
+        ))}
+
+        {/* El pin flota sobre el número del edificio actual. */}
+        {marcador !== null && (
+          <div
+            style={enPorcentaje(techoDe(marcador))}
+            className="absolute -translate-x-1/2 -translate-y-[calc(100%+12px)] transition-[left,top] duration-900 ease-in-out motion-safe:animate-flotar motion-reduce:transition-none"
+          >
+            <Pin relleno={colorMarcador.relleno} />
           </div>
         )}
       </div>
 
+      {/* Paso de "Ver recorrido" o aviso de "sin expediente": espacio propio y
+          reservado bajo el mapa, para no tapar el dibujo ni cambiar el alto. */}
+      <div aria-live="polite" className="flex min-h-9 items-center justify-center">
+        {mensaje && (
+          <span className="rounded-xl bg-ink px-3.5 py-2 text-center text-xs font-semibold text-white">{mensaje}</span>
+        )}
+      </div>
+
+      <ol aria-label="Oficinas del mapa" className="flex flex-wrap gap-x-3 gap-y-2">
+        {IDS_EDIFICIOS.map((id) => (
+          <li key={id} className="flex items-center gap-1.5 text-[11px] whitespace-nowrap text-text-soft">
+            <Insignia id={id} estilo={estiloDe(id)} pequena />
+            <span className={id === marcador ? "font-semibold text-ink" : ""}>{nombreDe(id)}</span>
+          </li>
+        ))}
+      </ol>
+
       <p className="text-xs leading-normal text-muted">
         El mapa es ilustrativo: muestra en qué oficina está tu carpeta física según lo que registra cada área.
+        Tesorería (T) participa en el trámite, pero no registra en el sistema.
       </p>
     </section>
   );

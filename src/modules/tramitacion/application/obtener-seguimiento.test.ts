@@ -3,18 +3,18 @@ import { EXPEDIENTES_DE_PRUEBA, ESTUDIANTE_DE_PRUEBA } from "../infrastructure/d
 import { crearDependenciasDePrueba } from "./ayudas-prueba";
 import { crearObtenerSeguimientoDelEstudiante, type SeguimientoModulo } from "./obtener-seguimiento";
 
-async function seguimientoDeLucia(): Promise<SeguimientoModulo[]> {
+async function seguimientoDelEstudiante(): Promise<SeguimientoModulo[]> {
   const { dependencias } = crearDependenciasDePrueba(EXPEDIENTES_DE_PRUEBA);
   return crearObtenerSeguimientoDelEstudiante(dependencias)(ESTUDIANTE_DE_PRUEBA.id);
 }
 
 describe("obtenerSeguimientoDelEstudiante (datos del mockup)", () => {
   test("siempre devuelve los tres módulos en orden", async () => {
-    expect((await seguimientoDeLucia()).map((s) => s.modulo)).toEqual(["I", "II", "III"]);
+    expect((await seguimientoDelEstudiante()).map((s) => s.modulo)).toEqual(["I", "II", "III"]);
   });
 
   test("Módulo I: constancia lista, todas las etapas completadas", async () => {
-    const [moduloI] = await seguimientoDeLucia();
+    const [moduloI] = await seguimientoDelEstudiante();
     expect(moduloI.expediente?.estado).toEqual({
       codigo: "10",
       nombre: "Constancia lista para recoger",
@@ -28,7 +28,7 @@ describe("obtenerSeguimientoDelEstudiante (datos del mockup)", () => {
   });
 
   test("Módulo II: observado en supervisión, Bienestar pendiente", async () => {
-    const [, moduloII] = await seguimientoDeLucia();
+    const [, moduloII] = await seguimientoDelEstudiante();
     const etapas = moduloII.expediente!.etapas;
 
     expect(moduloII.expediente?.ubicacion).toEqual({ dependencia: "docente", nombre: "Docente Supervisor" });
@@ -42,7 +42,7 @@ describe("obtenerSeguimientoDelEstudiante (datos del mockup)", () => {
   });
 
   test("Módulo II: la observación de pago figura subsanada y la de supervisión vigente", async () => {
-    const [, moduloII] = await seguimientoDeLucia();
+    const [, moduloII] = await seguimientoDelEstudiante();
     const [mesaPartes, , docente] = moduloII.expediente!.etapas;
 
     const pagoObservado = mesaPartes.eventos.find((e) => e.codigo === "02");
@@ -60,7 +60,7 @@ describe("obtenerSeguimientoDelEstudiante (datos del mockup)", () => {
   });
 
   test("Módulo III: sin expediente", async () => {
-    const [, , moduloIII] = await seguimientoDeLucia();
+    const [, , moduloIII] = await seguimientoDelEstudiante();
     expect(moduloIII).toEqual({ modulo: "III", expediente: null });
   });
 

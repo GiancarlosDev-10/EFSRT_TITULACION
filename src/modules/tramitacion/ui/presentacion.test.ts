@@ -4,10 +4,13 @@ import { crearObtenerSeguimientoDelEstudiante, type SeguimientoModulo } from "..
 import { ESTUDIANTE_DE_PRUEBA, EXPEDIENTES_DE_PRUEBA } from "../infrastructure/datos-prueba";
 import {
   avisosDeObservacion,
+  codigosDeObservacion,
   etapasDe,
   etiquetaDeModulo,
   moduloInicial,
   momento,
+  ordenParaInicio,
+  pasosDeRecorrido,
   progresoDeExpediente,
   resumenDeEtapa,
   textoSubsanado,
@@ -37,7 +40,7 @@ describe("aviso de observación", () => {
     expect(avisosDeObservacion(seguimiento, MISMO_DIA)).toEqual([
       {
         modulo: "II",
-        expedienteId: "exp-lucia-II",
+        expedienteId: "exp-giancarlos-II",
         motivo: "Anexo 4: falta la firma y el sello del jefe inmediato en la página 3.",
         entrega: "Entrega tu corrección al Docente Supervisor",
         observado: "Observado hoy, 09:40",
@@ -58,7 +61,7 @@ describe("aviso de observación", () => {
 describe("tarjeta de ubicación", () => {
   test("observado", () => {
     expect(ubicacionDeModulo(moduloII, MISMO_DIA)).toEqual({
-      rotulo: "Tu expediente está en",
+      rotulo: "Módulo II · Tu expediente está en",
       lugar: "Docente Supervisor",
       pildora: "08 · Supervisión observada",
       desde: "Desde hoy, 09:40",
@@ -68,7 +71,7 @@ describe("tarjeta de ubicación", () => {
 
   test("constancia lista", () => {
     expect(ubicacionDeModulo(moduloI, MISMO_DIA)).toMatchObject({
-      rotulo: "Recoge tu constancia en",
+      rotulo: "Módulo I · Recoge tu constancia en",
       lugar: "Bienestar y Empleabilidad",
       desde: "Desde el 28 ago., 16:05",
       tono: "listo",
@@ -118,6 +121,21 @@ describe("tracker", () => {
   });
 });
 
+describe("página de seguimiento (celular)", () => {
+  test("mini barra de pasos con nombres cortos y la oficina actual marcada", () => {
+    expect(pasosDeRecorrido(moduloII.expediente!)).toEqual([
+      { nombre: "Mesa de Partes", situacion: "completada", actual: false },
+      { nombre: "Coordinación", situacion: "completada", actual: false },
+      { nombre: "Docente", situacion: "observada", actual: true },
+      { nombre: "Bienestar", situacion: "pendiente", actual: false },
+    ]);
+  });
+
+  test("los códigos de observación salen del catálogo", () => {
+    expect(codigosDeObservacion()).toBe("02, 04 y 08");
+  });
+});
+
 describe("tarjetas de módulo (celular)", () => {
   test("progreso en curso", () => {
     expect(progresoDeExpediente(moduloII.expediente!, MISMO_DIA)).toEqual({
@@ -146,6 +164,11 @@ describe("últimos movimientos y módulo inicial", () => {
       ["En supervisión · Módulo II", "15 set. · Docente Supervisor"],
       ["Docente supervisor asignado · Módulo II", "12 set. · Coordinación de Carrera"],
     ]);
+  });
+
+  test("en el inicio de celular, el módulo observado va primero", () => {
+    expect(ordenParaInicio(seguimiento).map((m) => m.modulo)).toEqual(["II", "I", "III"]);
+    expect(ordenParaInicio([moduloI, moduloIII]).map((m) => m.modulo)).toEqual(["I", "III"]);
   });
 
   test("se abre primero el módulo observado; si no hay, el más reciente", () => {

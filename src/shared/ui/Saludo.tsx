@@ -7,7 +7,7 @@ type Props = {
   subtitulo: string;
 };
 
-/** "Hola, Lucía": en celular con avatar y correo; en PC con un subtítulo. */
+/** "Hola, Giancarlos": en celular con avatar y correo; en PC con un subtítulo. */
 export function Saludo({ nombre, correo, subtitulo }: Props) {
   const [primerNombre] = nombre.split(" ");
   return (

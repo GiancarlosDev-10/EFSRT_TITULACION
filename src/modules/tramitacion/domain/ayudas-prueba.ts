@@ -9,6 +9,6 @@ export const ACTORES = {
   bienestar: { id: "act-bi", nombre: "Bienestar y Empleabilidad", dependencia: "bienestar" },
 } as const satisfies Record<Dependencia, Actor>;
 
-export const DATOS_EXPEDIENTE = { id: "exp-1", estudianteId: "est-lucia", modulo: "II" } as const;
+export const DATOS_EXPEDIENTE = { id: "exp-1", estudianteId: "est-giancarlos", modulo: "II" } as const;
 
 export const FECHA = new Date("2026-10-10T09:00:00-05:00");

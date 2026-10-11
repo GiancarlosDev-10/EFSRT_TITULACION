@@ -2,7 +2,16 @@
 // convierten el seguimiento en textos y tonos. Los componentes solo pintan lo
 // que devuelve este archivo; aquí están todos los textos que dependen de datos.
 import { capitalizar, diaRelativo, diasEntre, haceDias, hora } from "@/shared";
-import { DEPENDENCIAS, ESTADOS, ORDEN_DEPENDENCIAS, ubicacionDe, type CodigoEstado, type Modulo } from "../domain";
+import {
+  CODIGOS_ESTADO,
+  DEPENDENCIAS,
+  ESTADOS,
+  ORDEN_DEPENDENCIAS,
+  esObservacion,
+  ubicacionDe,
+  type CodigoEstado,
+  type Modulo,
+} from "../domain";
 import type {
   EtapaSeguimiento,
   EventoSeguimiento,
@@ -83,6 +92,23 @@ export function etapaInicial(expediente: ExpedienteSeguimiento | null): EtapaSeg
   return expediente?.ubicacion.dependencia ?? null;
 }
 
+export type PasoRecorrido = { nombre: string; situacion: SituacionEtapa; actual: boolean };
+
+/** Mini barra de cuatro pasos de la tarjeta de ubicación (celular). */
+export function pasosDeRecorrido(expediente: ExpedienteSeguimiento): PasoRecorrido[] {
+  return expediente.etapas.map((etapa) => ({
+    nombre: DEPENDENCIAS[etapa.dependencia].nombreCorto,
+    situacion: etapa.situacion,
+    actual: etapa.dependencia === expediente.ubicacion.dependencia,
+  }));
+}
+
+/** "02, 04 y 08": códigos de los estados de observación, tomados del catálogo. */
+export function codigosDeObservacion(): string {
+  const codigos = CODIGOS_ESTADO.filter(esObservacion);
+  return codigos.length > 1 ? `${codigos.slice(0, -1).join(", ")} y ${codigos.at(-1)}` : codigos.join("");
+}
+
 // ---- Expediente ------------------------------------------------------------
 
 export function tonoDeExpediente(expediente: ExpedienteSeguimiento | null): TonoExpediente {
@@ -118,7 +144,7 @@ export function ubicacionDeModulo({ modulo, expediente }: SeguimientoModulo, aho
     };
   }
   return {
-    rotulo: tono === "listo" ? "Recoge tu constancia en" : "Tu expediente está en",
+    rotulo: `Módulo ${modulo} · ${tono === "listo" ? "Recoge tu constancia en" : "Tu expediente está en"}`,
     lugar: expediente.ubicacion.nombre,
     pildora: `${expediente.estado.codigo} · ${expediente.estado.nombre}`,
     desde: `Desde ${elDia(expediente.desde, ahora)}, ${hora(expediente.desde)}`,
@@ -203,7 +229,14 @@ export function ultimosMovimientos(seguimiento: SeguimientoModulo[], ahora: Date
     }));
 }
 
-// ---- Selección de módulo ---------------------------------------------------
+// ---- Orden y selección de módulos -----------------------------------------
+
+/** Orden de "Mis expedientes" (celular): primero los observados; el resto, en su orden. */
+export function ordenParaInicio(seguimiento: SeguimientoModulo[]): SeguimientoModulo[] {
+  const observado = (m: SeguimientoModulo) => m.expediente?.estado.tipo === "observacion";
+  return [...seguimiento.filter(observado), ...seguimiento.filter((m) => !observado(m))];
+}
+
 
 /** Módulo que se muestra primero: el observado; si no, el último actualizado; si no, el I. */
 export function moduloInicial(seguimiento: SeguimientoModulo[]): Modulo {

@@ -14,9 +14,9 @@ import {
 
 /** Mientras no haya login, /alumno muestra a esta estudiante. */
 export const ESTUDIANTE_DE_PRUEBA = {
-  id: "est-lucia-ramos",
-  nombre: "Lucía Ramos",
-  correo: "lramos@iestpgildaballivian.edu.pe",
+  id: "est-giancarlos-ormeno",
+  nombre: "Giancarlos Ormeño",
+  correo: "gormeno@iestpgildaballivian.edu.pe",
 } as const;
 
 const ACTORES = {
@@ -51,7 +51,7 @@ function construir(id: string, modulo: Modulo, fechaRecepcion: string, pasos: Pa
 }
 
 export const EXPEDIENTES_DE_PRUEBA: readonly Expediente[] = [
-  construir("exp-lucia-I", "I", "2026-06-10T11:20", [
+  construir("exp-giancarlos-I", "I", "2026-06-10T11:20", [
     ["03", "2026-06-11T09:02", "Voucher revisado. Carpeta derivada a Coordinación."],
     ["05", "2026-06-14T15:30"],
     ["06", "2026-06-17T10:11", "Mg. R. Paredes"],
@@ -59,7 +59,7 @@ export const EXPEDIENTES_DE_PRUEBA: readonly Expediente[] = [
     ["09", "2026-08-20T17:15", "Informe de la empresa (Anexo 4) conforme."],
     ["10", "2026-08-28T16:05", "Visto bueno final registrado. Acércate con tu DNI."],
   ]),
-  construir("exp-lucia-II", "II", "2026-08-02T10:14", [
+  construir("exp-giancarlos-II", "II", "2026-08-02T10:14", [
     ["02", "2026-08-03T08:50", "El monto del voucher no coincidía con S/ 20 × 1 módulo."],
     ["03", "2026-08-04T11:26", "Carpeta derivada a Coordinación."],
     ["05", "2026-08-08T16:02"],

@@ -2,6 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // El indicador de desarrollo tapaba la tarjeta del usuario en la barra lateral.
+  devIndicators: { position: "bottom-right" },
   partialPrefetching: true,
   turbopack: {
     rules: {

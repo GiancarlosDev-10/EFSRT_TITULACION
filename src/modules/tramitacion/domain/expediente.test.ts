@@ -25,7 +25,7 @@ describe("abrirExpediente", () => {
     expect(resultado.valor.evento).toEqual({
       tipo: "ExpedienteCambioDeEstado",
       expedienteId: "exp-1",
-      estudianteId: "est-lucia",
+      estudianteId: "est-giancarlos",
       modulo: "II",
       registro,
     });
