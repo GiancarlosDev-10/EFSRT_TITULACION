@@ -1,0 +1,124 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Constancia.dc.html": {
+      "h": 1160,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "07 · Constancia lista para recoger",
+      "w": 390,
+      "x": 2820,
+      "y": 0
+    },
+    "Correo.dc.html": {
+      "h": 1000,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "05 · Correo de notificación",
+      "w": 390,
+      "x": 1880,
+      "y": 0
+    },
+    "Inicio.dc.html": {
+      "h": 1180,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "02 · Inicio",
+      "w": 390,
+      "x": 470,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "01 · Ingreso",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "Observacion.dc.html": {
+      "h": 1120,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "04 · Detalle de observación",
+      "w": 390,
+      "x": 1410,
+      "y": 0
+    },
+    "PC_Ingreso.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "title": "PC · Ingreso",
+      "w": 1440,
+      "x": 0,
+      "y": 1980
+    },
+    "PC_Panel.dc.html": {
+      "h": 1040,
+      "is_interactive": true,
+      "title": "PC · Panel con mapa del recorrido",
+      "w": 1440,
+      "x": 1927,
+      "y": 2052
+    },
+    "Requisitos.dc.html": {
+      "h": 1300,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "06 · Cómo iniciar mi trámite",
+      "w": 390,
+      "x": 2350,
+      "y": 0
+    },
+    "Tracker.dc.html": {
+      "h": 1560,
+      "is_interactive": true,
+      "radius": 28,
+      "title": "03 · Seguimiento por dependencia",
+      "w": 390,
+      "x": 940,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-25T07:40:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "titulo": {
+      "kind": "title1",
+      "maxW": 3210,
+      "text": "EFSRT · Vista del alumno — Celular",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "tituloPC": {
+      "kind": "title1",
+      "maxW": 2960,
+      "text": "EFSRT · Vista del alumno — PC",
+      "w": 240,
+      "x": 0,
+      "y": 1680
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Inicio.dc.html",
+    "Tracker.dc.html",
+    "Observacion.dc.html",
+    "Correo.dc.html",
+    "Requisitos.dc.html",
+    "Constancia.dc.html",
+    "PC_Ingreso.dc.html",
+    "PC_Panel.dc.html"
+  ],
+  "pages": [],
+  "title": "EFSRT – Vista del Alumno"
+}

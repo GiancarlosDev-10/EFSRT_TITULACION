@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Correo de notificación</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Poppins:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#E9ECF2;font-family:'Poppins',system-ui,sans-serif;color:#0B1236}
+a{color:#14246B}a:hover{color:#0F1B52}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 1000px; box-sizing: border-box; display: flex; flex-direction: column; background: #E9ECF2; font-family: 'Poppins', system-ui, sans-serif; color: #0B1236">
+
+<div style="display: flex; align-items: center; gap: 8px; padding: 18px 16px 12px; background: #FFFFFF; border-bottom: 1px solid #E2E6EE">
+<a href="Inicio.dc.html" aria-label="Volver" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #0B1236; border-radius: 12px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg></a>
+<span style="font-size: 13px; color: #586074">Bandeja de entrada · correo institucional</span>
+</div>
+
+<div style="padding: 16px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF">
+<h1 style="margin: 0; font-size: 18px; font-weight: 600; line-height: 1.35">Módulo II: tu expediente fue observado</h1>
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 38px; height: 38px; border-radius: 50%; background: #14246B; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
+<div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+<span style="font-size: 13px; font-weight: 600">EFSRT Seguimiento</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">notificaciones@[dominio-institucional] · para mí · 09:41</span>
+</div>
+</div>
+</div>
+
+<div style="padding: 20px 16px 28px; display: flex; flex-direction: column">
+<div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 16px; overflow: hidden; border: 1px solid #DDE2EA">
+<div style="padding: 16px 20px; background: #0B1236; color: #FFFFFF; display: flex; align-items: center; gap: 10px">
+<span style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 15px">EFSRT Seguimiento</span>
+<span style="font-size: 11px; color: #AEB6C8">IESTP Gilda Liliana Ballivián Rosado</span>
+</div>
+<div style="padding: 22px 20px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-size: 14px">Hola, Lucía:</span>
+<span style="font-size: 14px; line-height: 1.6; color: #2A3142">Tu expediente del <b>Módulo II · Implementación</b> fue observado y está detenido en <b>Docente Supervisor</b>.</span>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 12px; background: #FDEBD3; color: #5C2D00">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em">MOTIVO DE LA OBSERVACIÓN</span>
+<span style="font-size: 13px; line-height: 1.55">Anexo 4: falta la firma y el sello del jefe inmediato en la página 3.</span>
+</div>
+<div style="display: grid; grid-template-columns: 110px minmax(0, 1fr); row-gap: 8px; column-gap: 10px; font-size: 13px">
+<span style="color: #586074">Estado</span><span style="font-weight: 600">08 · Supervisión observada</span>
+<span style="color: #586074">Responsable</span><span>Mg. R. Paredes</span>
+<span style="color: #586074">Fecha</span><span>Hoy, 09:40</span>
+</div>
+<a href="Observacion.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 48px; margin-top: 4px; border-radius: 12px; background: #14246B; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600">Ver mi expediente</a>
+<span style="font-size: 11px; line-height: 1.55; color: #5F677A">Este es un mensaje automático. Recibes este correo porque tienes un expediente de EFSRT en curso. No respondas a esta dirección.</span>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

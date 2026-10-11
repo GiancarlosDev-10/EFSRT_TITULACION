@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Seguimiento del expediente</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Poppins:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F3F4F8;font-family:'Poppins',system-ui,sans-serif;color:#0B1236}
+a{color:#14246B}a:hover{color:#0F1B52}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 1560px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3F4F8; font-family: 'Poppins', system-ui, sans-serif; color: #0B1236">
+<div style="padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 16px">
+
+<div style="display: flex; align-items: center; gap: 8px">
+<a href="Inicio.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: #0B1236; border-radius: 12px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg></a>
+<h1 style="margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 22px">Seguimiento</h1>
+</div>
+
+<div role="group" aria-label="Elegir módulo" style="display: flex; gap: 4px; padding: 4px; background: #E4E8F0; border-radius: 14px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+<button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="flex: 1; min-height: 44px; border-radius: 10px; border: 0; font-size: 13px; font-weight: 600; cursor: pointer; {{t.style}}">{{t.label}}</button>
+</sc-for>
+</div>
+
+<sc-if value="{{hasExp}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 18px; background: #0B1236; color: #FFFFFF; border-radius: 22px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #AEB6C8">{{locLabel}}</span>
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 14px; display: flex; align-items: center; justify-content: center; {{locIconStyle}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
+<div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+<span style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 21px; line-height: 1.15">{{locName}}</span>
+<span style="font-size: 12px; color: #C9CFDC">{{locSince}}</span>
+</div>
+</div>
+<span style="align-self: flex-start; padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; {{pillStyle}}">{{pillText}}</span>
+<div style="display: flex; align-items: flex-start">
+<sc-for list="{{steps}}" as="p" hint-placeholder-count="4">
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative">
+<div style="position: absolute; top: 9px; left: 50%; width: 100%; height: 2px; {{p.lineStyle}}"></div>
+<div style="position: relative; width: 20px; height: 20px; border-radius: 50%; box-sizing: border-box; {{p.dotStyle}}"></div>
+<span style="font-size: 10px; text-align: center; line-height: 1.25; {{p.labelStyle}}">{{p.short}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{isObs}}" hint-placeholder-val="{{true}}">
+<a href="Observacion.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 16px; background: #FDEBD3; border: 1px solid #F2C88F; color: #5C2D00; text-decoration: none">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+<span style="flex-grow: 1; font-size: 13px; line-height: 1.45"><b>Expediente detenido.</b> Mira qué te observaron y a quién llevar la corrección.</span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="m9 18 6-6-6-6"></path></svg>
+</a>
+</sc-if>
+<sc-if value="{{isReady}}" hint-placeholder-val="{{false}}">
+<a href="Constancia.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 50px; border-radius: 16px; background: #17704A; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600">Dónde y cómo recoger mi constancia</a>
+</sc-if>
+
+<h2 style="margin: 4px 0 0; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px">Recorrido por dependencia</h2>
+<ol aria-label="Recorrido por dependencia" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+<sc-for list="{{stages}}" as="g" hint-placeholder-count="4">
+<li style="background: #FFFFFF; border-radius: 18px; {{g.cardStyle}}">
+<button type="button" onClick="{{g.toggle}}" aria-expanded="{{g.expanded}}" style="width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px; background: transparent; border: 0; border-radius: 18px; text-align: left; cursor: pointer; color: #0B1236">
+<span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px; {{g.dotStyle}}">
+<sc-if value="{{g.iconCheck}}" hint-placeholder-val="{{true}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+<sc-if value="{{g.iconAlert}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v6"></path><path d="M12 17h.01"></path></svg></sc-if>
+<sc-if value="{{g.iconNum}}" hint-placeholder-val="{{false}}"><span>{{g.num}}</span></sc-if>
+</span>
+<span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+<span style="font-size: 14px; font-weight: 600; {{g.nameStyle}}">{{g.name}}</span>
+<span style="font-size: 12px; color: #586074">{{g.summary}}</span>
+</span>
+<span style="display: flex; color: #586074; {{g.chevStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span>
+</button>
+<sc-if value="{{g.open}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 0; padding: 0 14px 14px 60px">
+<sc-for list="{{g.events}}" as="e" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 3px; padding: 10px 0; border-top: 1px solid #EEF1F6">
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 10px; padding: 2px 6px; border-radius: 6px; {{e.chipStyle}}">{{e.code}}</span>
+<span style="font-size: 13px; font-weight: 600; {{e.titleStyle}}">{{e.title}}</span>
+</div>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">{{e.when}}</span>
+<sc-if value="{{e.hasNote}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 1.5; color: #333B4D">{{e.note}}</span></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{g.isEmpty}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 1.5; color: #586074; padding-top: 4px">{{g.emptyText}}</span></sc-if>
+</div>
+</sc-if>
+</li>
+</sc-for>
+</ol>
+</div>
+</sc-if>
+
+<sc-if value="{{noExp}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 22px; background: #FFFFFF; border: 1px dashed #C3CAD8; border-radius: 22px; text-align: center">
+<div style="width: 60px; height: 60px; border-radius: 50%; background: #E8EBF6; color: #14246B; display: flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></div>
+<span style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 18px">Aún no hay expediente</span>
+<span style="font-size: 13px; line-height: 1.55; color: #444C5E">El seguimiento empieza cuando entregas tu carpeta física en Mesa de Partes. Te llegará un correo de confirmación.</span>
+<a href="Requisitos.dc.html" style="display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; border-radius: 14px; background: #14246B; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600">Ver cómo iniciar el trámite</a>
+</div>
+</sc-if>
+
+<p style="margin: 0; padding: 12px 14px; border-radius: 14px; background: #E8EBF6; color: #0F1B52; font-size: 12px; line-height: 1.55">Los estados <b>02, 04 y 08</b> son observaciones: el expediente se detiene en esa oficina hasta que entregues la corrección. Cada cambio te llega también al correo.</p>
+</div>
+
+<nav aria-label="Principal" style="margin-top: auto; display: flex; background: #FFFFFF; border-top: 1px solid #E2E6EE; padding: 6px 12px 22px">
+<a href="Inicio.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #586074; font-size: 11px; font-weight: 500">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>Inicio</a>
+<a href="Tracker.dc.html" aria-current="page" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #14246B; font-size: 11px; font-weight: 600">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Seguimiento</a>
+<a href="Requisitos.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #586074; font-size: 11px; font-weight: 500">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="m9 14 2 2 4-4"></path></svg>Requisitos</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const mod = s.mod || 'II';
+    const DEPS = ['Mesa de Partes', 'Coordinación de Carrera', 'Docente Supervisor', 'Bienestar y Empleabilidad'];
+    const SHORT = ['Mesa de\nPartes', 'Coordi-\nnación', 'Docente', 'Bienestar'];
+
+    // e: [codigo, titulo, cuando, nota, tono]  tono: ok | warn | info | done
+    const DATA = {
+      I: {
+        loc: 3, tone: 'ready', pill: '10 · Constancia lista para recoger', since: 'Desde el 28 ago. 2026, 16:05',
+        stages: [
+          { st: 'done', summary: 'Conforme · 11 jun.', ev: [
+            ['01', 'Expediente recibido', '10 jun. · 11:20 · Mesa de Partes', 'Se registró la recepción de tu carpeta física.', 'done'],
+            ['03', 'Pago conforme', '11 jun. · 09:02 · Mesa de Partes', 'Voucher revisado. Carpeta derivada a Coordinación.', 'ok'] ] },
+          { st: 'done', summary: 'Conforme · 17 jun.', ev: [
+            ['05', 'Requisitos conformes', '14 jun. · 15:30 · Coordinación', '', 'ok'],
+            ['06', 'Docente supervisor asignado', '17 jun. · 10:11 · Coordinación', 'Mg. R. Paredes', 'ok'] ] },
+          { st: 'done', summary: 'Aprobado · 20 ago.', ev: [
+            ['07', 'En supervisión', '02 jul. · 12:40 · Docente Supervisor', '', 'done'],
+            ['09', 'Supervisión aprobada', '20 ago. · 17:15 · Docente Supervisor', 'Informe de la empresa (Anexo 4) conforme.', 'ok'] ] },
+          { st: 'done', summary: 'Constancia lista · 28 ago.', ev: [
+            ['10', 'Constancia lista para recoger', '28 ago. · 16:05 · Bienestar y Empleabilidad', 'Visto bueno final registrado. Acércate con tu DNI.', 'ok'] ] }
+        ]
+      },
+      II: {
+        loc: 2, tone: 'warn', pill: '08 · Supervisión observada', since: 'Desde hoy, 09:40',
+        stages: [
+          { st: 'done', summary: 'Conforme · 04 ago.', ev: [
+            ['01', 'Expediente recibido', '02 ago. · 10:14 · Mesa de Partes', 'Se registró la recepción de tu carpeta física.', 'done'],
+            ['02', 'Pago observado', '03 ago. · 08:50 · Mesa de Partes', 'El monto del voucher no coincidía con S/ 20 × 1 módulo. Subsanado el 04 ago.', 'warnDone'],
+            ['03', 'Pago conforme', '04 ago. · 11:26 · Mesa de Partes', 'Carpeta derivada a Coordinación.', 'ok'] ] },
+          { st: 'done', summary: 'Conforme · 12 set.', ev: [
+            ['05', 'Requisitos conformes', '08 ago. · 16:02 · Coordinación', '', 'ok'],
+            ['06', 'Docente supervisor asignado', '12 set. · 09:15 · Coordinación', 'Mg. R. Paredes', 'ok'] ] },
+          { st: 'obs', summary: 'Observado hoy · 09:40', ev: [
+            ['07', 'En supervisión', '15 set. · 14:30 · Docente Supervisor', 'Llamada de monitoreo con tu jefe inmediato.', 'done'],
+            ['08', 'Supervisión observada', 'Hoy · 09:40 · Docente Supervisor', 'Anexo 4: falta la firma y el sello del jefe inmediato en la página 3.', 'warn'] ] },
+          { st: 'pending', summary: 'Pendiente', ev: [] , empty: 'Cuando la supervisión esté aprobada, Bienestar registrará el visto bueno final.' }
+        ]
+      },
+      III: null
+    };
+
+    const TAB_ON = 'background: #FFFFFF; color: #0B1236; box-shadow: 0 1px 3px rgba(11,18,54,0.14)';
+    const TAB_OFF = 'background: transparent; color: #444C5E';
+    const tabs = ['I', 'II', 'III'].map((k) => ({
+      label: 'Módulo ' + k, pressed: k === mod ? 'true' : 'false',
+      style: k === mod ? TAB_ON : TAB_OFF,
+      pick: () => this.setState({ mod: k, open: null })
+    }));
+
+    const d = DATA[mod];
+    if (!d) {
+      return { tabs, hasExp: false, noExp: true, stages: [], steps: [], isObs: false, isReady: false };
+    }
+
+    const openIdx = (s.open === null || s.open === undefined) ? d.loc : s.open;
+
+    const DOT = {
+      done: 'background: #17704A; color: #FFFFFF',
+      obs: 'background: #A64B00; color: #FFFFFF; box-shadow: 0 0 0 4px #F7D9B2',
+      pending: 'background: #FFFFFF; color: #586074; border: 2px solid #CDD3DF'
+    };
+    const CARD = {
+      done: 'border: 1px solid #E2E6EE',
+      obs: 'border: 2px solid #E2A55C',
+      pending: 'border: 1px solid #E2E6EE'
+    };
+    const CHIP = {
+      done: 'background: #ECEFF4; color: #444C5E',
+      ok: 'background: #E1F3EA; color: #17704A',
+      warn: 'background: #A64B00; color: #FFFFFF',
+      warnDone: 'background: #FDEBD3; color: #6B3400'
+    };
+
+    const stages = d.stages.map((g, i) => {
+      const open = openIdx === i;
+      return {
+        name: DEPS[i], num: String(i + 1), summary: g.summary,
+        iconCheck: g.st === 'done', iconAlert: g.st === 'obs', iconNum: g.st === 'pending',
+        dotStyle: DOT[g.st], cardStyle: CARD[g.st],
+        nameStyle: g.st === 'pending' ? 'color: #586074' : 'color: #0B1236',
+        open, expanded: open ? 'true' : 'false',
+        chevStyle: open ? 'transform: rotate(180deg)' : 'transform: none',
+        isEmpty: g.ev.length === 0, emptyText: g.empty || '',
+        events: g.ev.map((e) => ({
+          code: e[0], title: e[1], when: e[2], note: e[3], hasNote: !!e[3],
+          chipStyle: CHIP[e[4]],
+          titleStyle: e[4] === 'warnDone' ? 'color: #586074; text-decoration: line-through' : 'color: #0B1236'
+        })),
+        toggle: () => this.setState({ open: open ? -1 : i })
+      };
+    });
+
+    const steps = d.stages.map((g, i) => {
+      const isLoc = i === d.loc;
+      let dot = 'background: transparent; border: 2px solid #4A5266';
+      if (g.st === 'done') dot = 'background: #3FB37B';
+      if (g.st === 'obs') dot = 'background: #E9A451; box-shadow: 0 0 0 4px rgba(233,164,81,0.3)';
+      const next = d.stages[i + 1];
+      return {
+        short: SHORT[i].replace('\n', ' '),
+        dotStyle: dot,
+        lineStyle: !next ? 'display: none' : (g.st === 'done' && next.st !== 'pending' ? 'background: #3FB37B' : 'background: #3A4152'),
+        labelStyle: isLoc ? 'color: #FFFFFF; font-weight: 600' : 'color: #AEB6C8'
+      };
+    });
+
+    const PILL = {
+      warn: 'background: #F7D9B2; color: #5C2D00',
+      ready: 'background: #BFE6D1; color: #0F4D32'
+    };
+    const LOCICON = {
+      warn: 'background: #F7D9B2; color: #6B3400',
+      ready: 'background: #BFE6D1; color: #0F4D32'
+    };
+
+    return {
+      tabs, stages, steps,
+      hasExp: true, noExp: false,
+      locLabel: d.tone === 'ready' ? 'RECOGE TU CONSTANCIA EN' : 'TU EXPEDIENTE ESTÁ EN',
+      locName: DEPS[d.loc], locSince: d.since,
+      locIconStyle: LOCICON[d.tone],
+      pillText: d.pill, pillStyle: PILL[d.tone],
+      isObs: d.tone === 'warn', isReady: d.tone === 'ready'
+    };
+  }
+}
+</script>
+</body>
+</html>

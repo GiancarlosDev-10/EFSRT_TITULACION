@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Cómo iniciar mi trámite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Poppins:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F3F4F8;font-family:'Poppins',system-ui,sans-serif;color:#0B1236}
+a{color:#14246B}a:hover{color:#0F1B52}
+button{font-family:inherit}
+input[type=checkbox]{accent-color:#14246B}
+</style>
+</helmet>
+<div style="width: 390px; height: 1300px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3F4F8; font-family: 'Poppins', system-ui, sans-serif; color: #0B1236">
+<div style="padding: 20px 20px 24px; display: flex; flex-direction: column; gap: 18px">
+
+<div style="display: flex; align-items: center; gap: 8px">
+<a href="Inicio.dc.html" aria-label="Volver al inicio" style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center; color: #0B1236; border-radius: 12px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path></svg></a>
+<h1 style="margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 21px">Cómo iniciar mi trámite</h1>
+</div>
+
+<p style="margin: 0; font-size: 13px; line-height: 1.6; color: #444C5E">El trámite se hace en físico. El sistema empieza a seguir tu expediente apenas Mesa de Partes recibe tu carpeta.</p>
+
+<ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px">
+
+<li style="display: flex; gap: 14px; padding: 16px; background: #FFFFFF; border: 1px solid #E2E6EE; border-radius: 18px">
+<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: #0B1236; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px">1</span>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 15px; font-weight: 600">Paga el derecho de constancia</span>
+<span style="font-size: 13px; line-height: 1.55; color: #444C5E"><b>S/ 20 por módulo</b> en el banco o agente autorizado. Luego canjea tu voucher en <b>Tesorería</b>.</span>
+<span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: #ECEFF4; color: #444C5E">Este paso no se registra en el sistema</span>
+</div>
+</li>
+
+<li style="display: flex; gap: 14px; padding: 16px; background: #FFFFFF; border: 1px solid #E2E6EE; border-radius: 18px">
+<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: #0B1236; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px">2</span>
+<div style="display: flex; flex-direction: column; gap: 10px; flex-grow: 1; min-width: 0">
+<span style="font-size: 15px; font-weight: 600">Arma tu carpeta física</span>
+<span style="font-size: 12px; color: #586074">Marca lo que ya tienes. Esta lista es solo una guía para ti.</span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<sc-for list="{{docs}}" as="d" hint-placeholder-count="6">
+<label style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 4px; border-radius: 10px; cursor: pointer">
+<input type="checkbox" checked="{{d.done}}" onChange="{{d.toggle}}" style="width: 20px; height: 20px; margin: 0; flex-shrink: 0">
+<span style="font-size: 13px; {{d.style}}">{{d.name}}</span>
+</label>
+</sc-for>
+</div>
+<div style="height: 6px; border-radius: 3px; background: #E2E6EE"><div style="height: 6px; border-radius: 3px; width: {{pct}}%; background: {{barColor}}"></div></div>
+<span style="font-size: 12px; color: #586074">{{progressText}}</span>
+</div>
+</li>
+
+<li style="display: flex; gap: 14px; padding: 16px; background: #FFFFFF; border: 1px solid #E2E6EE; border-radius: 18px">
+<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: #14246B; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 14px">3</span>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-size: 15px; font-weight: 600">Entrégala en Mesa de Partes</span>
+<span style="font-size: 13px; line-height: 1.55; color: #444C5E">Al recibirla, Mesa de Partes abre tu expediente en el sistema. Te llegará un correo y desde ese momento podrás seguirlo aquí.</span>
+<span style="align-self: flex-start; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 999px; background: #E8EBF6; color: #0F1B52">Aquí empieza el seguimiento</span>
+</div>
+</li>
+</ol>
+
+<div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #0B1236; color: #FFFFFF; border-radius: 18px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #AEB6C8">EL RECORRIDO DE TU CARPETA</span>
+<div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px">
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 22px; height: 22px; border-radius: 50%; background: #14246B; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">1</span>Mesa de Partes · recepción y pago</div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 22px; height: 22px; border-radius: 50%; background: #14246B; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">2</span>Coordinación · requisitos y docente</div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 22px; height: 22px; border-radius: 50%; background: #14246B; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">3</span>Docente Supervisor · supervisión</div>
+<div style="display: flex; align-items: center; gap: 10px"><span style="width: 22px; height: 22px; border-radius: 50%; background: #14246B; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600">4</span>Bienestar · visto bueno y constancia</div>
+</div>
+</div>
+
+<p style="margin: 0; font-size: 12px; line-height: 1.55; color: #586074">Horario de Mesa de Partes: [días y horario]. Un mismo voucher puede cubrir varios módulos si el monto es S/ 20 × N.</p>
+</div>
+
+<nav aria-label="Principal" style="margin-top: auto; display: flex; background: #FFFFFF; border-top: 1px solid #E2E6EE; padding: 6px 12px 22px">
+<a href="Inicio.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #586074; font-size: 11px; font-weight: 500">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>Inicio</a>
+<a href="Tracker.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #586074; font-size: 11px; font-weight: 500">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Seguimiento</a>
+<a href="Requisitos.dc.html" aria-current="page" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #14246B; font-size: 11px; font-weight: 600">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="m9 14 2 2 4-4"></path></svg>Requisitos</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const done = s.done || {};
+    const DEF = [
+      ['voucher', 'Voucher canjeado en Tesorería'],
+      ['a1', 'Anexo 1 [nombre oficial]'],
+      ['a2', 'Anexo 2 [nombre oficial]'],
+      ['a3', 'Anexo 3 [nombre oficial]'],
+      ['carta', 'Carta de presentación'],
+      ['foto', 'Fotografía [tamaño]']
+    ];
+    const docs = DEF.map(([id, name]) => {
+      const d = !!done[id];
+      return {
+        name, done: d,
+        style: d ? 'color: #586074; text-decoration: line-through' : 'color: #0B1236',
+        toggle: () => this.setState({ done: Object.assign({}, done, { [id]: !d }) })
+      };
+    });
+    const n = DEF.filter(([id]) => done[id]).length;
+    return {
+      docs,
+      pct: Math.round((n / DEF.length) * 100),
+      barColor: n === DEF.length ? '#17704A' : '#14246B',
+      progressText: n === DEF.length ? 'Listo para llevar a Mesa de Partes' : n + ' de ' + DEF.length + ' listos'
+    };
+  }
+}
+</script>
+</body>
+</html>

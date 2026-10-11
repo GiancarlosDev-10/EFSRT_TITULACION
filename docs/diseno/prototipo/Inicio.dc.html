@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Inicio del estudiante</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Poppins:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F3F4F8;font-family:'Poppins',system-ui,sans-serif;color:#0B1236}
+a{color:#14246B}a:hover{color:#0F1B52}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 1180px; box-sizing: border-box; display: flex; flex-direction: column; background: #F3F4F8; font-family: 'Poppins', system-ui, sans-serif; color: #0B1236">
+<div style="padding: 28px 20px 24px; display: flex; flex-direction: column; gap: 20px">
+
+<header style="display: flex; align-items: center; gap: 12px">
+<div style="width: 44px; height: 44px; border-radius: 50%; background: #0B1236; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 15px">LR</div>
+<div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+<span style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 20px">Hola, Lucía</span>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">lramos@iestpgildaballivian.edu.pe</span>
+</div>
+<button type="button" onClick="{{toggleNotif}}" aria-label="Notificaciones, 2 sin leer" style="position: relative; width: 44px; height: 44px; border-radius: 14px; border: 1px solid #E2E6EE; background: #FFFFFF; color: #0B1236; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+<span style="position: absolute; top: 6px; right: 6px; min-width: 16px; height: 16px; border-radius: 8px; background: #B34A00; color: #FFFFFF; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center">2</span>
+</button>
+</header>
+
+<sc-if value="{{notif}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 6px; background: #FFFFFF; border: 1px solid #E2E6EE; border-radius: 16px; box-shadow: 0 12px 32px rgba(11,18,54,0.12)">
+<a href="Correo.dc.html" style="display: flex; gap: 10px; padding: 10px; border-radius: 10px; text-decoration: none; color: #0B1236; background: #FFF6EA">
+<span style="width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: #B34A00; flex-shrink: 0"></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; font-weight: 600">Módulo II: tu Anexo 4 fue observado</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">Hoy, 09:40 · enviado también a tu correo</span></span>
+</a>
+<a href="Tracker.dc.html" style="display: flex; gap: 10px; padding: 10px; border-radius: 10px; text-decoration: none; color: #0B1236">
+<span style="width: 8px; height: 8px; margin-top: 7px; border-radius: 50%; background: #14246B; flex-shrink: 0"></span>
+<span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; font-weight: 600">Módulo II pasó a Docente Supervisor</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">15 set. · En supervisión</span></span>
+</a>
+</div>
+</sc-if>
+
+<a href="Observacion.dc.html" style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 20px; background: #FDEBD3; border: 1px solid #F2C88F; text-decoration: none; color: #5C2D00">
+<div style="display: flex; align-items: center; gap: 8px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase">Tienes una observación</span>
+</div>
+<span style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 18px; line-height: 1.25; color: #3D1E00">Módulo II: lleva tu Anexo 4 corregido a tu docente supervisor</span>
+<span style="font-size: 13px; line-height: 1.5">Falta la firma y el sello del jefe inmediato. Tu expediente está detenido hasta que lo subsanes.</span>
+<span style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #3D1E00">Ver qué tengo que hacer <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span>
+</a>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 17px">Mis expedientes</h2>
+
+<a href="Tracker.dc.html" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #FFFFFF; border: 1px solid #E2E6EE; border-radius: 20px; text-decoration: none; color: #0B1236">
+<div style="display: flex; align-items: flex-start; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1">
+<span style="font-size: 11px; color: #586074; font-weight: 600; letter-spacing: 0.06em">MÓDULO II</span>
+<span style="font-size: 15px; font-weight: 600">Implementación</span>
+</div>
+<span style="padding: 4px 10px; border-radius: 999px; background: #FDEBD3; color: #6B3400; font-size: 11px; font-weight: 600">Observado</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #F3F4F8">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#14246B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+<span style="font-size: 13px"><span style="color: #586074">Está en</span> <b>Docente Supervisor</b></span>
+</div>
+<div style="display: flex; gap: 4px">
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #17704A"></div>
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #17704A"></div>
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #D9822B"></div>
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #E2E6EE"></div>
+</div>
+<span style="font-size: 12px; color: #586074">Dependencia 3 de 4 · actualizado hoy</span>
+</a>
+
+<a href="Constancia.dc.html" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; background: #FFFFFF; border: 1px solid #E2E6EE; border-radius: 20px; text-decoration: none; color: #0B1236">
+<div style="display: flex; align-items: flex-start; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1">
+<span style="font-size: 11px; color: #586074; font-weight: 600; letter-spacing: 0.06em">MÓDULO I</span>
+<span style="font-size: 15px; font-weight: 600">Análisis y Diseño</span>
+</div>
+<span style="padding: 4px 10px; border-radius: 999px; background: #E1F3EA; color: #17704A; font-size: 11px; font-weight: 600">Lista para recoger</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #F3F4F8">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#17704A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+<span style="font-size: 13px"><span style="color: #586074">Recógela en</span> <b>Bienestar y Empleabilidad</b></span>
+</div>
+<div style="display: flex; gap: 4px">
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #17704A"></div>
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #17704A"></div>
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #17704A"></div>
+<div style="flex: 1; height: 6px; border-radius: 3px; background: #17704A"></div>
+</div>
+<span style="font-size: 12px; color: #586074">Recorrido completo · 28 ago.</span>
+</a>
+
+<a href="Requisitos.dc.html" style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #FFFFFF; border: 1px dashed #C3CAD8; border-radius: 20px; text-decoration: none; color: #0B1236">
+<div style="display: flex; align-items: flex-start; gap: 10px">
+<div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1">
+<span style="font-size: 11px; color: #586074; font-weight: 600; letter-spacing: 0.06em">MÓDULO III</span>
+<span style="font-size: 15px; font-weight: 600">Diseño y Puesta en Producción</span>
+</div>
+<span style="padding: 4px 10px; border-radius: 999px; background: #ECEFF4; color: #444C5E; font-size: 11px; font-weight: 600">Sin expediente</span>
+</div>
+<span style="font-size: 13px; color: #444C5E; line-height: 1.5">Aparecerá aquí cuando Mesa de Partes reciba tu carpeta.</span>
+<span style="display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: #14246B">Cómo iniciar el trámite <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></span>
+</a>
+</section>
+
+<section style="display: flex; flex-direction: column">
+<h2 style="margin: 0 0 6px; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 17px">Últimos movimientos</h2>
+<div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E2E6EE">
+<span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; color: #6B3400; background: #FDEBD3; border-radius: 6px; padding: 3px 6px; height: fit-content">08</span>
+<div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Supervisión observada · Módulo II</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">Hoy, 09:40 · Docente Supervisor</span></div>
+</div>
+<div style="display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #E2E6EE">
+<span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; color: #14246B; background: #E8EBF6; border-radius: 6px; padding: 3px 6px; height: fit-content">07</span>
+<div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">En supervisión · Módulo II</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">15 set. · Docente Supervisor</span></div>
+</div>
+<div style="display: flex; gap: 12px; padding: 10px 0">
+<span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 11px; color: #17704A; background: #E1F3EA; border-radius: 6px; padding: 3px 6px; height: fit-content">10</span>
+<div style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 13px; font-weight: 600">Constancia lista para recoger · Módulo I</span><span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">28 ago. · Bienestar y Empleabilidad</span></div>
+</div>
+</section>
+</div>
+
+<nav aria-label="Principal" style="margin-top: auto; display: flex; background: #FFFFFF; border-top: 1px solid #E2E6EE; padding: 6px 12px 22px">
+<a href="Inicio.dc.html" aria-current="page" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #14246B; font-size: 11px; font-weight: 600">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5 9.5V21h14V9.5"></path></svg>Inicio</a>
+<a href="Tracker.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #586074; font-size: 11px; font-weight: 500">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Seguimiento</a>
+<a href="Requisitos.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; text-decoration: none; color: #586074; font-size: 11px; font-weight: 500">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="m9 14 2 2 4-4"></path></svg>Requisitos</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    return { notif: !!s.notif, toggleNotif: () => this.setState({ notif: !s.notif }) };
+  }
+}
+</script>
+</body>
+</html>

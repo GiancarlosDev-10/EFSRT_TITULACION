@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Panel del estudiante (PC)</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&amp;family=Poppins:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600&amp;display=swap">
+<style>
+body{margin:0;background:#F3F4F8;font-family:'Poppins',system-ui,sans-serif;color:#0B1236}
+a{color:#14246B}a:hover{color:#0F1B52}
+button{font-family:inherit}
+@keyframes bob{0%,100%{transform:translate(-50%,-100%)}50%{transform:translate(-50%,calc(-100% - 8px))}}
+@keyframes pulse{0%{transform:translate(-50%,-50%) scale(0.6);opacity:0.7}100%{transform:translate(-50%,-50%) scale(1.8);opacity:0}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1040px; box-sizing: border-box; display: flex; background: #F3F4F8; font-family: 'Poppins', system-ui, sans-serif; color: #0B1236">
+
+<aside style="width: 260px; flex-shrink: 0; box-sizing: border-box; padding: 28px 18px; display: flex; flex-direction: column; gap: 28px; background: #0B1236; color: #FFFFFF">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 8px">
+<svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink: 0"><path d="M20.48 10.55 L22.93 10.79 L22.93 13.21 L20.48 13.45 L19.71 15.80 L21.56 17.45 L20.14 19.40 L18.00 18.16 L16.00 19.61 L16.53 22.03 L14.23 22.77 L13.24 20.51 L10.76 20.51 L9.77 22.77 L7.47 22.03 L8.00 19.61 L6.00 18.16 L3.86 19.40 L2.44 17.45 L4.29 15.80 L3.52 13.45 L1.07 13.21 L1.07 10.79 L3.52 10.55 L4.29 8.20 L2.44 6.55 L3.86 4.60 L6.00 5.84 L8.00 4.39 L7.47 1.97 L9.77 1.23 L10.76 3.49 L13.24 3.49 L14.23 1.23 L16.53 1.97 L16.00 4.39 L18.00 5.84 L20.14 4.60 L21.56 6.55 L19.71 8.20 Z" fill="#FFFFFF"></path><circle cx="12" cy="12" r="6.4" fill="#14246B"></circle><path d="M12 7.9a2.7 2.7 0 0 0-2.7 2.7c0 2.1 2.7 4.6 2.7 4.6s2.7-2.5 2.7-4.6A2.7 2.7 0 0 0 12 7.9z" fill="#FFFFFF"></path><circle cx="12" cy="10.6" r="0.95" fill="#14246B"></circle></svg>
+<div style="display: flex; flex-direction: column; gap: 1px">
+<span style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 16px">EFSRT Seguimiento</span>
+<span style="font-size: 11px; color: #AEB6CF">IESTP Gilda L. Ballivián Rosado</span>
+</div>
+</div>
+<nav aria-label="Principal" style="display: flex; flex-direction: column; gap: 4px">
+<a href="PC_Panel.dc.html" aria-current="page" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 12px; background: #1E2E78; color: #FFFFFF; text-decoration: none; font-size: 14px; font-weight: 600">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>Mi seguimiento</a>
+<a href="Requisitos.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 12px; color: #C9CFE3; text-decoration: none; font-size: 14px; font-weight: 500">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"></rect><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><path d="m9 14 2 2 4-4"></path></svg>Cómo iniciar mi trámite</a>
+<a href="Constancia.dc.html" style="display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border-radius: 12px; color: #C9CFE3; text-decoration: none; font-size: 14px; font-weight: 500">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="6"></circle><path d="M8.5 14 7 22l5-3 5 3-1.5-8"></path></svg>Mis constancias</a>
+</nav>
+<div style="margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 14px; background: #141D4A">
+<div style="width: 38px; height: 38px; border-radius: 50%; background: #FFFFFF; color: #0B1236; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px">LR</div>
+<div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+<span style="font-size: 13px; font-weight: 600">Lucía Ramos</span>
+<span style="font-size: 11px; color: #AEB6CF">Desarrollo de Sistemas · VI</span>
+</div>
+</div>
+</aside>
+
+<main style="flex-grow: 1; min-width: 0; box-sizing: border-box; padding: 52px 40px 32px; display: flex; flex-direction: column; gap: 24px">
+<header style="display: flex; align-items: center; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1">
+<h1 style="margin: 0; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 26px">Hola, Lucía</h1>
+<span style="font-size: 13px; color: #586074">Sigue el recorrido de tus expedientes de EFSRT por las oficinas del instituto.</span>
+</div>
+<button type="button" aria-label="Notificaciones, 2 sin leer" style="position: relative; width: 46px; height: 46px; border-radius: 14px; border: 1px solid #E2E6EE; background: #FFFFFF; color: #0B1236; display: flex; align-items: center; justify-content: center; cursor: pointer">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+<span style="position: absolute; top: 7px; right: 7px; min-width: 16px; height: 16px; border-radius: 8px; background: #B34A00; color: #FFFFFF; font-size: 10px; font-weight: 600; display: flex; align-items: center; justify-content: center">2</span>
+</button>
+</header>
+
+<a href="Observacion.dc.html" style="display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-radius: 16px; background: #FDEBD3; border: 1px solid #F2C88F; color: #5C2D00; text-decoration: none">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 9v4"></path><path d="M12 17h.01"></path><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"></path></svg>
+<span style="flex-grow: 1; font-size: 14px; line-height: 1.45"><b>Módulo II observado:</b> lleva tu Anexo 4 con la firma y el sello del jefe inmediato a tu docente supervisor.</span>
+<span style="font-size: 13px; font-weight: 600; white-space: nowrap">Ver detalle</span>
+</a>
+
+
+
+<div style="display: flex; gap: 24px; align-items: flex-start; height: 674px">
+
+<div style="width: 420px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
+<div style="position: relative">
+<button type="button" onClick="{{toggleDd}}" aria-haspopup="listbox" aria-expanded="{{ddExpanded}}" style="width: 100%; display: flex; align-items: center; gap: 12px; min-height: 62px; padding: 10px 14px; background: #FFFFFF; border: 1px solid #DDE2EC; border-radius: 16px; cursor: pointer; text-align: left; color: #0B1236">
+<span style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 50%; background: {{cur.dot}}"></span>
+<span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0"><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #586074">{{cur.label}}</span><span style="font-size: 15px; font-weight: 600">{{cur.name}}</span></span>
+<span style="padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; white-space: nowrap; {{cur.pill}}">{{cur.state}}</span>
+<span style="display: flex; color: #586074; {{ddChev}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span>
+</button>
+<sc-if value="{{ddOpen}}" hint-placeholder-val="{{false}}">
+<div role="listbox" aria-label="Elegir módulo" style="position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; display: flex; flex-direction: column; gap: 2px; padding: 6px; background: #FFFFFF; border: 1px solid #DDE2EC; border-radius: 16px; box-shadow: 0 16px 40px rgba(11,18,54,0.16)">
+<sc-for list="{{opts}}" as="o" hint-placeholder-count="3">
+<button type="button" role="option" aria-selected="{{o.selected}}" onClick="{{o.pick}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 8px 12px; border: 0; border-radius: 12px; cursor: pointer; text-align: left; color: #0B1236; {{o.style}}">
+<span style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 50%; background: {{o.dot}}"></span>
+<span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1"><span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; color: #586074">{{o.label}}</span><span style="font-size: 14px; font-weight: 600">{{o.name}}</span></span>
+<span style="font-size: 11px; font-weight: 600; color: #586074">{{o.state}}</span>
+</button>
+</sc-for>
+</div>
+</sc-if>
+</div>
+<div style="display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #0B1236; color: #FFFFFF; border-radius: 22px">
+<span style="font-size: 11px; font-weight: 600; letter-spacing: 0.08em; color: #AEB6CF">{{locLabel}}</span>
+<span style="font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 24px; line-height: 1.15">{{locName}}</span>
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<span style="padding: 5px 11px; border-radius: 999px; font-size: 12px; font-weight: 600; {{pillStyle}}">{{pillText}}</span>
+<span style="font-size: 12px; color: #C9CFE3">{{locSince}}</span>
+</div>
+</div>
+
+<ol aria-label="Recorrido por dependencia" style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+<sc-for list="{{stages}}" as="g" hint-placeholder-count="4">
+<li style="background: #FFFFFF; border-radius: 16px; {{g.cardStyle}}">
+<button type="button" onClick="{{g.toggle}}" aria-expanded="{{g.expanded}}" style="width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: transparent; border: 0; border-radius: 16px; text-align: left; cursor: pointer; color: #0B1236">
+<span style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; box-sizing: border-box; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-weight: 700; font-size: 13px; {{g.dotStyle}}">
+<sc-if value="{{g.iconCheck}}" hint-placeholder-val="{{true}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+<sc-if value="{{g.iconAlert}}" hint-placeholder-val="{{false}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v6"></path><path d="M12 17h.01"></path></svg></sc-if>
+<sc-if value="{{g.iconNum}}" hint-placeholder-val="{{false}}"><span>{{g.num}}</span></sc-if>
+</span>
+<span style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1; min-width: 0">
+<span style="font-size: 14px; font-weight: 600; {{g.nameStyle}}">{{g.name}}</span>
+<span style="font-size: 12px; color: #586074">{{g.summary}}</span>
+</span>
+<span style="display: flex; color: #586074; {{g.chevStyle}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></span>
+</button>
+<sc-if value="{{g.open}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; padding: 0 14px 12px 58px">
+<sc-for list="{{g.events}}" as="e" hint-placeholder-count="2">
+<div style="display: flex; flex-direction: column; gap: 3px; padding: 9px 0; border-top: 1px solid #EEF1F6">
+<div style="display: flex; align-items: center; gap: 8px">
+<span style="font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 10px; padding: 2px 6px; border-radius: 6px; {{e.chipStyle}}">{{e.code}}</span>
+<span style="font-size: 13px; font-weight: 600; {{e.titleStyle}}">{{e.title}}</span>
+</div>
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #586074">{{e.when}}</span>
+<sc-if value="{{e.hasNote}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 1.5; color: #333B4D">{{e.note}}</span></sc-if>
+</div>
+</sc-for>
+<sc-if value="{{g.isEmpty}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 1.5; color: #586074; padding-top: 2px">{{g.emptyText}}</span></sc-if>
+</div>
+</sc-if>
+</li>
+</sc-for>
+</ol>
+</div>
+
+<section aria-label="Mapa del recorrido" style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 18px; background: #FFFFFF; border: 1px solid #E2E6EE; border-radius: 22px">
+<div style="display: flex; align-items: center; gap: 12px">
+<h2 style="margin: 0; flex-grow: 1; font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 17px">Mapa del recorrido</h2>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #444C5E"><span style="width: 10px; height: 10px; border-radius: 3px; background: #98CCAF"></span>Conforme</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #444C5E"><span style="width: 10px; height: 10px; border-radius: 3px; background: #DE9C52"></span>Observado</span>
+<span style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #444C5E"><span style="width: 10px; height: 10px; border-radius: 3px; background: #C4CADB"></span>Pendiente</span>
+<sc-if value="{{canReplay}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{replay}}" style="display: flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #CDD3DF; background: #FFFFFF; color: #14246B; font-size: 12px; font-weight: 600; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"></path></svg>Ver recorrido</button></sc-if>
+</div>
+
+<div style="position: relative; width: 620px; height: 500px; align-self: center">
+<svg width="620" height="500" viewBox="0 0 620 500" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+<polygon points="{{ground.front}}" fill="#D9DEEA"></polygon>
+<polygon points="{{ground.right}}" fill="#C3CADB"></polygon>
+<polygon points="{{ground.top}}" fill="#EBEEF5" stroke="#D3D9E6" stroke-width="1"></polygon>
+<polygon points="{{ground.plaza}}" fill="#E1E6F0"></polygon>
+</svg>
+<sc-for list="{{segs}}" as="sg" hint-placeholder-count="3">
+<svg width="620" height="500" viewBox="0 0 620 500" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+<polyline points="{{sg.pts}}" fill="none" stroke="{{sg.color}}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="{{sg.dash}}"></polyline>
+</svg>
+</sc-for>
+<sc-for list="{{trees}}" as="tr" hint-placeholder-count="4">
+<div style="position: absolute; left: {{tr.x}}px; top: {{tr.y}}px; width: 20px; height: 30px; transform: translate(-50%, -100%)">
+<div style="position: absolute; left: 9px; top: 16px; width: 3px; height: 14px; background: #8A6B4E; border-radius: 2px"></div>
+<div style="position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: #7DBE93"></div>
+</div>
+</sc-for>
+<sc-for list="{{bldgs}}" as="b" hint-placeholder-count="5">
+<svg width="620" height="500" viewBox="0 0 620 500" aria-hidden="true" style="position: absolute; left: 0; top: 0">
+<polygon points="{{b.left}}" fill="{{b.cl}}" stroke="rgba(11,18,54,0.18)" stroke-width="1"></polygon>
+<polygon points="{{b.right}}" fill="{{b.cr}}" stroke="rgba(11,18,54,0.18)" stroke-width="1"></polygon>
+<polygon points="{{b.top}}" fill="{{b.ct}}" stroke="rgba(11,18,54,0.18)" stroke-width="1"></polygon>
+<polygon points="{{b.winL}}" fill="{{b.cw}}"></polygon>
+<polygon points="{{b.winR}}" fill="{{b.cw}}"></polygon>
+<polygon points="{{b.door}}" fill="{{b.cd}}"></polygon>
+</svg>
+</sc-for>
+<sc-for list="{{labels}}" as="l" hint-placeholder-count="4">
+<div style="position: absolute; left: {{l.x}}px; top: {{l.y}}px; transform: translate(-50%, calc(-100% - 4px)); padding: 5px 10px; border-radius: 10px; white-space: nowrap; font-size: 11px; font-weight: 600; box-shadow: 0 4px 12px rgba(11,18,54,0.12); {{l.style}}">{{l.name}}</div>
+</sc-for>
+<sc-if value="{{hasMarker}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; left: {{mk.x}}px; top: {{mk.y}}px; width: 26px; height: 26px; border-radius: 50%; background: {{mk.color}}; transition: left 0.9s ease, top 0.9s ease, background 0.3s; animation: pulse 1.8s ease-out infinite"></div>
+<div style="position: absolute; left: {{mk.x}}px; top: {{mk.y}}px; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: left 0.9s ease, top 0.9s ease; animation: bob 2.2s ease-in-out infinite">
+<span style="display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 7px 14px; border-radius: 12px; background: #0B1236; color: #FFFFFF; white-space: nowrap; box-shadow: 0 6px 16px rgba(11,18,54,0.25)"><span style="font-size: 13px; font-weight: 600">{{mk.place}}</span><span style="font-size: 11px; color: #C9CFE3">{{mk.text}}</span></span>
+<svg width="34" height="44" viewBox="0 0 24 31" aria-hidden="true"><path d="M12 0C5.4 0 0 5.2 0 11.7 0 20.4 12 31 12 31s12-10.6 12-19.3C24 5.2 18.6 0 12 0z" fill="{{mk.color}}"></path><circle cx="12" cy="11.5" r="4.6" fill="#FFFFFF"></circle></svg>
+</div>
+</sc-if>
+<sc-if value="{{noMarker}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; left: 50%; top: 18px; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: #0B1236; color: #FFFFFF; font-size: 13px; text-align: center; max-width: 380px; line-height: 1.45">Aún no hay expediente. El recorrido empezará en <b>Mesa de Partes</b> cuando entregues tu carpeta.</div>
+</sc-if>
+</div>
+<p style="margin: 0; font-size: 12px; line-height: 1.5; color: #586074">El mapa es ilustrativo: muestra en qué oficina está tu carpeta física según lo que registra cada área.</p>
+</section>
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const s = this.state || {};
+    const mod = s.mod || 'II';
+    const DEPS = ['Mesa de Partes', 'Coordinación de Carrera', 'Docente Supervisor', 'Bienestar y Empleabilidad'];
+
+    const DATA = {
+      I: {
+        loc: 3, tone: 'ready', pill: '10 · Constancia lista para recoger', since: 'Desde el 28 ago. 2026',
+        stages: [
+          { st: 'done', summary: 'Conforme · 11 jun.', ev: [
+            ['01', 'Expediente recibido', '10 jun. · 11:20 · Mesa de Partes', '', 'done'],
+            ['03', 'Pago conforme', '11 jun. · 09:02 · Mesa de Partes', 'Carpeta derivada a Coordinación.', 'ok'] ] },
+          { st: 'done', summary: 'Conforme · 17 jun.', ev: [
+            ['05', 'Requisitos conformes', '14 jun. · 15:30 · Coordinación', '', 'ok'],
+            ['06', 'Docente supervisor asignado', '17 jun. · 10:11 · Coordinación', 'Mg. R. Paredes', 'ok'] ] },
+          { st: 'done', summary: 'Aprobado · 20 ago.', ev: [
+            ['07', 'En supervisión', '02 jul. · 12:40 · Docente Supervisor', '', 'done'],
+            ['09', 'Supervisión aprobada', '20 ago. · 17:15 · Docente Supervisor', '', 'ok'] ] },
+          { st: 'done', summary: 'Constancia lista · 28 ago.', ev: [
+            ['10', 'Constancia lista para recoger', '28 ago. · 16:05 · Bienestar y Empleabilidad', 'Acércate con tu DNI.', 'ok'] ] }
+        ]
+      },
+      II: {
+        loc: 2, tone: 'warn', pill: '08 · Supervisión observada', since: 'Desde hoy, 09:40',
+        stages: [
+          { st: 'done', summary: 'Conforme · 04 ago.', ev: [
+            ['01', 'Expediente recibido', '02 ago. · 10:14 · Mesa de Partes', '', 'done'],
+            ['02', 'Pago observado', '03 ago. · 08:50 · Mesa de Partes', 'El monto no coincidía con S/ 20 × 1. Subsanado el 04 ago.', 'warnDone'],
+            ['03', 'Pago conforme', '04 ago. · 11:26 · Mesa de Partes', 'Carpeta derivada a Coordinación.', 'ok'] ] },
+          { st: 'done', summary: 'Conforme · 12 set.', ev: [
+            ['05', 'Requisitos conformes', '08 ago. · 16:02 · Coordinación', '', 'ok'],
+            ['06', 'Docente supervisor asignado', '12 set. · 09:15 · Coordinación', 'Mg. R. Paredes', 'ok'] ] },
+          { st: 'obs', summary: 'Observado hoy · 09:40', ev: [
+            ['07', 'En supervisión', '15 set. · 14:30 · Docente Supervisor', '', 'done'],
+            ['08', 'Supervisión observada', 'Hoy · 09:40 · Docente Supervisor', 'Anexo 4: falta la firma y el sello del jefe inmediato en la página 3.', 'warn'] ] },
+          { st: 'pending', summary: 'Pendiente', ev: [], empty: 'Bienestar registrará el visto bueno final cuando la supervisión esté aprobada.' }
+        ]
+      },
+      III: {
+        loc: -1, tone: 'none', pill: 'Sin expediente', since: 'Entrega tu carpeta en Mesa de Partes',
+        stages: [0, 1, 2, 3].map(() => ({ st: 'pending', summary: 'Pendiente', ev: [], empty: 'Aún no hay movimientos.' }))
+      }
+    };
+    const d = DATA[mod];
+
+    const MODS = {
+      I: { label: 'MÓDULO I', name: 'Análisis y Diseño', state: 'Constancia lista', dot: '#17704A', pill: 'background: #E1F3EA; color: #17704A' },
+      II: { label: 'MÓDULO II', name: 'Implementación', state: 'Observado', dot: '#A64B00', pill: 'background: #FDEBD3; color: #6B3400' },
+      III: { label: 'MÓDULO III', name: 'Diseño y Puesta en Producción', state: 'Sin expediente', dot: '#9AA4BF', pill: 'background: #ECEFF4; color: #444C5E' }
+    };
+    const ddOpen = !!s.dd;
+    const cur = MODS[mod];
+    const opts = ['I', 'II', 'III'].map((k) => Object.assign({}, MODS[k], {
+      selected: k === mod ? 'true' : 'false',
+      style: k === mod ? 'background: #E8EBF6' : 'background: transparent',
+      pick: () => { (this._t || []).forEach((t) => clearTimeout(t)); this.setState({ mod: k, open: null, anim: null, dd: false }); }
+    }));
+    const toggleDd = () => this.setState({ dd: !ddOpen });
+
+    const openIdx = (s.open === null || s.open === undefined) ? d.loc : s.open;
+    const DOT = {
+      done: 'background: #17704A; color: #FFFFFF',
+      obs: 'background: #A64B00; color: #FFFFFF; box-shadow: 0 0 0 4px #F7D9B2',
+      pending: 'background: #FFFFFF; color: #586074; border: 2px solid #CDD3DF'
+    };
+    const CHIP = {
+      done: 'background: #ECEFF4; color: #444C5E', ok: 'background: #E1F3EA; color: #17704A',
+      warn: 'background: #A64B00; color: #FFFFFF', warnDone: 'background: #FDEBD3; color: #6B3400'
+    };
+    const stages = d.stages.map((g, i) => {
+      const open = openIdx === i;
+      return {
+        name: DEPS[i], num: String(i + 1), summary: g.summary,
+        iconCheck: g.st === 'done', iconAlert: g.st === 'obs', iconNum: g.st === 'pending',
+        dotStyle: DOT[g.st],
+        cardStyle: g.st === 'obs' ? 'border: 2px solid #E2A55C' : 'border: 1px solid #E2E6EE',
+        nameStyle: g.st === 'pending' ? 'color: #586074' : 'color: #0B1236',
+        open, expanded: open ? 'true' : 'false',
+        chevStyle: open ? 'transform: rotate(180deg)' : 'transform: none',
+        isEmpty: g.ev.length === 0, emptyText: g.empty || '',
+        events: g.ev.map((e) => ({
+          code: e[0], title: e[1], when: e[2], note: e[3], hasNote: !!e[3], chipStyle: CHIP[e[4]],
+          titleStyle: e[4] === 'warnDone' ? 'color: #586074; text-decoration: line-through' : 'color: #0B1236'
+        })),
+        toggle: () => this.setState({ open: open ? -1 : i })
+      };
+    });
+
+    // ---- Mapa isométrico ----
+    const u = 24, ox = 310, oy = 118;
+    const P = (x, y, z) => [ox + (x - y) * u * 0.866, oy + (x + y) * u * 0.5 - z * u];
+    const pts = (arr) => arr.map((p) => P(p[0], p[1], p[2]).map((n) => n.toFixed(1)).join(',')).join(' ');
+    const ground = {
+      top: pts([[0, 0, 0], [14, 0, 0], [14, 14, 0], [0, 14, 0]]),
+      right: pts([[14, 0, 0], [14, 14, 0], [14, 14, -0.5], [14, 0, -0.5]]),
+      front: pts([[0, 14, 0], [14, 14, 0], [14, 14, -0.5], [0, 14, -0.5]]),
+      plaza: pts([[5.6, 5.6, 0], [9.6, 5.6, 0], [9.6, 6.4, 0], [5.6, 6.4, 0]])
+    };
+
+    const PAL = {
+      pending: ['#F7F8FC', '#DEE2EE', '#C4CADB', '#B7C2DE', '#9AA4BF'],
+      done: ['#E6F5EC', '#C2E3CF', '#98CCAF', '#FFFFFF', '#5E9C7B'],
+      obs: ['#FFE2B8', '#F2C080', '#DE9C52', '#FFF4E3', '#8F4A0A'],
+      ready: ['#C9EED7', '#93D5AE', '#5FB886', '#FFFFFF', '#1D6B45'],
+      ext: ['#EEF0F5', '#D9DCE4', '#C6CAD5', '#E4E7EE', '#A9AEBB']
+    };
+    // 5 edificios: Tesorería (paso previo, fuera del sistema) + las 4 oficinas
+    // que registran en el sistema. El recorrido da la vuelta en sentido horario:
+    // Tesorería → Mesa de Partes (inicio) → Coordinación → Docente Supervisor → Bienestar.
+    const DEF = [
+      { i: 't', x0: 1.2, y0: 4.2, w: 3, dd: 3, h: 2.0 },   // Tesorería (atrás izq.)
+      { i: 0, x0: 6.2, y0: 1.2, w: 3, dd: 3, h: 2.4 },     // Mesa de Partes (atrás)
+      { i: 1, x0: 10.0, y0: 5.0, w: 3, dd: 3, h: 2.4 },    // Coordinación (der.)
+      { i: 2, x0: 6.4, y0: 7.2, w: 2.6, dd: 4.0, h: 3.6 }, // Docente Supervisor (centro, el más alto)
+      { i: 3, x0: 1.2, y0: 9.4, w: 3, dd: 3, h: 2.0 }      // Bienestar (adelante izq.)
+    ];
+    const byIdx = (i) => DEF.find((b) => b.i === i);
+
+    // Paso de la animación "Ver recorrido": si está activa, el marcador
+    // se ubica en esa oficina; si no, en la oficina actual.
+    const anim = (typeof s.anim === 'number') ? s.anim : null;
+    const markIdx = anim !== null ? anim : d.loc;
+
+    const statusOf = (i) => {
+      if (i === 't') return 'ext';
+      const st = d.stages[i].st;
+      if (i === d.loc && d.tone === 'ready') return 'ready';
+      return st;
+    };
+    const bldgs = DEF.slice().sort((a, b) => (a.x0 + a.w + a.y0 + a.dd) - (b.x0 + b.w + b.y0 + b.dd)).map((b) => {
+      const x1 = b.x0 + b.w, y1 = b.y0 + b.dd, h = b.h;
+      const c = PAL[statusOf(b.i)];
+      const cx = b.x0 + b.w / 2;
+      const zw0 = h - 0.95, zw1 = h - 0.5;
+      return {
+        top: pts([[b.x0, b.y0, h], [x1, b.y0, h], [x1, y1, h], [b.x0, y1, h]]),
+        left: pts([[b.x0, y1, 0], [x1, y1, 0], [x1, y1, h], [b.x0, y1, h]]),
+        right: pts([[x1, b.y0, 0], [x1, y1, 0], [x1, y1, h], [x1, b.y0, h]]),
+        winL: pts([[b.x0 + 0.35, y1, zw0], [x1 - 0.35, y1, zw0], [x1 - 0.35, y1, zw1], [b.x0 + 0.35, y1, zw1]]),
+        winR: pts([[x1, b.y0 + 0.35, zw0], [x1, y1 - 0.35, zw0], [x1, y1 - 0.35, zw1], [x1, b.y0 + 0.35, zw1]]),
+        door: pts([[cx - 0.35, y1, 0], [cx + 0.35, y1, 0], [cx + 0.35, y1, 0.85], [cx - 0.35, y1, 0.85]]),
+        ct: c[0], cl: c[1], cr: c[2], cw: c[3], cd: c[4]
+      };
+    });
+
+    // Tramos del camino. El primero (Tesorería → Mesa de Partes) es previo al
+    // sistema: siempre punteado gris.
+    const SEGP = [
+      { from: 't', p: [[4.4, 5.7], [5.3, 5.7], [5.3, 4.7], [7.7, 4.7], [7.7, 4.4]] },
+      { from: 0, p: [[7.7, 4.7], [9.7, 4.7], [9.7, 8.4], [11.5, 8.4], [11.5, 8.2]] },
+      { from: 1, p: [[11.5, 8.4], [9.7, 8.4], [9.7, 9.2], [9.2, 9.2]] },
+      { from: 2, p: [[7.7, 11.4], [5.3, 11.4], [5.3, 10.9], [4.4, 10.9]] }
+    ];
+    const segs = SEGP.map((sg) => {
+      let done = false;
+      if (sg.from !== 't') {
+        const nextSt = d.stages[sg.from + 1].st;
+        done = d.stages[sg.from].st === 'done' && nextSt !== 'pending';
+      }
+      return {
+        pts: pts(sg.p.map((p) => [p[0], p[1], 0])),
+        color: done ? '#17704A' : (sg.from === 't' ? '#C9CDD8' : '#B7C0D4'),
+        dash: done ? 'none' : '2 10'
+      };
+    });
+
+    const trees = [[12.6, 12.4], [13.1, 1.6], [0.6, 1.0], [5.6, 13.2], [0.5, 8.4], [12.8, 9.6]].map((t) => {
+      const p = P(t[0], t[1], 0);
+      return { x: p[0].toFixed(1), y: p[1].toFixed(1) };
+    });
+
+    const LSTYLE = {
+      pending: 'background: #FFFFFF; color: #444C5E; border: 1px solid #DDE2EC',
+      done: 'background: #FFFFFF; color: #17704A; border: 1px solid #BFE0CC',
+      obs: 'background: #A64B00; color: #FFFFFF; border: 1px solid #A64B00',
+      ready: 'background: #17704A; color: #FFFFFF; border: 1px solid #17704A',
+      ext: 'background: #F3F4F8; color: #5F677A; border: 1px dashed #B9BFCC',
+      start: 'background: #14246B; color: #FFFFFF; border: 1px solid #14246B'
+    };
+    // Etiquetas sobre el techo de cada edificio; la oficina donde está el
+    // marcador no lleva etiqueta porque su nombre va en el marcador.
+    const labels = DEF.filter((b) => b.i !== markIdx).map((b) => {
+      const p = P(b.x0 + b.w / 2, b.y0 + b.dd / 2, b.h + 0.15);
+      let name = b.i === 't' ? 'Tesorería · fuera del sistema' : DEPS[b.i];
+      let style = LSTYLE[statusOf(b.i)];
+      if (b.i === 0 && d.loc < 0) { name = 'Mesa de Partes · aquí empieza'; style = LSTYLE.start; }
+      return { name, x: p[0].toFixed(1), y: p[1].toFixed(1), style };
+    });
+
+    let mk = { x: 0, y: 0, color: '#A64B00', text: '', place: '' };
+    if (markIdx !== null && markIdx >= 0) {
+      const b = byIdx(markIdx);
+      const p = P(b.x0 + b.w / 2, b.y0 + b.dd / 2, b.h);
+      const isFinal = anim === null;
+      mk = {
+        x: p[0].toFixed(1), y: p[1].toFixed(1), place: DEPS[markIdx],
+        color: !isFinal ? '#14246B' : (d.tone === 'ready' ? '#17704A' : '#A64B00'),
+        text: !isFinal ? ('Paso ' + (markIdx + 1) + ' · ' + d.stages[markIdx].summary)
+          : (d.tone === 'ready' ? 'Recoge aquí tu constancia' : 'Tu expediente está aquí')
+      };
+    }
+
+    const replay = () => {
+      (this._t || []).forEach((t) => clearTimeout(t));
+      this._t = [];
+      this.setState({ anim: 0 });
+      for (let k = 1; k <= d.loc; k++) {
+        this._t.push(setTimeout(() => this.setState({ anim: k }), k * 1100));
+      }
+      this._t.push(setTimeout(() => this.setState({ anim: null }), (d.loc + 1) * 1100));
+    };
+
+    const PILL = {
+      warn: 'background: #F7D9B2; color: #5C2D00',
+      ready: 'background: #BFE6D1; color: #0F4D32',
+      none: 'background: #2A3358; color: #E3E6F0'
+    };
+
+    return {
+      cur, opts, ddOpen, toggleDd, ddExpanded: ddOpen ? 'true' : 'false', ddChev: ddOpen ? 'transform: rotate(180deg)' : 'transform: none',
+      stages, ground, bldgs, segs, trees, labels, mk, replay,
+      canReplay: d.loc > 0,
+      hasMarker: d.loc >= 0, noMarker: d.loc < 0,
+      locLabel: d.tone === 'ready' ? 'RECOGE TU CONSTANCIA EN' : (d.tone === 'none' ? 'MÓDULO III' : 'TU EXPEDIENTE ESTÁ EN'),
+      locName: d.loc >= 0 ? DEPS[d.loc] : 'Aún sin expediente',
+      locSince: d.since, pillText: d.pill, pillStyle: PILL[d.tone]
+    };
+  }
+
+  componentWillUnmount() {
+    (this._t || []).forEach((t) => clearTimeout(t));
+  }
+}
+</script>
+</body>
+</html>

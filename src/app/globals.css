@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* Paleta institucional (ver CLAUDE.md > Diseño). Usar siempre estos tokens,
+   nunca hex sueltos en los componentes: bg-navy, text-muted, border-line…
+   ESLint rechaza los hex en archivos .ts/.tsx. */
+@theme {
+  --color-navy: #14246b;
+  --color-navy-hover: #0f1b52;
+  --color-ink: #0b1236;
+  --color-navy-tint: #e8ebf6;
+  --color-bg: #f3f4f8;
+  --color-line: #e2e6ee;
+  --color-muted: #586074;
+
+  --color-ok: #17704a;
+  --color-ok-bg: #e1f3ea;
+
+  --color-warn: #a64b00;
+  --color-warn-text: #6b3400;
+  --color-warn-bg: #fdebd3;
+  --color-warn-border: #f2c88f;
+
+  --color-pending: #cdd3df;
+
+  /* Tonos complementarios del prototipo (D25). */
+  --color-neutral-bg: #eceff4; /* chip de evento en proceso, píldora "sin expediente" */
+  --color-text-soft: #444c5e; /* texto secundario más oscuro que muted */
+  --color-warn-deep: #3d1e00; /* título del aviso de observación */
+  --color-warn-soft: #f7d9b2; /* píldora observada sobre fondo oscuro, halo del punto */
+  --color-warn-on-soft: #5c2d00;
+  --color-warn-bright: #e9a451; /* observado sobre fondo oscuro, barra de avance */
+  --color-ok-soft: #bfe6d1; /* píldora lista sobre fondo oscuro */
+  --color-ok-on-soft: #0f4d32;
+  --color-ok-bright: #3fb37b; /* conforme sobre fondo oscuro */
+  --color-ink-raised: #141d4a; /* tarjeta del usuario en la barra lateral */
+  --color-ink-active: #1e2e78; /* ítem activo de la barra lateral */
+  --color-ink-line: #2a3358; /* bordes y píldoras neutras sobre fondo oscuro */
+  --color-on-ink: #c9cfe3; /* texto secundario sobre fondo oscuro */
+  --color-on-ink-muted: #aeb6cf; /* rótulos sobre fondo oscuro */
+
+  /* Animaciones del marcador del mapa del recorrido. */
+  --animate-flotar: flotar 2.2s ease-in-out infinite;
+  --animate-pulso: pulso 1.8s ease-out infinite;
+
+  @keyframes flotar {
+    0%,
+    100% {
+      transform: translate(-50%, -100%);
+    }
+    50% {
+      transform: translate(-50%, calc(-100% - 8px));
+    }
+  }
+
+  @keyframes pulso {
+    0% {
+      transform: translate(-50%, -50%) scale(0.6);
+      opacity: 0.7;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(1.8);
+      opacity: 0;
+    }
+  }
+}
+
+/* Fuentes cargadas con next/font en app/layout.tsx.
+   font-display → títulos · font-sans → texto · font-mono → datos de trazabilidad */
+@theme inline {
+  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
