@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { CODIGOS_ESTADO, LONGITUD_MAXIMA_MOTIVO, type CodigoEstado, type Dependencia } from "./catalogo";
 import {
   esModulo,
+  estadoAlSubsanar,
   estaPermitida,
   indicacionDe,
   transicionesDisponibles,
@@ -103,6 +104,13 @@ describe("consultas", () => {
   test("esModulo valida valores externos", () => {
     expect(["I", "II", "III"].every(esModulo)).toBe(true);
     for (const valor of ["IV", "i", "", undefined, ["II"], 2]) expect(esModulo(valor)).toBe(false);
+  });
+
+  test("estado al que vuelve el expediente al subsanar", () => {
+    expect(estadoAlSubsanar("02")).toBe("03");
+    expect(estadoAlSubsanar("04")).toBe("05");
+    expect(estadoAlSubsanar("08")).toBe("07");
+    expect(estadoAlSubsanar("07")).toBeNull();
   });
 
   test("solo las observaciones tienen indicación", () => {

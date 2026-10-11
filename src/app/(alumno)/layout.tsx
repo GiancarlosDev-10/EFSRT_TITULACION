@@ -1,8 +1,14 @@
-// Layout de todas las páginas del estudiante: barra lateral en PC (con los
-// módulos bajo "Mi seguimiento") y navegación inferior en celular.
+// Layout de todas las páginas del estudiante: barra lateral en PC (módulos bajo
+// "Mi seguimiento" y constancias listas bajo "Mis constancias") y navegación
+// inferior en celular.
 import { Suspense, type ReactNode } from "react";
 import { obtenerUsuarioActual } from "@/modules/auth";
-import { RUTAS_ALUMNO, obtenerSeguimientoDelEstudiante, subitemsDeModulos } from "@/modules/tramitacion";
+import {
+  RUTAS_ALUMNO,
+  obtenerSeguimientoDelEstudiante,
+  subitemsDeConstancias,
+  subitemsDeModulos,
+} from "@/modules/tramitacion";
 import {
   Avatar,
   BarraLateral,
@@ -16,12 +22,22 @@ import {
   type SubitemNavegacion,
 } from "@/shared";
 
-function navegacionPC(modulos?: SubitemNavegacion[]): ItemNavegacion[] {
-  return [
+function navegacionPC(modulos?: SubitemNavegacion[], constancias: SubitemNavegacion[] = []): ItemNavegacion[] {
+  const items: ItemNavegacion[] = [
     { href: RUTAS_ALUMNO.inicio, etiqueta: "Mi seguimiento", icono: <IconoUbicacion />, exacto: true, subitems: modulos },
     { href: RUTAS_ALUMNO.requisitos, etiqueta: "Cómo iniciar mi trámite", icono: <IconoRequisitos /> },
-    { href: RUTAS_ALUMNO.constancias, etiqueta: "Mis constancias", icono: <IconoConstancia /> },
   ];
+  // "Mis constancias" solo aparece si hay alguna lista; se despliega para elegirla.
+  if (constancias.length > 0) {
+    items.push({
+      href: constancias[0].href,
+      etiqueta: "Mis constancias",
+      icono: <IconoConstancia />,
+      subitems: constancias,
+      desplegable: true,
+    });
+  }
+  return items;
 }
 
 const NAVEGACION_MOVIL: ItemNavegacion[] = [
@@ -33,7 +49,7 @@ const NAVEGACION_MOVIL: ItemNavegacion[] = [
 async function NavegacionConModulos() {
   const usuario = await obtenerUsuarioActual();
   const seguimiento = await obtenerSeguimientoDelEstudiante(usuario.id);
-  return <NavegacionLateral items={navegacionPC(subitemsDeModulos(seguimiento))} />;
+  return <NavegacionLateral items={navegacionPC(subitemsDeModulos(seguimiento), subitemsDeConstancias(seguimiento))} />;
 }
 
 async function TarjetaUsuario() {

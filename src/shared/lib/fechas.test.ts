@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { capitalizar, diaRelativo, diasEntre, fechaCorta, haceDias, hora } from "./fechas";
+import { capitalizar, diaRelativo, diasEntre, fechaConAnio, fechaCorta, haceDias, hora, rangoDeFechas } from "./fechas";
 
 const lima = (fecha: string) => new Date(`${fecha}-05:00`);
 const AHORA = lima("2026-10-10T12:00");
@@ -28,6 +28,13 @@ describe("fechas en hora de Lima", () => {
     expect(haceDias(lima("2026-10-10T08:00"), AHORA)).toBe("hoy");
     expect(haceDias(lima("2026-10-09T08:00"), AHORA)).toBe("hace 1 día");
     expect(haceDias(lima("2026-10-07T08:00"), AHORA)).toBe("hace 3 días");
+  });
+
+  test("fecha con año y rangos", () => {
+    expect(fechaConAnio(lima("2026-08-28T16:05"))).toBe("28 ago. 2026");
+    expect(rangoDeFechas(lima("2026-06-10T11:20"), lima("2026-06-11T09:02"))).toBe("10 – 11 jun.");
+    expect(rangoDeFechas(lima("2026-06-17T10:11"), lima("2026-08-20T17:15"))).toBe("17 jun. – 20 ago.");
+    expect(rangoDeFechas(lima("2026-08-28T09:00"), lima("2026-08-28T16:05"))).toBe("28 ago.");
   });
 
   test("capitalizar", () => {

@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { MODULOS, esModulo } from "@/modules/tramitacion";
-import { CargandoSeguimiento, ContenidoSeguimiento, MarcoSeguimiento } from "../_componentes/ContenidoSeguimiento";
+import { CargandoPagina, MarcoPagina } from "@/shared";
+import { ContenidoSeguimiento } from "../_componentes/ContenidoSeguimiento";
 
 export const metadata = { title: "Seguimiento — EFSRT" };
 
@@ -12,11 +13,11 @@ export function generateStaticParams() {
 
 export default function PaginaSeguimientoModulo({ params }: PageProps<"/alumno/seguimiento/[modulo]">) {
   return (
-    <MarcoSeguimiento>
-      <Suspense fallback={<CargandoSeguimiento />}>
+    <MarcoPagina ancho="completo">
+      <Suspense fallback={<CargandoPagina etiqueta="Cargando el seguimiento" />}>
         <SeguimientoSegunRuta params={params} />
       </Suspense>
-    </MarcoSeguimiento>
+    </MarcoPagina>
   );
 }
 

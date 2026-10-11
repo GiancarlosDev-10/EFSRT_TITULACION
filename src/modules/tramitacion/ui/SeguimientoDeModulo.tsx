@@ -1,7 +1,7 @@
 // Página de seguimiento de un módulo (celular; mockup Tracker.dc.html): pestañas
 // por módulo, tarjeta de ubicación con su mini barra de pasos y el tracker.
 import Link from "next/link";
-import { IconoCarpeta, IconoVolver, TituloSeccion } from "@/shared";
+import { EncabezadoPagina, IconoCarpeta, TituloSeccion } from "@/shared";
 import { MODULOS, type Modulo } from "../domain";
 import type { SeguimientoModulo as DatosModulo } from "../application";
 import {
@@ -14,6 +14,7 @@ import {
   tonoDeExpediente,
   ubicacionDeModulo,
 } from "./presentacion";
+import { BotonConstancia } from "./BotonConstancia";
 import { RUTAS_ALUMNO } from "./rutas";
 import { TarjetaUbicacion } from "./TarjetaUbicacion";
 import { TrackerDependencias } from "./TrackerDependencias";
@@ -61,26 +62,24 @@ type Props = {
   seguimiento: DatosModulo[];
   /** `null`: el predeterminado (el observado o el más reciente). */
   modulo: Modulo | null;
+  /** Nombres de los módulos de la carrera; `null` si no se conocen. */
+  nombresModulo: Record<Modulo, string> | null;
   ahora: Date;
 };
 
-export function SeguimientoDeModulo({ seguimiento, modulo, ahora }: Props) {
+export function SeguimientoDeModulo({ seguimiento, modulo, nombresModulo, ahora }: Props) {
   const elegido = modulo ?? moduloInicial(seguimiento);
   const datos = seguimiento.find((m) => m.modulo === elegido) ?? seguimiento[0];
   const { expediente } = datos;
 
   return (
-    <div className="mx-auto flex w-full max-w-lg flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <Link
-          href={RUTAS_ALUMNO.inicio}
-          aria-label="Volver al inicio"
-          className="-ml-2.5 flex size-11 items-center justify-center rounded-xl text-ink hover:bg-line"
-        >
-          <IconoVolver tamano={22} />
-        </Link>
-        <h1 className="font-display text-[22px] font-extrabold">Seguimiento</h1>
-      </div>
+    <>
+      <EncabezadoPagina
+        volverA={RUTAS_ALUMNO.inicio}
+        etiquetaVolver="Volver al inicio"
+        titulo="Seguimiento"
+        subtitulo={nombresModulo?.[elegido]}
+      />
 
       <Pestanas elegido={elegido} />
 
@@ -91,14 +90,7 @@ export function SeguimientoDeModulo({ seguimiento, modulo, ahora }: Props) {
             aviso={avisosDeObservacion([datos], ahora)[0]}
             pasos={pasosDeRecorrido(expediente)}
           />
-          {tonoDeExpediente(expediente) === "listo" && (
-            <Link
-              href={RUTAS_ALUMNO.constancia(elegido)}
-              className="flex min-h-[50px] items-center justify-center rounded-2xl bg-ok text-sm font-semibold text-white"
-            >
-              Dónde y cómo recoger mi constancia
-            </Link>
-          )}
+          {tonoDeExpediente(expediente) === "listo" && <BotonConstancia modulo={elegido} />}
           <div className="mt-1">
             <TituloSeccion>Recorrido por dependencia</TituloSeccion>
           </div>
@@ -117,6 +109,6 @@ export function SeguimientoDeModulo({ seguimiento, modulo, ahora }: Props) {
         Los estados <b>{codigosDeObservacion()}</b> son observaciones: el expediente se detiene en esa oficina hasta que
         entregues la corrección. Cada cambio te llega también al correo.
       </p>
-    </div>
+    </>
   );
 }

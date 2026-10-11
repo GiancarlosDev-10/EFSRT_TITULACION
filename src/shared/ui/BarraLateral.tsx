@@ -3,37 +3,9 @@
 // Barra lateral oscura de PC, colapsable a solo íconos. La preferencia se
 // guarda en el navegador. Los hijos se adaptan con la variante
 // `group-data-[contraida=true]/barra:` (p. ej. ocultando textos con sr-only).
-import { useSyncExternalStore, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useValorLocal } from "../lib/useValorLocal";
 import { IconoChevronDerecha, Logo } from "./iconos";
-
-const CLAVE = "efsrt:barra-contraida";
-const EVENTO = "efsrt:barra-contraida";
-
-function leerPreferencia(): boolean {
-  try {
-    return localStorage.getItem(CLAVE) === "1";
-  } catch {
-    return false;
-  }
-}
-
-function guardarPreferencia(contraida: boolean) {
-  try {
-    localStorage.setItem(CLAVE, contraida ? "1" : "0");
-  } catch {
-    // Sin almacenamiento (modo privado): la preferencia dura solo esta visita.
-  }
-  window.dispatchEvent(new Event(EVENTO));
-}
-
-function suscribir(aviso: () => void) {
-  window.addEventListener(EVENTO, aviso);
-  window.addEventListener("storage", aviso);
-  return () => {
-    window.removeEventListener(EVENTO, aviso);
-    window.removeEventListener("storage", aviso);
-  };
-}
 
 type Props = {
   /** Navegación principal. */
@@ -44,7 +16,8 @@ type Props = {
 
 export function BarraLateral({ children, pie }: Props) {
   // En el servidor siempre se dibuja abierta; en el navegador se aplica la preferencia.
-  const contraida = useSyncExternalStore(suscribir, leerPreferencia, () => false);
+  const [preferencia, guardarPreferencia] = useValorLocal("efsrt:barra-contraida");
+  const contraida = preferencia === "1";
 
   return (
     <aside
@@ -65,7 +38,7 @@ export function BarraLateral({ children, pie }: Props) {
           de 28 px, pero el área clicable es de 44 px (accesibilidad). */}
       <button
         type="button"
-        onClick={() => guardarPreferencia(!contraida)}
+        onClick={() => guardarPreferencia(contraida ? "0" : "1")}
         aria-expanded={!contraida}
         aria-label={contraida ? "Expandir menú" : "Contraer menú"}
         title={contraida ? "Expandir menú" : "Contraer menú"}

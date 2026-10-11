@@ -1,4 +1,10 @@
-export { subitemsDeModulos } from "./navegacion";
+export { nombresDeModulos } from "./contenido";
+export { subitemsDeConstancias, subitemsDeModulos } from "./navegacion";
+export { detalleDeObservacion } from "./presentacion";
 export { RUTAS_ALUMNO } from "./rutas";
 export { SeguimientoDeModulo } from "./SeguimientoDeModulo";
+export { VistaConstancia } from "./VistaConstancia";
 export { SeguimientoEscritorio, SeguimientoMovil } from "./VistaEstudiante";
+export { VistaObservacion } from "./VistaObservacion";
+export { VistaPreviaSeguimiento } from "./VistaPreviaSeguimiento";
+export { VistaRequisitos } from "./VistaRequisitos";

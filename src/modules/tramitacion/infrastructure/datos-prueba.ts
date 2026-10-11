@@ -17,6 +17,7 @@ export const ESTUDIANTE_DE_PRUEBA = {
   id: "est-giancarlos-ormeno",
   nombre: "Giancarlos Ormeño",
   correo: "gormeno@iestpgildaballivian.edu.pe",
+  carrera: "desarrollo-sistemas",
 } as const;
 
 const ACTORES = {

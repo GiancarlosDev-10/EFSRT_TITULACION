@@ -8,6 +8,8 @@ export type UsuarioActual = {
   id: string;
   nombre: string;
   correo: string;
+  /** Identificador de la carrera (los nombres de módulos se buscan con él). */
+  carrera: string;
   rol: Rol;
 };
 

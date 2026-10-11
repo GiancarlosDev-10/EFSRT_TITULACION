@@ -35,6 +35,19 @@ export function fechaCorta(fecha: Date): string {
   return `${dia} ${mes}`;
 }
 
+/** "28 ago. 2026" */
+export function fechaConAnio(fecha: Date): string {
+  return `${fechaCorta(fecha)} ${anioEnLima(fecha)}`;
+}
+
+/** "10 – 11 jun.", "17 jun. – 20 ago." o "28 ago." si es el mismo día. */
+export function rangoDeFechas(desde: Date, hasta: Date): string {
+  const [inicio, fin] = [fechaCorta(desde), fechaCorta(hasta)];
+  if (inicio === fin) return fin;
+  const [diaInicio, mesInicio] = inicio.split(" ");
+  return mesInicio === fin.split(" ")[1] ? `${diaInicio} – ${fin}` : `${inicio} – ${fin}`;
+}
+
 /** "09:40" */
 export function hora(fecha: Date): string {
   return formatoHora.format(fecha);

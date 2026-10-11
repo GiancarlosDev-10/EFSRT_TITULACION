@@ -96,6 +96,67 @@ export function IconoCarpeta(props: PropsIcono) {
   );
 }
 
+export function IconoCheckCirculo(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m8 12 3 3 5-6" />
+    </Icono>
+  );
+}
+
+export function IconoReloj(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 6v6l4 2" />
+    </Icono>
+  );
+}
+
+export function IconoIdentificacion(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <rect x="2" y="5" width="20" height="14" rx="2" />
+      <circle cx="8" cy="12" r="2" />
+      <path d="M14 10h4" />
+      <path d="M14 14h4" />
+    </Icono>
+  );
+}
+
+export function IconoCorreo(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <rect x="2" y="4" width="20" height="16" rx="2" />
+      <path d="m22 7-10 5L2 7" />
+    </Icono>
+  );
+}
+
+export function IconoHistorial(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <path d="M8 6h13" />
+      <path d="M8 12h13" />
+      <path d="M8 18h13" />
+      <path d="M3 6h.01" />
+      <path d="M3 12h.01" />
+      <path d="M3 18h.01" />
+    </Icono>
+  );
+}
+
+export function IconoIngresar(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+      <path d="m10 17 5-5-5-5" />
+      <path d="M15 12H3" />
+    </Icono>
+  );
+}
+
 export function IconoInicio(props: PropsIcono) {
   return (
     <Icono {...props}>

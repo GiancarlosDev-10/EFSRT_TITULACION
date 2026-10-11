@@ -1,6 +1,12 @@
-import { PaginaProvisional } from "@/shared";
+import { VistaRequisitos } from "@/modules/tramitacion";
+import { MarcoPagina } from "@/shared";
 
-// Provisional hasta la Fase 5.
+export const metadata = { title: "Cómo iniciar mi trámite — EFSRT" };
+
 export default function PaginaRequisitos() {
-  return <PaginaProvisional perfil="Cómo iniciar tu trámite" ruta="/alumno/requisitos" />;
+  return (
+    <MarcoPagina ancho="amplio">
+      <VistaRequisitos />
+    </MarcoPagina>
+  );
 }

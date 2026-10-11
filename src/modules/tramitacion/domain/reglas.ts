@@ -35,6 +35,16 @@ export function esFinal(estado: CodigoEstado): boolean {
   return ESTADOS[estado].tipo === "final";
 }
 
+/**
+ * Estado al que vuelve el expediente cuando se subsana la observación (su única
+ * salida en el catálogo: 02→03, 04→05, 08→07); `null` si no es una observación.
+ */
+export function estadoAlSubsanar(estado: CodigoEstado): CodigoEstado | null {
+  if (!esObservacion(estado)) return null;
+  const [salida] = TRANSICIONES[estado];
+  return salida ?? null;
+}
+
 /** Primer paso de la guía para subsanar una observación; `null` si el estado no es una observación. */
 export function indicacionDe(estado: CodigoEstado): string | null {
   const definicion: DefinicionEstado = ESTADOS[estado];

@@ -3,18 +3,18 @@
 // Navegación principal: lateral en PC, inferior en celular. Es de cliente solo
 // para marcar el enlace de la página actual (aria-current).
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { Suspense, type ReactNode } from "react";
+import { IconoChevronAbajo as IconoChevron } from "./iconos";
 
 /** Opción anidada bajo un ítem (solo en la navegación lateral). */
 export type SubitemNavegacion = {
-  /** Puede llevar parámetros, p. ej. "/alumno?modulo=II". */
   href: string;
   /** Nombre para el tooltip y los lectores de pantalla. */
   etiqueta: string;
   contenido: ReactNode;
-  /** Activo cuando la URL no trae parámetros (la opción por defecto). */
-  predeterminado?: boolean;
+  /** Rutas donde esta opción se muestra activa por defecto (p. ej. el inicio). */
+  predeterminadoEn?: readonly string[];
 };
 
 export type ItemNavegacion = {
@@ -24,6 +24,8 @@ export type ItemNavegacion = {
   /** Activo solo en esa ruta exacta (p. ej. el inicio de la sección). */
   exacto?: boolean;
   subitems?: SubitemNavegacion[];
+  /** Los sub-ítems se pliegan; se abre solo si alguno está activo (solo navegación lateral). */
+  desplegable?: boolean;
 };
 
 type Variante = "lateral" | "inferior";
@@ -51,20 +53,18 @@ const ESTILOS: Record<Variante, Estilos> = {
   },
 };
 
-/** Ruta y parámetros actuales; `null` mientras no se conocen. */
-type Ubicacion = { ruta: string; busqueda: string } | null;
+/** Ruta actual; `null` mientras no se conoce. */
+type Ubicacion = string | null;
 
-function estaActivo(ubicacion: Ubicacion, { href, exacto }: ItemNavegacion): boolean {
-  if (!ubicacion) return false;
-  const { ruta } = ubicacion;
-  return exacto ? ruta === href : ruta === href || ruta.startsWith(`${href}/`);
+function subitemActivo(ruta: Ubicacion, { href, predeterminadoEn = [] }: SubitemNavegacion): boolean {
+  return ruta !== null && (ruta === href || predeterminadoEn.includes(ruta));
 }
 
-function subitemActivo(ubicacion: Ubicacion, { href, predeterminado }: SubitemNavegacion): boolean {
-  if (!ubicacion) return false;
-  const [ruta, busqueda = ""] = href.split("?");
-  if (ubicacion.ruta !== ruta) return false;
-  return ubicacion.busqueda === busqueda || (ubicacion.busqueda === "" && predeterminado === true);
+/** Un ítem está activo en su ruta (o bajo ella, si no es exacto) o si lo está alguno de sus sub-ítems. */
+function estaActivo(ruta: Ubicacion, { href, exacto, subitems = [] }: ItemNavegacion): boolean {
+  if (ruta === null) return false;
+  const propio = exacto ? ruta === href : ruta === href || ruta.startsWith(`${href}/`);
+  return propio || subitems.some((subitem) => subitemActivo(ruta, subitem));
 }
 
 type Props = { items: ItemNavegacion[]; className?: string };
@@ -75,6 +75,45 @@ function Lista({ items, className = "", variante, ubicacion }: Props & { variant
     <nav aria-label="Principal" className={`${estilos.nav} ${className}`}>
       {items.map((item) => {
         const activo = estaActivo(ubicacion, item);
+        const contenido = (
+          <>
+            {item.icono}
+            <span className={estilos.texto}>{item.etiqueta}</span>
+          </>
+        );
+        const subitems = variante === "lateral" && (item.subitems ?? []).map((subitem) => {
+          const subactivo = subitemActivo(ubicacion, subitem);
+          return (
+            <Link
+              key={subitem.href}
+              href={subitem.href}
+              aria-current={subactivo ? "page" : undefined}
+              title={subitem.etiqueta}
+              className={`ml-6 flex min-h-11 items-center gap-2.5 rounded-lg px-3 text-[13px] group-data-[contraida=true]/barra:ml-0 group-data-[contraida=true]/barra:justify-center group-data-[contraida=true]/barra:px-0 ${
+                subactivo ? "bg-ink-raised font-semibold text-white" : "text-on-ink hover:bg-ink-raised"
+              }`}
+            >
+              {subitem.contenido}
+            </Link>
+          );
+        });
+
+        // Desplegable: el ítem es un botón que pliega sus sub-ítems (<details> nativo).
+        if (variante === "lateral" && item.desplegable) {
+          return (
+            <details key={item.href} open={activo} className={`group/desplegable ${estilos.item}`}>
+              <summary
+                title={item.etiqueta}
+                className={`${estilos.enlace} cursor-pointer list-none [&::-webkit-details-marker]:hidden ${activo ? estilos.activo : estilos.inactivo}`}
+              >
+                {contenido}
+                <IconoChevron className="ml-auto shrink-0 transition-transform group-open/desplegable:rotate-180 group-data-[contraida=true]/barra:hidden" />
+              </summary>
+              <div className="mt-0.5 flex flex-col gap-0.5">{subitems}</div>
+            </details>
+          );
+        }
+
         return (
           <div key={item.href} className={estilos.item}>
             <Link
@@ -83,26 +122,9 @@ function Lista({ items, className = "", variante, ubicacion }: Props & { variant
               title={item.etiqueta}
               className={`${estilos.enlace} ${activo ? estilos.activo : estilos.inactivo}`}
             >
-              {item.icono}
-              <span className={estilos.texto}>{item.etiqueta}</span>
+              {contenido}
             </Link>
-            {variante === "lateral" &&
-              item.subitems?.map((subitem) => {
-                const subactivo = subitemActivo(ubicacion, subitem);
-                return (
-                  <Link
-                    key={subitem.href}
-                    href={subitem.href}
-                    aria-current={subactivo ? "page" : undefined}
-                    title={subitem.etiqueta}
-                    className={`ml-6 flex min-h-11 items-center gap-2.5 rounded-lg px-3 text-[13px] group-data-[contraida=true]/barra:ml-0 group-data-[contraida=true]/barra:justify-center group-data-[contraida=true]/barra:px-0 ${
-                      subactivo ? "bg-ink-raised font-semibold text-white" : "text-on-ink hover:bg-ink-raised"
-                    }`}
-                  >
-                    {subitem.contenido}
-                  </Link>
-                );
-              })}
+            {subitems}
           </div>
         );
       })}
@@ -111,9 +133,7 @@ function Lista({ items, className = "", variante, ubicacion }: Props & { variant
 }
 
 function ListaConUbicacion(props: Props & { variante: Variante }) {
-  const ruta = usePathname();
-  const busqueda = useSearchParams().toString();
-  return <Lista {...props} ubicacion={{ ruta, busqueda }} />;
+  return <Lista {...props} ubicacion={usePathname()} />;
 }
 
 // En rutas con parámetros dinámicos la ubicación solo se conoce al recibir la

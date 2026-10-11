@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { TituloSeccion } from "@/shared";
 import type { Modulo } from "../domain";
 import type { SeguimientoModulo } from "../application";
+import { BotonConstancia } from "./BotonConstancia";
 import { MapaRecorrido } from "./MapaRecorrido";
 import {
   avisosDeObservacion,
@@ -28,11 +29,16 @@ type Props = {
   encabezado: ReactNode;
 };
 
+type PropsMovil = Props & {
+  /** Nombres de los módulos de la carrera; `null` si no se conocen. */
+  nombresModulo: Record<Modulo, string> | null;
+};
+
 /**
  * Celular: saludo, tarjetas por módulo y últimos movimientos. Un módulo
  * observado va primero y con su tarjeta destacada (D28).
  */
-export function SeguimientoMovil({ seguimiento, ahora, encabezado }: Props) {
+export function SeguimientoMovil({ seguimiento, ahora, encabezado, nombresModulo }: PropsMovil) {
   const avisos = avisosDeObservacion(seguimiento, ahora);
   return (
     <div className="mx-auto flex w-full max-w-lg flex-col gap-5 lg:hidden">
@@ -45,6 +51,7 @@ export function SeguimientoMovil({ seguimiento, ahora, encabezado }: Props) {
             seguimiento={modulo}
             ahora={ahora}
             aviso={avisos.find((aviso) => aviso.modulo === modulo.modulo)}
+            nombre={nombresModulo?.[modulo.modulo]}
           />
         ))}
       </section>
@@ -74,6 +81,7 @@ export function SeguimientoEscritorio({ seguimiento, ahora, encabezado, modulo }
       <div key={elegido} className="flex items-start gap-6">
         <div className="flex w-[330px] shrink-0 flex-col gap-3.5">
           <TarjetaUbicacion ubicacion={ubicacionDeModulo(seguimientoModulo, ahora)} aviso={aviso} />
+          {tonoDeExpediente(expediente) === "listo" && <BotonConstancia modulo={elegido} />}
           <TrackerDependencias
             etapas={etapas}
             hayExpediente={expediente !== null}

@@ -1,13 +1,15 @@
 // Lógica de presentación de la vista del estudiante: funciones puras que
 // convierten el seguimiento en textos y tonos. Los componentes solo pintan lo
 // que devuelve este archivo; aquí están todos los textos que dependen de datos.
-import { capitalizar, diaRelativo, diasEntre, haceDias, hora } from "@/shared";
+import { capitalizar, diaRelativo, diasEntre, fechaConAnio, haceDias, hora, rangoDeFechas } from "@/shared";
 import {
   CODIGOS_ESTADO,
   DEPENDENCIAS,
   ESTADOS,
   ORDEN_DEPENDENCIAS,
+  estadoAlSubsanar,
   esObservacion,
+  indicacionDe,
   ubicacionDe,
   type CodigoEstado,
   type Modulo,
@@ -182,25 +184,121 @@ export type AvisoObservacion = {
   observado: string;
 };
 
+/** Evento de la observación vigente (el último de la oficina actual); `null` si no hay observación. */
+function eventoObservado(expediente: ExpedienteSeguimiento): EventoSeguimiento | null {
+  if (expediente.estado.tipo !== "observacion") return null;
+  const { dependencia } = expediente.ubicacion;
+  return expediente.etapas.find((etapa) => etapa.dependencia === dependencia)?.eventos.at(-1) ?? null;
+}
+
+const entregaA = (expediente: ExpedienteSeguimiento) =>
+  `Entrega tu corrección ${DEPENDENCIAS[expediente.ubicacion.dependencia].conPreposicion}`;
+
 /** Un aviso por cada módulo con una observación vigente (D22). */
 export function avisosDeObservacion(seguimiento: SeguimientoModulo[], ahora: Date): AvisoObservacion[] {
   return seguimiento.flatMap(({ modulo, expediente }) => {
-    if (expediente?.estado.tipo !== "observacion") return [];
-    const dependencia = expediente.ubicacion.dependencia;
-    const observacion = expediente.etapas.find((etapa) => etapa.dependencia === dependencia)?.eventos.at(-1);
+    const evento = expediente && eventoObservado(expediente);
+    if (!expediente || !evento) return [];
     const fecha = expediente.desde;
     const transcurrido = diasEntre(fecha, ahora) === 0 ? "" : ` · ${haceDias(fecha, ahora)}`;
     return [
       {
         modulo,
         expedienteId: expediente.id,
-        motivo: observacion?.nota ?? "",
-        entrega: `Entrega tu corrección ${DEPENDENCIAS[dependencia].conPreposicion}`,
+        motivo: evento.nota ?? "",
+        entrega: entregaA(expediente),
         observado: `Observado ${elDia(fecha, ahora)}, ${hora(fecha)}${transcurrido}`,
       },
     ];
   });
 }
+
+// ---- Detalle de una observación --------------------------------------------
+
+export type DetalleObservacion =
+  | {
+      vigente: true;
+      modulo: Modulo;
+      codigo: CodigoEstado;
+      nombre: string;
+      motivo: string;
+      actor: string;
+      /** "Docente Supervisor · Hoy · 09:40" */
+      registro: string;
+      lugar: string;
+      /** Guía en tres pasos, armada desde el catálogo (D22). */
+      pasos: string[];
+    }
+  | { vigente: false; modulo: Modulo };
+
+/**
+ * Observación de un expediente del estudiante. Solo busca entre sus propios
+ * expedientes: un id ajeno devuelve `null`, igual que uno inexistente (IDOR).
+ */
+export function detalleDeObservacion(
+  seguimiento: SeguimientoModulo[],
+  expedienteId: string,
+  ahora: Date,
+): DetalleObservacion | null {
+  const datos = seguimiento.find((m) => m.expediente?.id === expedienteId);
+  const expediente = datos?.expediente;
+  if (!datos || !expediente) return null;
+
+  const evento = eventoObservado(expediente);
+  if (!evento) return { vigente: false, modulo: datos.modulo };
+
+  const { codigo, nombre } = expediente.estado;
+  const lugar = DEPENDENCIAS[expediente.ubicacion.dependencia].nombre;
+  const vuelveA = estadoAlSubsanar(codigo);
+  return {
+    vigente: true,
+    modulo: datos.modulo,
+    codigo,
+    nombre,
+    motivo: evento.nota ?? "",
+    actor: evento.actor,
+    registro: `${lugar} · ${momento(evento.fecha, ahora)}`,
+    lugar,
+    pasos: [
+      indicacionDe(codigo) ?? "Corrige lo indicado en la observación.",
+      `${entregaA(expediente)}.`,
+      vuelveA
+        ? `Cuando registren tu corrección, tu expediente vuelve a ${vuelveA} · ${ESTADOS[vuelveA].nombre} y te llegará un correo.`
+        : "Cuando registren tu corrección, te llegará un correo.",
+    ],
+  };
+}
+
+// ---- Constancia -------------------------------------------------------------
+
+export type ResumenConstancia = {
+  vistoBueno: string;
+  /** Tiempo en cada oficina: desde que llegó hasta su último registro. */
+  tramos: { nombre: string; periodo: string }[];
+  dias: number;
+};
+
+/** Datos de la constancia lista para recoger; `null` si el expediente aún no llega a 10. */
+export function resumenDeConstancia(expediente: ExpedienteSeguimiento): ResumenConstancia | null {
+  if (expediente.estado.tipo !== "final") return null;
+  const eventos = expediente.etapas.flatMap((etapa) => etapa.eventos);
+  const recepcion = eventos[0].fecha;
+
+  let llegada = recepcion;
+  const tramos = expediente.etapas.map((etapa) => {
+    const salida = etapa.eventos.at(-1)?.fecha ?? llegada;
+    const tramo = { nombre: etapa.nombre, periodo: rangoDeFechas(llegada, salida) };
+    llegada = salida;
+    return tramo;
+  });
+
+  return {
+    vistoBueno: `${DEPENDENCIAS.bienestar.nombre} registró el visto bueno final el ${fechaConAnio(expediente.desde)}.`,
+    tramos,
+    dias: diasEntre(recepcion, expediente.desde),
+  };
+}
+
 
 // ---- Últimos movimientos ---------------------------------------------------
 
@@ -227,6 +325,11 @@ export function ultimosMovimientos(seguimiento: SeguimientoModulo[], ahora: Date
       titulo: `${evento.nombre} · Módulo ${modulo}`,
       detalle: `${capitalizar(cuando(evento.fecha, ahora))} · ${DEPENDENCIAS[ubicacionDe(evento.codigo)].nombre}`,
     }));
+}
+
+/** Módulos con la constancia lista para recoger. */
+export function constanciasListas(seguimiento: SeguimientoModulo[]): SeguimientoModulo[] {
+  return seguimiento.filter((m) => m.expediente?.estado.tipo === "final");
 }
 
 // ---- Orden y selección de módulos -----------------------------------------

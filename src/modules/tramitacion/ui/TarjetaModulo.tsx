@@ -11,15 +11,24 @@ type Props = {
   ahora: Date;
   /** Observación vigente del módulo, si la hay: la tarjeta se destaca. */
   aviso?: AvisoObservacion;
+  /** Nombre del módulo en la carrera del estudiante, si se conoce. */
+  nombre?: string;
 };
 
 /** Tarjeta de un módulo en "Mis expedientes" (celular). */
-export function TarjetaModulo({ seguimiento, ahora, aviso }: Props) {
+export function TarjetaModulo({ seguimiento, ahora, aviso, nombre }: Props) {
   const { modulo, expediente } = seguimiento;
   const tono = tonoDeExpediente(expediente);
   const encabezado = (
     <div className="flex items-start gap-2.5">
-      <span className="grow font-display text-[15px] font-bold">Módulo {modulo}</span>
+      {nombre ? (
+        <span className="flex min-w-0 grow flex-col gap-px">
+          <span className="text-[11px] font-semibold tracking-[0.06em] text-muted uppercase">Módulo {modulo}</span>
+          <span className="font-display text-[15px] leading-snug font-bold">{nombre}</span>
+        </span>
+      ) : (
+        <span className="grow font-display text-[15px] font-bold">Módulo {modulo}</span>
+      )}
       <PildoraEstado texto={etiquetaDeModulo(seguimiento)} tono={tono} />
     </div>
   );

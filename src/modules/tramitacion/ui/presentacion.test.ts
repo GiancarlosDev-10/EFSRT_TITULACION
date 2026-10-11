@@ -5,6 +5,8 @@ import { ESTUDIANTE_DE_PRUEBA, EXPEDIENTES_DE_PRUEBA } from "../infrastructure/d
 import {
   avisosDeObservacion,
   codigosDeObservacion,
+  constanciasListas,
+  detalleDeObservacion,
   etapasDe,
   etiquetaDeModulo,
   moduloInicial,
@@ -12,6 +14,7 @@ import {
   ordenParaInicio,
   pasosDeRecorrido,
   progresoDeExpediente,
+  resumenDeConstancia,
   resumenDeEtapa,
   textoSubsanado,
   tonoDeEvento,
@@ -118,6 +121,54 @@ describe("tracker", () => {
   test("un módulo sin expediente muestra cuatro etapas pendientes", () => {
     const etapas = etapasDe(moduloIII.expediente);
     expect(etapas.map((e) => e.situacion)).toEqual(["pendiente", "pendiente", "pendiente", "pendiente"]);
+  });
+});
+
+describe("detalle de la observación", () => {
+  test("arma la guía de tres pasos desde el catálogo", () => {
+    expect(detalleDeObservacion(seguimiento, "exp-giancarlos-II", MISMO_DIA)).toEqual({
+      vigente: true,
+      modulo: "II",
+      codigo: "08",
+      nombre: "Supervisión observada",
+      motivo: "Anexo 4: falta la firma y el sello del jefe inmediato en la página 3.",
+      actor: "Mg. R. Paredes",
+      registro: "Docente Supervisor · Hoy · 09:40",
+      lugar: "Docente Supervisor",
+      pasos: [
+        "Corrige el documento de supervisión indicado.",
+        "Entrega tu corrección al Docente Supervisor.",
+        "Cuando registren tu corrección, tu expediente vuelve a 07 · En supervisión y te llegará un correo.",
+      ],
+    });
+  });
+
+  test("un expediente sin observación vigente se informa como subsanado", () => {
+    expect(detalleDeObservacion(seguimiento, "exp-giancarlos-I", MISMO_DIA)).toEqual({ vigente: false, modulo: "I" });
+  });
+
+  test("un expediente ajeno o inexistente no se encuentra (IDOR)", () => {
+    expect(detalleDeObservacion(seguimiento, "exp-de-otro-estudiante", MISMO_DIA)).toBeNull();
+  });
+});
+
+describe("constancia", () => {
+  test("visto bueno, tiempo por oficina y total de días", () => {
+    expect(resumenDeConstancia(moduloI.expediente!)).toEqual({
+      vistoBueno: "Bienestar y Empleabilidad registró el visto bueno final el 28 ago. 2026.",
+      tramos: [
+        { nombre: "Mesa de Partes", periodo: "10 – 11 jun." },
+        { nombre: "Coordinación de Carrera", periodo: "11 – 17 jun." },
+        { nombre: "Docente Supervisor", periodo: "17 jun. – 20 ago." },
+        { nombre: "Bienestar y Empleabilidad", periodo: "20 – 28 ago." },
+      ],
+      dias: 79,
+    });
+  });
+
+  test("si aún no está en 10, no hay constancia", () => {
+    expect(resumenDeConstancia(moduloII.expediente!)).toBeNull();
+    expect(constanciasListas(seguimiento).map((m) => m.modulo)).toEqual(["I"]);
   });
 });
 

@@ -1,15 +1,16 @@
 import { Suspense } from "react";
-import { CargandoSeguimiento, ContenidoSeguimiento, MarcoSeguimiento } from "./_componentes/ContenidoSeguimiento";
+import { CargandoPagina, MarcoPagina } from "@/shared";
+import { ContenidoSeguimiento } from "./_componentes/ContenidoSeguimiento";
 
 export const metadata = { title: "Seguimiento — EFSRT" };
 
 /** Pestaña "Seguimiento": muestra el módulo predeterminado (observado o más reciente). */
 export default function PaginaSeguimiento() {
   return (
-    <MarcoSeguimiento>
-      <Suspense fallback={<CargandoSeguimiento />}>
+    <MarcoPagina ancho="completo">
+      <Suspense fallback={<CargandoPagina etiqueta="Cargando el seguimiento" />}>
         <ContenidoSeguimiento modulo={null} />
       </Suspense>
-    </MarcoSeguimiento>
+    </MarcoPagina>
   );
 }
