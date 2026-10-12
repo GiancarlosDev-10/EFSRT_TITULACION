@@ -7,9 +7,17 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "bun test"
+    "test": "bun test",
+    "test:db": "PRUEBAS_SUPABASE=1 bun test --timeout 30000",
+    "db:nueva": "bun scripts/db/nueva-migracion.ts",
+    "db:catalogo": "bun scripts/db/generar-catalogo.ts",
+    "db:aplicar": "supabase db push",
+    "db:tipos": "supabase gen types typescript --linked --schema public > src/shared/lib/supabase/tipos-db.ts",
+    "db:sembrar": "bun scripts/db/sembrar.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.117.3",
     "next": "16.4.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
@@ -23,6 +31,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "supabase": "2.120.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

@@ -1,4 +1,5 @@
 export { crearBusEnMemoria } from "./lib/bus-en-memoria";
+export type { Database } from "./lib/supabase/tipos-db";
 export {
   capitalizar,
   diaRelativo,
