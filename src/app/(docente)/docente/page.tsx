@@ -1,5 +1,7 @@
-import { PaginaProvisional } from "@/shared";
+import { PanelProvisional } from "../../_componentes/PanelProvisional";
 
-export default function DocentePage() {
-  return <PaginaProvisional perfil="Docente Supervisor" ruta="/docente" />;
+export const metadata = { title: "Docente Supervisor — EFSRT" };
+
+export default function PaginaDocente() {
+  return <PanelProvisional rol="docente" perfil="Docente Supervisor" />;
 }

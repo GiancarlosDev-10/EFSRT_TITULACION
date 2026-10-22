@@ -1,8 +1,8 @@
 // Usuarios ficticios del proyecto de desarrollo: uno por perfil, más un
 // estudiante y un docente "ajenos" para probar que nadie ve lo de otro.
 // Entran con contraseña (CLAVE_USUARIOS_PRUEBA en .env) solo en las pruebas;
-// el ingreso real será con Google o enlace al correo (Fase 7).
-import type { Rol } from "../../src/modules/auth/sesion";
+// la aplicación se usa con Google o enlace al correo (cuentas reales, abajo).
+import type { Rol } from "../../src/modules/auth/roles";
 
 export type UsuarioPrueba = { correo: string; nombre: string; rol: Rol };
 
@@ -23,3 +23,26 @@ export function claveUsuariosPrueba(): string {
   if (!clave) throw new Error("Falta CLAVE_USUARIOS_PRUEBA en .env");
   return clave;
 }
+
+/**
+ * Estudiantes de las pruebas automáticas, enlazados a los usuarios de prueba.
+ * Son distintos de Giancarlos y Valeria (datos del video, enlazados a tus
+ * cuentas reales) porque una cuenta solo puede enlazarse a un estudiante.
+ */
+export const ESTUDIANTES_PRUEBA = {
+  estudiante: { tipo_documento: "DNI", numero_documento: "70000091", nombres: "Estudiante", apellidos: "De Prueba" },
+  estudianteAjeno: { tipo_documento: "CE", numero_documento: "009000091", nombres: "Estudiante", apellidos: "Ajena De Prueba" },
+} as const;
+
+/**
+ * Cuentas reales para probar a mano y grabar el video (D48). Se leen del .env
+ * para no guardar correos personales en el repositorio. Las vacías se omiten.
+ */
+export const CUENTAS_REALES = {
+  estudiante: process.env.CUENTA_ESTUDIANTE,
+  egresada: process.env.CUENTA_EGRESADA,
+  "mesa-partes": process.env.CUENTA_MESA_PARTES,
+  coordinacion: process.env.CUENTA_COORDINACION,
+  docente: process.env.CUENTA_DOCENTE,
+  bienestar: process.env.CUENTA_BIENESTAR,
+} as const;

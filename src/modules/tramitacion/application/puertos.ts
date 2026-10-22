@@ -20,6 +20,19 @@ export interface ExpedienteRepository {
   ): Promise<Resultado<void, "EXPEDIENTE_NO_ENCONTRADO" | "CONFLICTO_DE_ESTADO">>;
 }
 
+/** Datos del estudiante que necesita su vista de seguimiento. */
+export type EstudianteRegistrado = {
+  id: string;
+  nombre: string;
+  /** Identificador de la carrera (los nombres de módulos se buscan con él). */
+  carrera: string;
+};
+
+export interface DirectorioEstudiantes {
+  /** Estudiante enlazado a la cuenta `usuarioId`, o `null` si no hay ninguno. */
+  buscarPorUsuario(usuarioId: string): Promise<EstudianteRegistrado | null>;
+}
+
 export interface PublicadorDeEventos {
   publicar(evento: ExpedienteCambioDeEstado): Promise<void>;
 }

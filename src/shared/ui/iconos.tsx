@@ -175,6 +175,16 @@ export function IconoConstancia(props: PropsIcono) {
   );
 }
 
+export function IconoSalir(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="m16 17 5-5-5-5" />
+      <path d="M21 12H9" />
+    </Icono>
+  );
+}
+
 export function IconoReproducir({ tamano = 14, className }: PropsIcono) {
   return (
     <svg width={tamano} height={tamano} viewBox="0 0 24 24" aria-hidden="true" className={`fill-current ${className ?? ""}`}>

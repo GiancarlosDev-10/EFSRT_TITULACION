@@ -12,7 +12,7 @@ import {
   type Modulo,
 } from "../domain";
 
-/** Mientras no haya login, /alumno muestra a esta estudiante. */
+/** Estudiante de los datos de prueba (pruebas automáticas y siembra de la base). */
 export const ESTUDIANTE_DE_PRUEBA = {
   id: "est-giancarlos-ormeno",
   nombre: "Giancarlos Ormeño",

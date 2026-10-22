@@ -273,6 +273,36 @@ export type Database = {
         }
         Relationships: []
       }
+      personal: {
+        Row: {
+          activo: boolean
+          correo: string
+          creado_en: string
+          id: string
+          nombre: string
+          rol: string
+          usuario_id: string | null
+        }
+        Insert: {
+          activo?: boolean
+          correo: string
+          creado_en?: string
+          id?: string
+          nombre: string
+          rol: string
+          usuario_id?: string | null
+        }
+        Update: {
+          activo?: boolean
+          correo?: string
+          creado_en?: string
+          id?: string
+          nombre?: string
+          rol?: string
+          usuario_id?: string | null
+        }
+        Relationships: []
+      }
       transiciones: {
         Row: {
           desde: string
@@ -338,6 +368,13 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      mi_perfil: {
+        Args: never
+        Returns: {
+          nombre: string
+          rol: string
+        }[]
       }
       registrar_cambio: {
         Args: {

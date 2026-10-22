@@ -1,5 +1,7 @@
-import { PaginaProvisional } from "@/shared";
+import { PanelProvisional } from "../../_componentes/PanelProvisional";
 
-export default function BienestarPage() {
-  return <PaginaProvisional perfil="Bienestar y Empleabilidad" ruta="/bienestar" />;
+export const metadata = { title: "Bienestar y Empleabilidad — EFSRT" };
+
+export default function PaginaBienestar() {
+  return <PanelProvisional rol="bienestar" perfil="Bienestar y Empleabilidad" />;
 }

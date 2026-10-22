@@ -1,5 +1,7 @@
-import { PaginaProvisional } from "@/shared";
+import { PanelProvisional } from "../../_componentes/PanelProvisional";
 
-export default function MesaPartesPage() {
-  return <PaginaProvisional perfil="Mesa de Partes" ruta="/mesa-partes" />;
+export const metadata = { title: "Mesa de Partes — EFSRT" };
+
+export default function PaginaMesaPartes() {
+  return <PanelProvisional rol="mesa-partes" perfil="Mesa de Partes" />;
 }

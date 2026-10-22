@@ -1,5 +1,7 @@
-import { PaginaProvisional } from "@/shared";
+import { PanelProvisional } from "../../_componentes/PanelProvisional";
 
-export default function CoordinacionPage() {
-  return <PaginaProvisional perfil="Coordinación de Carrera" ruta="/coordinacion" />;
+export const metadata = { title: "Coordinación de Carrera — EFSRT" };
+
+export default function PaginaCoordinacion() {
+  return <PanelProvisional rol="coordinacion" perfil="Coordinación de Carrera" />;
 }

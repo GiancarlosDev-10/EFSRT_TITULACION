@@ -1,18 +1,20 @@
-import { NextResponse } from "next/server";
-
+// Capa 1 del control de acceso (D04): chequeo optimista, sin consultar la base.
 // Next.js 16: "proxy" es el nuevo nombre de "middleware".
-export function proxy() {
-  // TODO(auth): control de acceso por rol.
-  //   1. Leer la sesión (Google OAuth restringido a @iestpgildaballivian.edu.pe).
-  //   2. Sin sesión → redirigir a /login.
-  //   3. Obtener el rol y comparar con el prefijo de la ruta
-  //      (/alumno, /mesa-partes, /coordinacion, /docente, /bienestar).
-  //   4. Si la ruta no corresponde a su rol → redirigir a su propia ruta.
-  // Es un chequeo optimista: la autorización real debe repetirse en el
-  // servidor (casos de uso / RLS de Supabase), no solo aquí.
-  return NextResponse.next();
+//
+// Solo comprueba que haya una sesión válida y la renueva. El rol lo revisa cada
+// página, Server Action y Route Handler con `exigirRol` (capa 2), y los datos
+// los protege el RLS (capa 3). Ver D46.
+import type { NextRequest } from "next/server";
+import { actualizarSesion, redirigirConCookies } from "@/shared/lib/supabase/proxy";
+
+export async function proxy(peticion: NextRequest) {
+  const { respuesta, hayUsuario } = await actualizarSesion(peticion);
+  if (hayUsuario) return respuesta;
+  return redirigirConCookies(respuesta, new URL("/login", peticion.url));
 }
 
+// Rutas de cada perfil (RUTA_DE_ROL en modules/auth/roles.ts; una prueba
+// comprueba que coincidan). No cubre /api: cada Route Handler se protege solo.
 export const config = {
   matcher: [
     "/alumno/:path*",

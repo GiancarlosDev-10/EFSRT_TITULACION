@@ -1,13 +1,19 @@
+import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { AvisoCuentaNoHabilitada, PantallaIngreso } from "@/modules/auth";
-import { RUTAS_ALUMNO, VistaPreviaSeguimiento } from "@/modules/tramitacion";
+import {
+  AvisoCuentaNoHabilitada,
+  AvisoEnlaceVencido,
+  PantallaIngreso,
+  RUTA_DE_ROL,
+  obtenerSesion,
+} from "@/modules/auth";
+import { VistaPreviaSeguimiento } from "@/modules/tramitacion";
 
 export const metadata = { title: "Ingresar — EFSRT Seguimiento" };
 
 export default function PaginaIngreso({ searchParams }: PageProps<"/login">) {
   return (
     <PantallaIngreso
-      destino={RUTAS_ALUMNO.inicio}
       vistaPrevia={<VistaPreviaSeguimiento />}
       aviso={
         <Suspense fallback={null}>
@@ -18,8 +24,16 @@ export default function PaginaIngreso({ searchParams }: PageProps<"/login">) {
   );
 }
 
-/** El login real redirigirá a /login?error=cuenta si la cuenta no está habilitada. */
+/**
+ * Con sesión habilitada, el ingreso no tiene nada que hacer: lleva a su ruta.
+ * Si no, muestra el aviso que pidió el retorno del login (?error=…).
+ */
 async function AvisoSegunUrl({ searchParams }: Pick<PageProps<"/login">, "searchParams">) {
+  const sesion = await obtenerSesion();
+  if (sesion.estado === "activa") redirect(RUTA_DE_ROL[sesion.usuario.rol]);
+
   const { error } = await searchParams;
-  return error === "cuenta" ? <AvisoCuentaNoHabilitada /> : null;
+  if (error === "enlace") return <AvisoEnlaceVencido />;
+  if (error === "cuenta" || sesion.estado === "sin-perfil") return <AvisoCuentaNoHabilitada />;
+  return null;
 }

@@ -20,7 +20,7 @@ export async function crearClienteServidor() {
             for (const { name, value, options } of nuevas) almacen.set(name, value, options);
           } catch {
             // Desde un Server Component no se pueden escribir cookies; la sesión
-            // la renueva el proxy (TODO(auth), Fase 7).
+            // la renueva el proxy (shared/lib/supabase/proxy.ts).
           }
         },
       },

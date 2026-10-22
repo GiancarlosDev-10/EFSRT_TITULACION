@@ -1,6 +1,7 @@
 // API pública del módulo tramitacion. Otros módulos solo importan desde aquí.
 export * from "./domain";
 export type {
+  EstudianteRegistrado,
   EtapaSeguimiento,
   ErrorTramitacion,
   EventoSeguimiento,
@@ -12,10 +13,10 @@ export type {
 } from "./application";
 export { MENSAJES_DE_ERROR } from "./application";
 export {
+  obtenerEstudianteDeUsuario,
   obtenerSeguimientoDelEstudiante,
   registrarCambioEstado,
   registrarRecepcion,
   suscribirseACambiosDeEstado,
 } from "./infrastructure/contenedor";
-export { ESTUDIANTE_DE_PRUEBA } from "./infrastructure/datos-prueba";
 export * from "./ui";

@@ -32,6 +32,7 @@ export {
   IconoReloj,
   IconoReproducir,
   IconoRequisitos,
+  IconoSalir,
   IconoUbicacion,
   IconoVolver,
   Logo,
