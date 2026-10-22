@@ -56,6 +56,20 @@ describe("registrarCambioEstado", () => {
     expect(eventosPublicados).toHaveLength(0);
   });
 
+  test("si el estado que vio la oficina ya no es el actual, hay conflicto", async () => {
+    const { dependencias, eventosPublicados, registrarCambioEstado } = preparar();
+    // La pantalla mostraba 07, pero el expediente ya está en 08.
+    const resultado = await registrarCambioEstado({
+      actor: ACTORES.docente,
+      expedienteId: "exp-giancarlos-II",
+      hacia: "09",
+      desde: "07",
+    });
+    expect(resultado).toEqual({ ok: false, error: "CONFLICTO_DE_ESTADO" });
+    expect((await dependencias.repositorio.buscarPorId("exp-giancarlos-II"))?.estado).toBe("08");
+    expect(eventosPublicados).toHaveLength(0);
+  });
+
   describe("asignación del docente (05→06)", () => {
     // exp-giancarlos-I llega a 10; se toma su versión en 05 para asignar.
     function enCinco() {

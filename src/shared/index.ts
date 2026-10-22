@@ -11,12 +11,16 @@ export {
   rangoDeFechas,
 } from "./lib/fechas";
 export { useValorLocal } from "./lib/useValorLocal";
+export { esUuid } from "./lib/validacion";
 export { Avatar } from "./ui/Avatar";
 export { BarraLateral } from "./ui/BarraLateral";
 export { CargandoPagina } from "./ui/CargandoPagina";
 export { EncabezadoPagina } from "./ui/EncabezadoPagina";
 export {
   IconoAlerta,
+  IconoBandeja,
+  IconoBuscar,
+  IconoCambiar,
   IconoCarpeta,
   IconoCheck,
   IconoCheckCirculo,
@@ -44,6 +48,5 @@ export {
   type ItemNavegacion,
   type SubitemNavegacion,
 } from "./ui/Navegacion";
-export { PaginaProvisional } from "./ui/PaginaProvisional";
 export { Saludo } from "./ui/Saludo";
 export { TituloSeccion } from "./ui/TituloSeccion";

@@ -6,9 +6,11 @@ import "server-only";
 import { cache } from "react";
 import { crearBusEnMemoria } from "@/shared";
 import { crearClienteServidor } from "@/shared/lib/supabase/servidor";
-import type { ExpedienteCambioDeEstado } from "../domain";
+import type { Dependencia, ExpedienteCambioDeEstado } from "../domain";
 import {
   crearCambiarDocente,
+  crearObtenerBandeja,
+  crearObtenerExpedienteDeOficina,
   crearObtenerSeguimientoDelEstudiante,
   crearRegistrarCambioEstado,
   crearRegistrarRecepcion,
@@ -17,6 +19,7 @@ import {
   type SolicitudCambioEstado,
   type SolicitudRecepcion,
 } from "../application";
+import { crearConsultasSupabase } from "./consultas-supabase";
 import { crearDirectorioDocentesSupabase } from "./directorio-docentes-supabase";
 import { crearDirectorioSupabase } from "./directorio-supabase";
 import { crearRepositorioSupabase } from "./repositorio-supabase";
@@ -30,6 +33,7 @@ const cliente = cache(crearClienteServidor);
 const dependencias = cache(
   async (): Promise<DependenciasTramitacion> => ({
     repositorio: crearRepositorioSupabase(await cliente()),
+    consultas: crearConsultasSupabase(await cliente()),
     docentes: crearDirectorioDocentesSupabase(await cliente()),
     publicador: bus,
     reloj: { ahora: () => new Date() },
@@ -46,6 +50,16 @@ export const obtenerEstudianteDeUsuario = cache(async (usuarioId: string) =>
 export const obtenerSeguimientoDelEstudiante = cache(async (estudianteId: string) =>
   crearObtenerSeguimientoDelEstudiante(await dependencias())(estudianteId),
 );
+
+/** Bandeja de una oficina; `consulta` filtra por documento o nombre del estudiante. */
+export async function obtenerBandeja(dependencia: Dependencia, consulta?: string) {
+  return crearObtenerBandeja(await dependencias())(dependencia, consulta);
+}
+
+/** Detalle de un expediente para una oficina; `null` si no existe o la sesión no lo ve. */
+export async function obtenerExpedienteDeOficina(expedienteId: string, dependencia: Dependencia) {
+  return crearObtenerExpedienteDeOficina(await dependencias())(expedienteId, dependencia);
+}
 
 export async function registrarRecepcion(solicitud: SolicitudRecepcion) {
   return crearRegistrarRecepcion(await dependencias())(solicitud);

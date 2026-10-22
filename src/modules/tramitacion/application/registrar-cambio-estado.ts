@@ -17,6 +17,11 @@ export type SolicitudCambioEstado = {
   actor: Actor;
   expedienteId: string;
   hacia: CodigoEstado;
+  /**
+   * Estado que la oficina vio en pantalla. Si ya no es el actual, otra persona
+   * lo cambió mientras tanto: CONFLICTO_DE_ESTADO en vez de un error confuso.
+   */
+  desde?: CodigoEstado;
   motivo?: string;
   /** Docente elegido al asignar (06). El nombre se toma del directorio, no del navegador. */
   docenteId?: string;
@@ -36,11 +41,13 @@ export function crearRegistrarCambioEstado({
     actor,
     expedienteId,
     hacia,
+    desde,
     motivo,
     docenteId,
   }: SolicitudCambioEstado): Promise<Resultado<Expediente, ErrorTramitacion>> {
     const expediente = await repositorio.buscarPorId(expedienteId);
     if (!expediente) return fallo("EXPEDIENTE_NO_ENCONTRADO");
+    if (desde !== undefined && desde !== expediente.estado) return fallo("CONFLICTO_DE_ESTADO");
 
     let docente: DocenteAsignado | undefined;
     if (exigeDocente(hacia) && docenteId) {

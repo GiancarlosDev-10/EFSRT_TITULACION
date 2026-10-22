@@ -14,9 +14,16 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../src/shared/lib/supabase/tipos-db";
 import { ubicacionDe, type Dependencia, type Expediente } from "../../src/modules/tramitacion/domain";
-import { EXPEDIENTES_DE_PRUEBA, EXPEDIENTE_POR_ASIGNAR } from "../../src/modules/tramitacion/infrastructure/datos-prueba";
 import {
+  EXPEDIENTES_DE_PRUEBA,
+  EXPEDIENTE_EN_SUPERVISION,
+  EXPEDIENTE_POR_ASIGNAR,
+} from "../../src/modules/tramitacion/infrastructure/datos-prueba";
+import {
+  CARRERA_DE_PRUEBAS,
+  CARRERA_REAL,
   CUENTAS_REALES,
+  DOCENTES_CONTRATO,
   ESTUDIANTES_PRUEBA,
   USUARIOS_PRUEBA,
   claveUsuariosPrueba,
@@ -35,7 +42,6 @@ const admin = createClient<Database>(variable("NEXT_PUBLIC_SUPABASE_URL"), varia
 });
 
 const DOMINIO_INSTITUCIONAL = "@iestpgildaballivian.edu.pe";
-const CARRERA = "desarrollo-sistemas";
 
 /** Respuestas de supabase-js: o hay `data`, o hay `error`. */
 type Respuesta<T> = { data: T; error: null } | { data: unknown; error: { message: string } };
@@ -86,7 +92,7 @@ async function habilitarPersonal(
   correo: string,
   nombre: string,
   rol: RolOficina,
-  carrera: string | null = rol === "coordinacion" ? CARRERA : null,
+  carrera: string | null = rol === "coordinacion" ? CARRERA_REAL : null,
 ): Promise<PersonalHabilitado> {
   const usuarioId = await idDeCuenta(correo);
   const { data: fila, error } = await admin
@@ -224,21 +230,38 @@ async function sembrarPruebasAutomaticas(): Promise<Actores> {
     docentePersonalId: ids.docente.personalId,
   };
 
+  for (const { correo, nombre } of DOCENTES_CONTRATO) await habilitarPersonal(correo, nombre, "docente");
+
   console.log("Estudiantes de prueba…");
   for (const clave of ["estudiante", "estudianteAjeno"] as const) {
     const datos = ESTUDIANTES_PRUEBA[clave];
     const estudianteId = await asegurarEstudiante({
       ...datos,
-      carrera: CARRERA,
       correo_institucional: null,
       correo_personal: USUARIOS_PRUEBA[clave].correo,
     });
     await enlazarEstudiante(estudianteId, await asegurarUsuarioPrueba(clave), `${datos.nombres} ${datos.apellidos}`);
     // Mismo recorrido que Giancarlos (I conforme, II observado); la ajena, el I
-    // conforme y el II en 05, por asignar (para las pruebas de seguridad).
-    const expedientes = clave === "estudiante" ? EXPEDIENTES_DE_PRUEBA : [EXPEDIENTES_DE_PRUEBA[0], EXPEDIENTE_POR_ASIGNAR];
+    // conforme, el II en 05 (por asignar) y el III en 08 (para las pruebas de seguridad).
+    const expedientes =
+      clave === "estudiante"
+        ? EXPEDIENTES_DE_PRUEBA
+        : [EXPEDIENTES_DE_PRUEBA[0], EXPEDIENTE_POR_ASIGNAR, EXPEDIENTE_EN_SUPERVISION];
     for (const expediente of expedientes) await cargarExpediente(expediente, estudianteId, actores);
   }
+
+  // Los estudiantes que crea el contrato del repositorio en cada test:db van a la
+  // carrera de pruebas; aquí se mueven los creados antes de existir esa regla.
+  const movidos = revisar(
+    await admin
+      .from("estudiantes")
+      .update({ carrera: CARRERA_DE_PRUEBAS })
+      .like("apellidos", "Automática %")
+      .neq("carrera", CARRERA_DE_PRUEBAS)
+      .select("id"),
+    "mover estudiantes de prueba",
+  );
+  if (movidos.length > 0) console.log(`  · ${movidos.length} estudiantes "Prueba Automática" pasaron a la carrera de pruebas`);
   return actores;
 }
 
@@ -269,7 +292,7 @@ async function sembrarDatosDelVideo(actores: Actores) {
     numero_documento: "70000001",
     nombres: "Giancarlos",
     apellidos: "Ormeño",
-    carrera: CARRERA,
+    carrera: CARRERA_REAL,
     ...correosDe(correoGiancarlos),
   });
   await enlazarEstudiante(giancarlos, await idDeCuenta(correoGiancarlos), "Giancarlos Ormeño");
@@ -282,7 +305,7 @@ async function sembrarDatosDelVideo(actores: Actores) {
     numero_documento: "001234567",
     nombres: "Valeria",
     apellidos: "Chávez Rojas",
-    carrera: CARRERA,
+    carrera: CARRERA_REAL,
     ...correosDe(correoValeria),
   });
   await enlazarEstudiante(valeria, await idDeCuenta(correoValeria), "Valeria Chávez Rojas");

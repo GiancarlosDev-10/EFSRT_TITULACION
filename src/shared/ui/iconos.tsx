@@ -185,6 +185,35 @@ export function IconoSalir(props: PropsIcono) {
   );
 }
 
+export function IconoBandeja(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <path d="M22 12h-6l-2 3h-4l-2-3H2" />
+      <path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z" />
+    </Icono>
+  );
+}
+
+export function IconoBuscar(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <circle cx="11" cy="11" r="7" />
+      <path d="m21 21-4.3-4.3" />
+    </Icono>
+  );
+}
+
+export function IconoCambiar(props: PropsIcono) {
+  return (
+    <Icono {...props}>
+      <path d="m17 2 4 4-4 4" />
+      <path d="M3 11v-1a4 4 0 0 1 4-4h14" />
+      <path d="m7 22-4-4 4-4" />
+      <path d="M21 13v1a4 4 0 0 1-4 4H3" />
+    </Icono>
+  );
+}
+
 export function IconoReproducir({ tamano = 14, className }: PropsIcono) {
   return (
     <svg width={tamano} height={tamano} viewBox="0 0 24 24" aria-hidden="true" className={`fill-current ${className ?? ""}`}>

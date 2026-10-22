@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { CODIGOS_ESTADO, LONGITUD_MAXIMA_MOTIVO, type CodigoEstado, type Dependencia } from "./catalogo";
 import {
+  esCodigoEstado,
   esModulo,
   estadoAlSubsanar,
   exigeDocente,
@@ -116,6 +117,11 @@ describe("consultas", () => {
   test("esModulo valida valores externos", () => {
     expect(["I", "II", "III"].every(esModulo)).toBe(true);
     for (const valor of ["IV", "i", "", undefined, ["II"], 2]) expect(esModulo(valor)).toBe(false);
+  });
+
+  test("esCodigoEstado valida valores externos", () => {
+    expect(CODIGOS_ESTADO.every(esCodigoEstado)).toBe(true);
+    for (const valor of ["11", "1", "00", "toString", "", undefined, 6]) expect(esCodigoEstado(valor)).toBe(false);
   });
 
   test("estado al que vuelve el expediente al subsanar", () => {

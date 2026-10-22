@@ -17,6 +17,11 @@ const CARRERAS: Record<string, { nombre: string; modulos: Record<Modulo, string>
   },
 };
 
+/** "Desarrollo de Sistemas"; si la carrera no está registrada, su identificador. */
+export function nombreDeCarrera(carrera: string): string {
+  return CARRERAS[carrera]?.nombre ?? carrera;
+}
+
 /** Nombres de los módulos de una carrera; `null` si la carrera no está registrada. */
 export function nombresDeModulos(carrera: string): Record<Modulo, string> | null {
   return CARRERAS[carrera]?.modulos ?? null;

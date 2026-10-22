@@ -28,6 +28,11 @@ export function esModulo(valor: unknown): valor is Modulo {
   return MODULOS.some((modulo) => modulo === valor);
 }
 
+/** Valida un valor externo (p. ej. de un formulario); si es válido, TypeScript lo trata como `CodigoEstado`. */
+export function esCodigoEstado(valor: unknown): valor is CodigoEstado {
+  return typeof valor === "string" && Object.hasOwn(ESTADOS, valor);
+}
+
 /** Dependencia donde se encuentra el expediente en ese estado. */
 export function ubicacionDe(estado: CodigoEstado): Dependencia {
   return ESTADOS[estado].dependencia;

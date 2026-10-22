@@ -1,4 +1,4 @@
-import type { Modulo } from "../domain";
+import type { Dependencia, Modulo } from "../domain";
 
 /**
  * Rutas de la vista del estudiante, en un solo lugar. Cada módulo tiene una
@@ -11,4 +11,10 @@ export const RUTAS_ALUMNO = {
   observacion: (expedienteId: string) => `/alumno/observacion/${expedienteId}`,
   constancia: (modulo: Modulo) => `/alumno/constancia/${modulo}`,
   requisitos: "/alumno/requisitos",
+} as const;
+
+/** Rutas de las pantallas de oficina: la bandeja de cada dependencia y el detalle de un expediente. */
+export const RUTAS_OFICINA = {
+  bandeja: (dependencia: Dependencia) => `/${dependencia}`,
+  expediente: (dependencia: Dependencia, expedienteId: string) => `/${dependencia}/expediente/${expedienteId}`,
 } as const;

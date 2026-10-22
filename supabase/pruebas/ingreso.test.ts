@@ -4,6 +4,7 @@
 // en el panel de Supabase. Cada prueba borra las cuentas y filas que crea.
 import { afterEach, describe, expect, test } from "bun:test";
 import { PRUEBAS_SUPABASE, clienteAdmin, clienteAnonimo, clienteComo } from "../../scripts/db/clientes-prueba";
+import { CARRERA_DE_PRUEBAS } from "../../scripts/db/usuarios-prueba";
 
 const admin = PRUEBAS_SUPABASE ? clienteAdmin() : null!;
 const limpiezas: (() => PromiseLike<unknown>)[] = [];
@@ -33,7 +34,7 @@ async function registrarEstudiante(correo: string) {
       numero_documento: `8${String(Date.now()).slice(-7)}`,
       nombres: "Ingreso",
       apellidos: "De Prueba",
-      carrera: "desarrollo-sistemas",
+      carrera: CARRERA_DE_PRUEBAS,
       correo_personal: correo,
     })
     .select("id")

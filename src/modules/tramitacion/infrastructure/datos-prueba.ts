@@ -77,6 +77,15 @@ export const EXPEDIENTES_DE_PRUEBA: readonly Expediente[] = [
   // Módulo III: sin expediente todavía.
 ];
 
+/** Expediente en 08 (supervisión observada) del Módulo III. Solo para las pruebas de seguridad. */
+export const EXPEDIENTE_EN_SUPERVISION: Expediente = construir("exp-en-supervision", "III", "2026-09-01T09:00", [
+  ["03", "2026-09-01T10:00"],
+  ["05", "2026-09-03T11:00"],
+  ["06", "2026-09-04T09:00"],
+  ["07", "2026-09-08T09:00"],
+  ["08", "2026-10-15T16:00", "Falta el informe de la empresa."],
+]);
+
 /** Expediente en 05 (requisitos conformes), listo para asignar docente. Solo para las pruebas de seguridad. */
 export const EXPEDIENTE_POR_ASIGNAR: Expediente = construir("exp-por-asignar", "II", "2026-10-01T09:00", [
   ["03", "2026-10-01T10:00"],

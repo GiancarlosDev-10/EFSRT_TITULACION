@@ -54,6 +54,31 @@ export interface DirectorioEstudiantes {
   buscarPorUsuario(usuarioId: string): Promise<EstudianteRegistrado | null>;
 }
 
+/** Datos del estudiante que ve una oficina (D38). */
+export type FichaEstudiante = {
+  id: string;
+  nombres: string;
+  apellidos: string;
+  tipoDocumento: "DNI" | "CE";
+  numeroDocumento: string;
+  carrera: string;
+  correoInstitucional: string | null;
+  correoPersonal: string | null;
+};
+
+export type ExpedienteConEstudiante = {
+  expediente: Expediente;
+  estudiante: FichaEstudiante;
+};
+
+/** Lecturas de las pantallas de oficina. Qué expedientes ve cada sesión lo decide la base (RLS). */
+export interface ConsultasDeOficina {
+  /** Todos los expedientes que la sesión puede ver, con su estudiante. */
+  listarExpedientes(): Promise<readonly ExpedienteConEstudiante[]>;
+  /** `null` si no existe o la sesión no puede verlo. */
+  buscarExpediente(id: string): Promise<ExpedienteConEstudiante | null>;
+}
+
 /** Docente Supervisor del personal, con cuántos expedientes supervisa ahora. */
 export type DocenteDelDirectorio = DocenteAsignado & {
   activo: boolean;
@@ -80,6 +105,7 @@ export interface GeneradorDeIds {
 /** Todo lo que pueden necesitar los casos de uso; cada uno toma solo lo suyo. */
 export type DependenciasTramitacion = {
   repositorio: ExpedienteRepository;
+  consultas: ConsultasDeOficina;
   docentes: DirectorioDocentes;
   publicador: PublicadorDeEventos;
   reloj: Reloj;

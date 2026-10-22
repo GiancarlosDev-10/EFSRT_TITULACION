@@ -1,7 +1,11 @@
-export { nombresDeModulos } from "./contenido";
+export { BandejaOficina } from "./BandejaOficina";
+export { nombreDeCarrera, nombresDeModulos } from "./contenido";
+export { DetalleExpedienteOficina } from "./DetalleExpedienteOficina";
 export { subitemsDeConstancias, subitemsDeModulos } from "./navegacion";
+export { PanelAccion, type DocenteParaElegir, type EstadoPanelAccion } from "./PanelAccion";
 export { detalleDeObservacion } from "./presentacion";
-export { RUTAS_ALUMNO } from "./rutas";
+export { esVistaBandeja, opcionesDeAccion, registraObservaciones, type VistaBandeja } from "./presentacion-oficina";
+export { RUTAS_ALUMNO, RUTAS_OFICINA } from "./rutas";
 export { SeguimientoDeModulo } from "./SeguimientoDeModulo";
 export { VistaConstancia } from "./VistaConstancia";
 export { SeguimientoEscritorio, SeguimientoMovil } from "./VistaEstudiante";

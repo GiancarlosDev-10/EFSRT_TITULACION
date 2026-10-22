@@ -1,7 +1,7 @@
-import { PanelProvisional } from "../../_componentes/PanelProvisional";
+import { PaginaBandeja } from "../../_oficinas/PaginaBandeja";
 
-export const metadata = { title: "Bienestar y Empleabilidad — EFSRT" };
+export const metadata = { title: "Bandeja · Bienestar — EFSRT" };
 
-export default function PaginaBienestar() {
-  return <PanelProvisional rol="bienestar" perfil="Bienestar y Empleabilidad" />;
+export default function PaginaBandejaBienestar({ searchParams }: PageProps<"/bienestar">) {
+  return <PaginaBandeja dependencia="bienestar" searchParams={searchParams} />;
 }

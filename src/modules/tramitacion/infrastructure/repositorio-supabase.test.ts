@@ -3,7 +3,7 @@
 // no se puede borrar, D11); son datos del proyecto de desarrollo, no de producción.
 import type { Dependencia } from "../domain";
 import { PRUEBAS_SUPABASE, clienteAdmin, clienteComo } from "../../../../scripts/db/clientes-prueba";
-import { USUARIOS_PRUEBA } from "../../../../scripts/db/usuarios-prueba";
+import { CARRERA_DE_PRUEBAS, DOCENTES_CONTRATO } from "../../../../scripts/db/usuarios-prueba";
 import { probarContratoRepositorio } from "./contrato-repositorio";
 import { crearRepositorioSupabase } from "./repositorio-supabase";
 
@@ -23,8 +23,8 @@ probarContratoRepositorio(
     const clientes = await Promise.all(dependencias.map((d) => clienteComo(USUARIO_DE[d])));
     const repositorios = new Map(dependencias.map((d, i) => [d, crearRepositorioSupabase(clientes[i])]));
     const mesa = await clienteComo("mesaPartes");
-    // Filas de `personal` de los dos docentes de prueba (las habilita db:sembrar).
-    const correos = [USUARIOS_PRUEBA.docente.correo, USUARIOS_PRUEBA.docenteAjeno.correo];
+    // Docentes sin cuenta, solo para este contrato (los habilita db:sembrar).
+    const correos = DOCENTES_CONTRATO.map((d) => d.correo);
     const { data: personal, error: errorPersonal } = await clienteAdmin().from("personal").select("id, nombre, correo").in("correo", correos);
     if (errorPersonal) throw new Error(errorPersonal.message);
     const docente = (correo: string) => {
@@ -46,7 +46,7 @@ probarContratoRepositorio(
             numero_documento: `9${marca.slice(-7)}`,
             nombres: "Prueba",
             apellidos: `Automática ${marca}`,
-            carrera: "desarrollo-sistemas",
+            carrera: CARRERA_DE_PRUEBAS,
             correo_personal: `prueba-${marca}@efsrt.test`,
           })
           .select("id")

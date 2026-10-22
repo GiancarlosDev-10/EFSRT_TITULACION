@@ -1,7 +1,7 @@
-import { PanelProvisional } from "../../_componentes/PanelProvisional";
+import { PaginaBandeja } from "../../_oficinas/PaginaBandeja";
 
-export const metadata = { title: "Coordinación de Carrera — EFSRT" };
+export const metadata = { title: "Bandeja · Coordinación — EFSRT" };
 
-export default function PaginaCoordinacion() {
-  return <PanelProvisional rol="coordinacion" perfil="Coordinación de Carrera" />;
+export default function PaginaBandejaCoordinacion({ searchParams }: PageProps<"/coordinacion">) {
+  return <PaginaBandeja dependencia="coordinacion" searchParams={searchParams} />;
 }

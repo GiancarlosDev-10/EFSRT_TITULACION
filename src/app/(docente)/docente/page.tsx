@@ -1,7 +1,7 @@
-import { PanelProvisional } from "../../_componentes/PanelProvisional";
+import { PaginaBandeja } from "../../_oficinas/PaginaBandeja";
 
-export const metadata = { title: "Docente Supervisor — EFSRT" };
+export const metadata = { title: "Bandeja · Docente Supervisor — EFSRT" };
 
-export default function PaginaDocente() {
-  return <PanelProvisional rol="docente" perfil="Docente Supervisor" />;
+export default function PaginaBandejaDocente({ searchParams }: PageProps<"/docente">) {
+  return <PaginaBandeja dependencia="docente" searchParams={searchParams} />;
 }

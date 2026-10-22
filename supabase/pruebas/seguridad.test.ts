@@ -10,10 +10,13 @@ import { PRUEBAS_SUPABASE, clienteAdmin, clienteAnonimo, clienteComo, type Clien
 import { ESTUDIANTES_PRUEBA, USUARIOS_PRUEBA } from "../../scripts/db/usuarios-prueba";
 
 // Expedientes sembrados para las pruebas: el estudiante de prueba tiene I (10) y
-// II (08, docente R. Paredes); la estudiante ajena, I (10) y II (05, sin docente).
+// II (08, docente R. Paredes), en la carrera real; la estudiante ajena, en la
+// carrera de pruebas (la coordina el usuario de prueba), I (10), II (05, sin
+// docente) y III (08, docente R. Paredes).
 let expedienteObservado: string;
 let expedienteAjeno: string;
 let expedientePorAsignar: string;
+let expedienteAjenoObservado: string;
 let admin: Cliente;
 /** Filas de `personal` (no cuentas): lo que se guarda como docente asignado. */
 let personal: Record<"docente" | "docenteAjeno" | "mesaPartes", string>;
@@ -37,6 +40,7 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
     expedienteObservado = expedientes!.find((e) => e.estudiante_id === id(documentos[0]) && e.modulo === "II")!.id;
     expedienteAjeno = expedientes!.find((e) => e.estudiante_id === id(documentos[1]) && e.modulo === "I")!.id;
     expedientePorAsignar = expedientes!.find((e) => e.estudiante_id === id(documentos[1]) && e.modulo === "II")!.id;
+    expedienteAjenoObservado = expedientes!.find((e) => e.estudiante_id === id(documentos[1]) && e.modulo === "III")!.id;
     const claves = ["docente", "docenteAjeno", "mesaPartes"] as const;
     const { data: filas } = await admin
       .from("personal")
@@ -161,8 +165,12 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
 
     test("un docente no ve ni modifica expedientes que no tiene asignados", async () => {
       const docenteAjeno = await clienteComo("docenteAjeno");
-      const { data } = await docenteAjeno.from("expedientes").select("id");
-      expect(data).toEqual([]);
+      const { data } = await docenteAjeno.from("expedientes").select("id, docente_id");
+      const visibles = data?.map((e) => e.id) ?? [];
+      expect(visibles).not.toContain(expedienteObservado);
+      expect(visibles).not.toContain(expedienteAjeno);
+      // Lo que vea (si algo) está asignado a él.
+      expect(data?.every((e) => e.docente_id === personal.docenteAjeno)).toBe(true);
 
       // Transición válida y dependencia correcta, pero el expediente no es suyo.
       const { error } = await docenteAjeno.rpc("registrar_cambio", {
@@ -265,8 +273,9 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
       // Expediente ajeno en 10: la supervisión ya terminó.
       expect((await cambiar(expedienteAjeno, personal.docente)).error?.message).toBe("CAMBIO_DE_DOCENTE_NO_PERMITIDO");
       // En 08, pero diciendo que reemplaza a quien no es el docente vigente.
-      expect((await cambiar(expedienteObservado, personal.docenteAjeno)).error?.message).toBe("CONFLICTO_DE_ESTADO");
-      expect(await estadoDe(expedienteObservado)).toEqual(antes);
+      const antesDelCambio = await estadoDe(expedienteAjenoObservado);
+      expect((await cambiar(expedienteAjenoObservado, personal.docenteAjeno)).error?.message).toBe("CONFLICTO_DE_ESTADO");
+      expect(await estadoDe(expedienteAjenoObservado)).toEqual(antesDelCambio);
     });
 
     test("no se puede falsificar el actor, la fecha ni los nombres de un cambio de docente", async () => {
@@ -320,10 +329,15 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
       expect(await estadoDe(expedientePorAsignar)).toEqual(antesDeAsignar);
     });
 
-    test("la Coordinación de la carrera sí ve sus expedientes", async () => {
+    test("cada Coordinación ve solo su carrera", async () => {
+      // El coordinador de prueba es de la carrera de pruebas: ve a la estudiante
+      // ajena, pero no a Estudiante De Prueba (carrera real).
       const propia = await clienteComo("coordinacion");
-      const { data } = await propia.from("expedientes").select("id").in("id", [expedienteObservado, expedientePorAsignar]);
-      expect(data).toHaveLength(2);
+      const { data } = await propia
+        .from("expedientes")
+        .select("id")
+        .in("id", [expedienteObservado, expedientePorAsignar, expedienteAjenoObservado]);
+      expect(data?.map((e) => e.id).sort()).toEqual([expedientePorAsignar, expedienteAjenoObservado].sort());
     });
   });
 

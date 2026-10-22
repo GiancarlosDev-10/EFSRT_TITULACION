@@ -81,12 +81,17 @@ export function crearRepositorioSupabase(cliente: SupabaseClient<Database>): Exp
   };
 }
 
-// Actor y fecha salen de las columnas que fijó el trigger, no de lo que envió el cliente.
-function consultaExpedientes(cliente: SupabaseClient<Database>) {
+/**
+ * Lectura de expedientes con su historial, cambios de docente y estudiante
+ * (la usan el repositorio y las consultas de oficina). Actor y fecha salen de
+ * las columnas que fijó el trigger, no de lo que envió el cliente.
+ */
+export function consultaExpedientes(cliente: SupabaseClient<Database>) {
   return cliente
     .from("expedientes")
     .select(
       `id, estudiante_id, modulo, estado, docente_id, docente_nombre,
+      estudiante:estudiantes (id, nombres, apellidos, tipo_documento, numero_documento, carrera, correo_institucional, correo_personal),
       historial (id, estado_anterior, estado_nuevo, actor_id, actor_nombre, actor_dependencia, motivo, fecha, docente_id, docente_nombre),
       cambios_docente (id, docente_anterior_id, docente_anterior_nombre, docente_nuevo_id, docente_nuevo_nombre, motivo, actor_id, actor_nombre, fecha)`,
     )
@@ -131,7 +136,7 @@ function aDocente(id: string | null, nombre: string | null): DocenteAsignado | n
   return id !== null && nombre !== null ? { id, nombre } : null;
 }
 
-function aExpediente(fila: FilaExpediente): Expediente {
+export function aExpediente(fila: FilaExpediente): Expediente {
   if (!esModulo(fila.modulo)) throw new Error(`Módulo desconocido en la base: ${fila.modulo}`);
   return {
     id: fila.id,
@@ -176,6 +181,6 @@ function errorConocido<E extends ErrorRepositorio>(error: PostgrestError, espera
   return esperados.find((codigo) => error.message === codigo) ?? null;
 }
 
-function errorDeBase(error: PostgrestError): Error {
+export function errorDeBase(error: PostgrestError): Error {
   return new Error(`Supabase: ${error.message} (${error.code})`);
 }
