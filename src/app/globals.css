@@ -87,7 +87,7 @@ html::-webkit-scrollbar {
 /* Fuentes cargadas con next/font en app/layout.tsx.
    font-display → títulos · font-sans → texto · font-mono → datos de trazabilidad */
 @theme inline {
-  --font-display: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-poppins), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-chivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-chivo), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
