@@ -3,6 +3,8 @@ import { CODIGOS_ESTADO, LONGITUD_MAXIMA_MOTIVO, type CodigoEstado, type Depende
 import {
   esModulo,
   estadoAlSubsanar,
+  exigeDocente,
+  permiteCambiarDocente,
   estaPermitida,
   indicacionDe,
   transicionesDisponibles,
@@ -84,10 +86,20 @@ describe("validarTransicion: motivo", () => {
   });
 
   test("en estados normales la nota es opcional", () => {
-    expect(validarTransicion({ desde: "05", hacia: "06", dependencia: "coordinacion" })).toEqual({
+    expect(validarTransicion({ desde: "03", hacia: "05", dependencia: "coordinacion" })).toEqual({
       ok: true,
       valor: { motivo: null },
     });
+  });
+
+  test("asignar docente (05→06) exige indicar quién es", () => {
+    expect(validarTransicion({ desde: "05", hacia: "06", dependencia: "coordinacion" })).toEqual({
+      ok: false,
+      error: "DOCENTE_REQUERIDO",
+    });
+    expect(
+      validarTransicion({ desde: "05", hacia: "06", dependencia: "coordinacion", docente: { id: "d", nombre: "Mg. R. Paredes" } }),
+    ).toEqual({ ok: true, valor: { motivo: null } });
   });
 
   test(`acepta hasta ${LONGITUD_MAXIMA_MOTIVO} caracteres y rechaza uno más`, () => {
@@ -122,6 +134,13 @@ describe("consultas", () => {
   test("la ubicación es la dependencia del estado actual", () => {
     expect(ubicacionDe("03")).toBe("mesa-partes");
     expect(ubicacionDe("08")).toBe("docente");
+  });
+
+  test("solo el 06 exige docente; se puede cambiar en 06, 07 y 08", () => {
+    for (const codigo of CODIGOS_ESTADO) {
+      expect(exigeDocente(codigo)).toBe(codigo === "06");
+      expect(permiteCambiarDocente(codigo)).toBe(["06", "07", "08"].includes(codigo));
+    }
   });
 
   test("transicionesDisponibles filtra por dependencia", () => {

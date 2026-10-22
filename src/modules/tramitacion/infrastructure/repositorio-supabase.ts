@@ -2,12 +2,15 @@ import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared";
 import {
   DEPENDENCIAS,
+  ESTADO_ASIGNACION_DOCENTE,
   ESTADOS,
   esModulo,
   exito,
   fallo,
+  ubicacionDe,
   type CodigoEstado,
   type Dependencia,
+  type DocenteAsignado,
   type Expediente,
 } from "../domain";
 import type { ErrorRepositorio, ExpedienteRepository } from "../application";
@@ -52,9 +55,26 @@ export function crearRepositorioSupabase(cliente: SupabaseClient<Database>): Exp
         p_estado_anterior: registro.estadoAnterior,
         p_estado_nuevo: registro.estadoNuevo,
         p_motivo: registro.motivo ?? undefined,
+        p_docente_id: registro.docente?.id,
       });
       if (!error) return exito(undefined);
-      const conocido = errorConocido(error, ["EXPEDIENTE_NO_ENCONTRADO", "CONFLICTO_DE_ESTADO"]);
+      const conocido = errorConocido(error, ["EXPEDIENTE_NO_ENCONTRADO", "CONFLICTO_DE_ESTADO", "DOCENTE_NO_VALIDO"]);
+      if (conocido) return fallo(conocido);
+      throw errorDeBase(error);
+    },
+
+    async registrarCambioDocente(expedienteId, cambio) {
+      const { error } = await cliente.rpc("cambiar_docente", {
+        p_expediente_id: expedienteId,
+        p_docente_anterior_id: cambio.anterior.id,
+        p_docente_nuevo_id: cambio.nuevo.id,
+        p_motivo: cambio.motivo,
+      });
+      if (!error) return exito(undefined);
+      // El caso de uso validó con lo que leyó: si al guardar el estado ya no lo
+      // permite, es que otra persona lo cambió entretanto.
+      if (error.message === "CAMBIO_DE_DOCENTE_NO_PERMITIDO") return fallo("CONFLICTO_DE_ESTADO");
+      const conocido = errorConocido(error, ["EXPEDIENTE_NO_ENCONTRADO", "CONFLICTO_DE_ESTADO", "DOCENTE_NO_VALIDO"]);
       if (conocido) return fallo(conocido);
       throw errorDeBase(error);
     },
@@ -66,9 +86,12 @@ function consultaExpedientes(cliente: SupabaseClient<Database>) {
   return cliente
     .from("expedientes")
     .select(
-      "id, estudiante_id, modulo, estado, historial (id, estado_anterior, estado_nuevo, actor_id, actor_nombre, actor_dependencia, motivo, fecha)",
+      `id, estudiante_id, modulo, estado, docente_id, docente_nombre,
+      historial (id, estado_anterior, estado_nuevo, actor_id, actor_nombre, actor_dependencia, motivo, fecha, docente_id, docente_nombre),
+      cambios_docente (id, docente_anterior_id, docente_anterior_nombre, docente_nuevo_id, docente_nuevo_nombre, motivo, actor_id, actor_nombre, fecha)`,
     )
-    .order("id", { referencedTable: "historial", ascending: true });
+    .order("id", { referencedTable: "historial", ascending: true })
+    .order("id", { referencedTable: "cambios_docente", ascending: true });
 }
 
 type FilaExpediente = {
@@ -76,6 +99,8 @@ type FilaExpediente = {
   estudiante_id: string;
   modulo: string;
   estado: string;
+  docente_id: string | null;
+  docente_nombre: string | null;
   historial: {
     estado_anterior: string | null;
     estado_nuevo: string;
@@ -84,8 +109,27 @@ type FilaExpediente = {
     actor_dependencia: string;
     motivo: string | null;
     fecha: string;
+    docente_id: string | null;
+    docente_nombre: string | null;
+  }[];
+  cambios_docente: {
+    docente_anterior_id: string;
+    docente_anterior_nombre: string;
+    docente_nuevo_id: string;
+    docente_nuevo_nombre: string;
+    motivo: string;
+    actor_id: string;
+    actor_nombre: string;
+    fecha: string;
   }[];
 };
+
+/** Quien cambia al docente es siempre la dependencia que lo asigna (lo exige el trigger). */
+const DEPENDENCIA_QUE_ASIGNA = ubicacionDe(ESTADO_ASIGNACION_DOCENTE);
+
+function aDocente(id: string | null, nombre: string | null): DocenteAsignado | null {
+  return id !== null && nombre !== null ? { id, nombre } : null;
+}
 
 function aExpediente(fila: FilaExpediente): Expediente {
   if (!esModulo(fila.modulo)) throw new Error(`Módulo desconocido en la base: ${fila.modulo}`);
@@ -94,12 +138,24 @@ function aExpediente(fila: FilaExpediente): Expediente {
     estudianteId: fila.estudiante_id,
     modulo: fila.modulo,
     estado: codigoEstado(fila.estado),
-    historial: fila.historial.map((r) => ({
-      estadoAnterior: r.estado_anterior === null ? null : codigoEstado(r.estado_anterior),
-      estadoNuevo: codigoEstado(r.estado_nuevo),
-      actor: { id: r.actor_id, nombre: r.actor_nombre, dependencia: dependencia(r.actor_dependencia) },
-      motivo: r.motivo,
-      fecha: new Date(r.fecha),
+    historial: fila.historial.map((r) => {
+      const docente = aDocente(r.docente_id, r.docente_nombre);
+      return {
+        estadoAnterior: r.estado_anterior === null ? null : codigoEstado(r.estado_anterior),
+        estadoNuevo: codigoEstado(r.estado_nuevo),
+        actor: { id: r.actor_id, nombre: r.actor_nombre, dependencia: dependencia(r.actor_dependencia) },
+        motivo: r.motivo,
+        fecha: new Date(r.fecha),
+        ...(docente ? { docente } : {}),
+      };
+    }),
+    docente: aDocente(fila.docente_id, fila.docente_nombre),
+    cambiosDocente: fila.cambios_docente.map((c) => ({
+      anterior: { id: c.docente_anterior_id, nombre: c.docente_anterior_nombre },
+      nuevo: { id: c.docente_nuevo_id, nombre: c.docente_nuevo_nombre },
+      motivo: c.motivo,
+      actor: { id: c.actor_id, nombre: c.actor_nombre, dependencia: DEPENDENCIA_QUE_ASIGNA },
+      fecha: new Date(c.fecha),
     })),
   };
 }

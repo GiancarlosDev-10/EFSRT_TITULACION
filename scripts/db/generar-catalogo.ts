@@ -9,6 +9,7 @@ import { CARPETA_MIGRACIONES, siguienteMigracion } from "./nombre-migracion";
 import {
   CODIGOS_ESTADO,
   DEPENDENCIAS,
+  ESTADO_ASIGNACION_DOCENTE,
   ESTADO_INICIAL,
   ESTADOS,
   LONGITUD_MAXIMA_MOTIVO,
@@ -57,6 +58,17 @@ language sql
 immutable
 set search_path = ''
 as $$ select ${LONGITUD_MAXIMA_MOTIVO} $$;
+
+-- Estado en el que se elige al Docente Supervisor (D49).
+create or replace function privado.estado_asignacion_docente()
+returns text
+language sql
+immutable
+set search_path = ''
+as $$ select ${texto(ESTADO_ASIGNACION_DOCENTE)} $$;
+
+revoke all on function privado.estado_asignacion_docente() from public;
+grant execute on function privado.estado_asignacion_docente() to authenticated, service_role;
 `;
 }
 

@@ -26,6 +26,8 @@ export type EventoSeguimiento = {
   fecha: Date;
   actor: string;
   nota: string | null;
+  /** Nombre del Docente Supervisor, solo en el registro de asignación. */
+  docente: string | null;
   /** `null` si no es una observación. Si lo es: `subsanadaEl` es `null` mientras siga vigente. */
   observacion: { subsanadaEl: Date | null } | null;
 };
@@ -67,6 +69,7 @@ function aEvento(registro: RegistroHistorial, siguiente: RegistroHistorial | und
     fecha: registro.fecha,
     actor: registro.actor.nombre,
     nota: registro.motivo,
+    docente: registro.docente?.nombre ?? null,
     observacion: esObservacion(registro.estadoNuevo) ? { subsanadaEl: siguiente?.fecha ?? null } : null,
   };
 }

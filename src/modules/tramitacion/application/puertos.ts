@@ -1,8 +1,21 @@
 // Puertos: lo que los casos de uso necesitan del exterior, sin saber cómo se
-// implementa. Hoy se conectan adaptadores en memoria; después, Supabase.
-import type { Expediente, ExpedienteCambioDeEstado, RegistroHistorial, Resultado } from "../domain";
+// implementa. La aplicación usa los adaptadores de Supabase; las pruebas, los
+// de memoria.
+import type {
+  CambioDocente,
+  DocenteAsignado,
+  Expediente,
+  ExpedienteCambioDeEstado,
+  RegistroHistorial,
+  Resultado,
+} from "../domain";
 
-export type ErrorRepositorio = "EXPEDIENTE_NO_ENCONTRADO" | "EXPEDIENTE_YA_EXISTE" | "CONFLICTO_DE_ESTADO";
+export type ErrorRepositorio =
+  | "EXPEDIENTE_NO_ENCONTRADO"
+  | "EXPEDIENTE_YA_EXISTE"
+  | "CONFLICTO_DE_ESTADO"
+  /** El docente elegido no existe, no es docente o está desactivado. */
+  | "DOCENTE_NO_VALIDO";
 
 export interface ExpedienteRepository {
   buscarPorId(id: string): Promise<Expediente | null>;
@@ -17,7 +30,15 @@ export interface ExpedienteRepository {
   registrarCambio(
     expedienteId: string,
     registro: RegistroHistorial,
-  ): Promise<Resultado<void, "EXPEDIENTE_NO_ENCONTRADO" | "CONFLICTO_DE_ESTADO">>;
+  ): Promise<Resultado<void, "EXPEDIENTE_NO_ENCONTRADO" | "CONFLICTO_DE_ESTADO" | "DOCENTE_NO_VALIDO">>;
+  /**
+   * Añade un cambio de docente. Falla con CONFLICTO_DE_ESTADO si el docente
+   * vigente ya no es `cambio.anterior` o el estado ya no permite cambiarlo.
+   */
+  registrarCambioDocente(
+    expedienteId: string,
+    cambio: CambioDocente,
+  ): Promise<Resultado<void, "EXPEDIENTE_NO_ENCONTRADO" | "CONFLICTO_DE_ESTADO" | "DOCENTE_NO_VALIDO">>;
 }
 
 /** Datos del estudiante que necesita su vista de seguimiento. */
@@ -31,6 +52,17 @@ export type EstudianteRegistrado = {
 export interface DirectorioEstudiantes {
   /** Estudiante enlazado a la cuenta `usuarioId`, o `null` si no hay ninguno. */
   buscarPorUsuario(usuarioId: string): Promise<EstudianteRegistrado | null>;
+}
+
+/** Docente Supervisor del personal, con cuántos expedientes supervisa ahora. */
+export type DocenteDelDirectorio = DocenteAsignado & {
+  activo: boolean;
+  enSupervision: number;
+};
+
+export interface DirectorioDocentes {
+  /** Todos los docentes, también los desactivados (sus expedientes hay que reasignarlos). */
+  listar(): Promise<readonly DocenteDelDirectorio[]>;
 }
 
 export interface PublicadorDeEventos {
@@ -48,7 +80,14 @@ export interface GeneradorDeIds {
 /** Todo lo que pueden necesitar los casos de uso; cada uno toma solo lo suyo. */
 export type DependenciasTramitacion = {
   repositorio: ExpedienteRepository;
+  docentes: DirectorioDocentes;
   publicador: PublicadorDeEventos;
   reloj: Reloj;
   ids: GeneradorDeIds;
 };
+
+/** Docente activo con ese id, con el nombre que tiene hoy; `null` si no existe o está desactivado. */
+export async function buscarDocenteActivo(docentes: DirectorioDocentes, id: string): Promise<DocenteAsignado | null> {
+  const docente = (await docentes.listar()).find((d) => d.id === id && d.activo);
+  return docente ? { id: docente.id, nombre: docente.nombre } : null;
+}

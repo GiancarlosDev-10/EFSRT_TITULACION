@@ -8,13 +8,16 @@ import { crearBusEnMemoria } from "@/shared";
 import { crearClienteServidor } from "@/shared/lib/supabase/servidor";
 import type { ExpedienteCambioDeEstado } from "../domain";
 import {
+  crearCambiarDocente,
   crearObtenerSeguimientoDelEstudiante,
   crearRegistrarCambioEstado,
   crearRegistrarRecepcion,
   type DependenciasTramitacion,
+  type SolicitudCambioDocente,
   type SolicitudCambioEstado,
   type SolicitudRecepcion,
 } from "../application";
+import { crearDirectorioDocentesSupabase } from "./directorio-docentes-supabase";
 import { crearDirectorioSupabase } from "./directorio-supabase";
 import { crearRepositorioSupabase } from "./repositorio-supabase";
 
@@ -27,6 +30,7 @@ const cliente = cache(crearClienteServidor);
 const dependencias = cache(
   async (): Promise<DependenciasTramitacion> => ({
     repositorio: crearRepositorioSupabase(await cliente()),
+    docentes: crearDirectorioDocentesSupabase(await cliente()),
     publicador: bus,
     reloj: { ahora: () => new Date() },
     ids: { nuevoId: () => crypto.randomUUID() },
@@ -49,6 +53,10 @@ export async function registrarRecepcion(solicitud: SolicitudRecepcion) {
 
 export async function registrarCambioEstado(solicitud: SolicitudCambioEstado) {
   return crearRegistrarCambioEstado(await dependencias())(solicitud);
+}
+
+export async function cambiarDocente(solicitud: SolicitudCambioDocente) {
+  return crearCambiarDocente(await dependencias())(solicitud);
 }
 
 /** Otros módulos (p. ej. notificaciones) escuchan aquí los cambios de estado. */

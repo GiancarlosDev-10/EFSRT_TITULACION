@@ -72,6 +72,9 @@ export function TrackerDependencias({ etapas, hayExpediente, abierta, ahora }: P
                     <span className="font-mono text-[11px] text-muted">
                       {momento(evento.fecha, ahora)} · {evento.actor}
                     </span>
+                    {evento.docente && (
+                      <span className="text-xs leading-normal text-text-soft">Docente Supervisor: {evento.docente}</span>
+                    )}
                     {evento.nota && <span className="text-xs leading-normal text-text-soft">{evento.nota}</span>}
                     {subsanado && <span className="text-xs font-semibold text-ok">{subsanado}</span>}
                   </div>

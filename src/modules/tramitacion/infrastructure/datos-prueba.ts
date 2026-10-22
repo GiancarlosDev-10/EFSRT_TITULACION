@@ -4,10 +4,12 @@
 import {
   abrirExpediente,
   aplicarCambioEstado,
+  exigeDocente,
   ubicacionDe,
   type Actor,
   type CodigoEstado,
   type Dependencia,
+  type DocenteAsignado,
   type Expediente,
   type Modulo,
 } from "../domain";
@@ -27,6 +29,9 @@ const ACTORES = {
   bienestar: { id: "act-bi-1", nombre: "Lic. P. Salazar", dependencia: "bienestar" },
 } as const satisfies Record<Dependencia, Actor>;
 
+/** Docente Supervisor de los datos de prueba (el que asigna Coordinación en 06). */
+export const DOCENTE_DE_PRUEBA = { id: "doc-paredes", nombre: "Mg. R. Paredes" } as const satisfies DocenteAsignado;
+
 type Paso = [hacia: CodigoEstado, fechaLima: string, nota?: string];
 
 const enLima = (fecha: string) => new Date(`${fecha}-05:00`);
@@ -44,6 +49,7 @@ function construir(id: string, modulo: Modulo, fechaRecepcion: string, pasos: Pa
       actor: ACTORES[ubicacionDe(hacia)],
       fecha: enLima(fecha),
       motivo: nota,
+      docente: exigeDocente(hacia) ? DOCENTE_DE_PRUEBA : undefined,
     });
   }
 
@@ -55,7 +61,7 @@ export const EXPEDIENTES_DE_PRUEBA: readonly Expediente[] = [
   construir("exp-giancarlos-I", "I", "2026-06-10T11:20", [
     ["03", "2026-06-11T09:02", "Voucher revisado. Carpeta derivada a Coordinación."],
     ["05", "2026-06-14T15:30"],
-    ["06", "2026-06-17T10:11", "Mg. R. Paredes"],
+    ["06", "2026-06-17T10:11"],
     ["07", "2026-07-02T12:40"],
     ["09", "2026-08-20T17:15", "Informe de la empresa (Anexo 4) conforme."],
     ["10", "2026-08-28T16:05", "Visto bueno final registrado. Acércate con tu DNI."],
@@ -64,9 +70,15 @@ export const EXPEDIENTES_DE_PRUEBA: readonly Expediente[] = [
     ["02", "2026-08-03T08:50", "El monto del voucher no coincidía con S/ 20 × 1 módulo."],
     ["03", "2026-08-04T11:26", "Carpeta derivada a Coordinación."],
     ["05", "2026-08-08T16:02"],
-    ["06", "2026-09-12T09:15", "Mg. R. Paredes"],
+    ["06", "2026-09-12T09:15"],
     ["07", "2026-09-15T14:30", "Llamada de monitoreo con tu jefe inmediato."],
     ["08", "2026-10-10T09:40", "Anexo 4: falta la firma y el sello del jefe inmediato en la página 3."],
   ]),
   // Módulo III: sin expediente todavía.
 ];
+
+/** Expediente en 05 (requisitos conformes), listo para asignar docente. Solo para las pruebas de seguridad. */
+export const EXPEDIENTE_POR_ASIGNAR: Expediente = construir("exp-por-asignar", "II", "2026-10-01T09:00", [
+  ["03", "2026-10-01T10:00"],
+  ["05", "2026-10-05T11:00"],
+]);

@@ -1,4 +1,5 @@
 import {
+  ESTADO_ASIGNACION_DOCENTE,
   ESTADO_INICIAL,
   ESTADOS,
   LONGITUD_MAXIMA_MOTIVO,
@@ -9,13 +10,18 @@ import {
   type Dependencia,
   type Modulo,
 } from "./catalogo";
+import type { DocenteAsignado } from "./historial";
 import { exito, fallo, type Resultado } from "./resultado";
 
-export type ErrorTransicion =
-  | "TRANSICION_NO_PERMITIDA"
+type ErrorMotivo = "MOTIVO_REQUERIDO" | "MOTIVO_DEMASIADO_LARGO";
+
+export type ErrorTransicion = "TRANSICION_NO_PERMITIDA" | "DEPENDENCIA_NO_AUTORIZADA" | "DOCENTE_REQUERIDO" | ErrorMotivo;
+
+export type ErrorCambioDocente =
   | "DEPENDENCIA_NO_AUTORIZADA"
-  | "MOTIVO_REQUERIDO"
-  | "MOTIVO_DEMASIADO_LARGO";
+  | "CAMBIO_DE_DOCENTE_NO_PERMITIDO"
+  | "MISMO_DOCENTE"
+  | ErrorMotivo;
 
 /** Valida un valor externo (p. ej. de la URL); si es válido, TypeScript lo trata como `Modulo`. */
 export function esModulo(valor: unknown): valor is Modulo {
@@ -77,11 +83,33 @@ export function transicionesDisponibles(
   return TRANSICIONES[desde].filter((hacia) => puedeRegistrar(dependencia, hacia));
 }
 
+/** ¿Registrar este estado exige elegir al Docente Supervisor? */
+export function exigeDocente(estado: CodigoEstado): boolean {
+  return estado === ESTADO_ASIGNACION_DOCENTE;
+}
+
+/**
+ * Mientras la supervisión está en curso (docente asignado, en supervisión u
+ * observada), Coordinación puede cambiar al docente. Después de la aprobación
+ * ya no: el docente que aprobó queda como el responsable.
+ */
+export function permiteCambiarDocente(estado: CodigoEstado): boolean {
+  return exigeDocente(estado) || (ubicacionDe(estado) === "docente" && ESTADOS[estado].tipo !== "conforme");
+}
+
+/** Motivo sin espacios sobrantes; `null` si quedó vacío. */
+function normalizarMotivo(motivo: string | undefined): Resultado<string | null, "MOTIVO_DEMASIADO_LARGO"> {
+  const normalizado = motivo?.trim() || null;
+  if (normalizado !== null && normalizado.length > LONGITUD_MAXIMA_MOTIVO) return fallo("MOTIVO_DEMASIADO_LARGO");
+  return exito(normalizado);
+}
+
 type SolicitudTransicion = {
   desde: CodigoEstado | null;
   hacia: CodigoEstado;
   dependencia: Dependencia;
   motivo?: string;
+  docente?: DocenteAsignado;
 };
 
 /**
@@ -93,15 +121,43 @@ export function validarTransicion({
   hacia,
   dependencia,
   motivo,
+  docente,
 }: SolicitudTransicion): Resultado<{ motivo: string | null }, ErrorTransicion> {
   if (!estaPermitida(desde, hacia)) return fallo("TRANSICION_NO_PERMITIDA");
   if (!puedeRegistrar(dependencia, hacia)) return fallo("DEPENDENCIA_NO_AUTORIZADA");
+  if (exigeDocente(hacia) && !docente) return fallo("DOCENTE_REQUERIDO");
 
-  const motivoNormalizado = motivo?.trim() || null;
-  if (esObservacion(hacia) && motivoNormalizado === null) return fallo("MOTIVO_REQUERIDO");
-  if (motivoNormalizado !== null && motivoNormalizado.length > LONGITUD_MAXIMA_MOTIVO) {
-    return fallo("MOTIVO_DEMASIADO_LARGO");
-  }
+  const motivoNormalizado = normalizarMotivo(motivo);
+  if (!motivoNormalizado.ok) return motivoNormalizado;
+  if (esObservacion(hacia) && motivoNormalizado.valor === null) return fallo("MOTIVO_REQUERIDO");
+  return exito({ motivo: motivoNormalizado.valor });
+}
 
-  return exito({ motivo: motivoNormalizado });
+type SolicitudCambioDocente = {
+  estado: CodigoEstado;
+  dependencia: Dependencia;
+  anterior: DocenteAsignado | null;
+  nuevo: DocenteAsignado;
+  motivo?: string;
+};
+
+/**
+ * Valida un cambio de docente. Lo registra la misma dependencia que lo asignó
+ * (la de ESTADO_ASIGNACION_DOCENTE) y siempre con motivo, como una observación.
+ */
+export function validarCambioDocente({
+  estado,
+  dependencia,
+  anterior,
+  nuevo,
+  motivo,
+}: SolicitudCambioDocente): Resultado<{ anterior: DocenteAsignado; motivo: string }, ErrorCambioDocente> {
+  if (!puedeRegistrar(dependencia, ESTADO_ASIGNACION_DOCENTE)) return fallo("DEPENDENCIA_NO_AUTORIZADA");
+  if (!permiteCambiarDocente(estado) || anterior === null) return fallo("CAMBIO_DE_DOCENTE_NO_PERMITIDO");
+  if (anterior.id === nuevo.id) return fallo("MISMO_DOCENTE");
+
+  const motivoNormalizado = normalizarMotivo(motivo);
+  if (!motivoNormalizado.ok) return motivoNormalizado;
+  if (motivoNormalizado.valor === null) return fallo("MOTIVO_REQUERIDO");
+  return exito({ anterior, motivo: motivoNormalizado.valor });
 }

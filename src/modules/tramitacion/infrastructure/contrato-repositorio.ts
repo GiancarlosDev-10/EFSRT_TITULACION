@@ -5,8 +5,10 @@ import { describe, expect, test } from "bun:test";
 import {
   abrirExpediente,
   aplicarCambioEstado,
+  cambiarDocente,
   type CodigoEstado,
   type Dependencia,
+  type DocenteAsignado,
   type Expediente,
   type Modulo,
 } from "../domain";
@@ -18,6 +20,8 @@ export type EntornoContrato = {
   repositorioDe(dependencia: Dependencia): ExpedienteRepository;
   /** Un estudiante sin expedientes, distinto en cada llamada. */
   nuevoEstudiante(): Promise<string>;
+  /** Dos docentes activos distintos (el nombre, como lo guarda el directorio). */
+  docentes: readonly [DocenteAsignado, DocenteAsignado];
 };
 
 function nuevoExpediente(estudianteId: string, modulo: Modulo = "I", nota?: string): Expediente {
@@ -29,10 +33,32 @@ function nuevoExpediente(estudianteId: string, modulo: Modulo = "I", nota?: stri
   return apertura.valor.expediente;
 }
 
-function cambio(expediente: Expediente, hacia: CodigoEstado, dependencia: Dependencia, motivo?: string) {
-  const resultado = aplicarCambioEstado(expediente, { hacia, actor: ACTORES[dependencia], fecha: FECHA, motivo });
+function cambio(
+  expediente: Expediente,
+  hacia: CodigoEstado,
+  dependencia: Dependencia,
+  motivo?: string,
+  docente?: DocenteAsignado,
+) {
+  const resultado = aplicarCambioEstado(expediente, { hacia, actor: ACTORES[dependencia], fecha: FECHA, motivo, docente });
   if (!resultado.ok) throw new Error(resultado.error);
   return resultado.valor;
+}
+
+/** Guarda los cambios uno tras otro, cada uno con la sesión de su oficina, y devuelve el expediente como quedó. */
+async function avanzar(
+  repositorioDe: EntornoContrato["repositorioDe"],
+  expediente: Expediente,
+  pasos: [CodigoEstado, Dependencia, DocenteAsignado?][],
+): Promise<Expediente> {
+  let actual = expediente;
+  for (const [hacia, dependencia, docente] of pasos) {
+    const { expediente: siguiente, evento } = cambio(actual, hacia, dependencia, undefined, docente);
+    const guardado = await repositorioDe(dependencia).registrarCambio(actual.id, evento.registro);
+    if (!guardado.ok) throw new Error(`${actual.estado}→${hacia}: ${guardado.error}`);
+    actual = siguiente;
+  }
+  return actual;
 }
 
 export function probarContratoRepositorio(nombre: string, preparar: () => Promise<EntornoContrato>, opciones?: { omitir?: boolean }) {
@@ -110,6 +136,61 @@ export function probarContratoRepositorio(nombre: string, preparar: () => Promis
       const guardado = await mesa.buscarPorId(expediente.id);
       expect(guardado?.estado).toBe("03");
       expect(guardado?.historial).toHaveLength(2);
+    });
+
+    test("la asignación (06) guarda al docente en el registro y como docente vigente", async () => {
+      const { repositorioDe, nuevoEstudiante, docentes } = await preparar();
+      const expediente = nuevoExpediente(await nuevoEstudiante());
+      await repositorioDe("mesa-partes").crear(expediente);
+      await avanzar(repositorioDe, expediente, [
+        ["03", "mesa-partes"],
+        ["05", "coordinacion"],
+        ["06", "coordinacion", docentes[0]],
+      ]);
+
+      const guardado = await repositorioDe("coordinacion").buscarPorId(expediente.id);
+      expect(guardado?.estado).toBe("06");
+      expect(guardado?.docente).toEqual(docentes[0]);
+      expect(guardado?.historial.at(-1)?.docente).toEqual(docentes[0]);
+      expect(guardado?.historial.slice(0, -1).every((r) => r.docente === undefined)).toBe(true);
+      expect(guardado?.cambiosDocente).toEqual([]);
+    });
+
+    test("un cambio de docente reemplaza al vigente sin tocar el estado; uno tardío choca", async () => {
+      const { repositorioDe, nuevoEstudiante, docentes } = await preparar();
+      const coordinacion = repositorioDe("coordinacion");
+      const expediente = nuevoExpediente(await nuevoEstudiante());
+      await repositorioDe("mesa-partes").crear(expediente);
+      const asignado = await avanzar(repositorioDe, expediente, [
+        ["03", "mesa-partes"],
+        ["05", "coordinacion"],
+        ["06", "coordinacion", docentes[0]],
+      ]);
+
+      const solicitud = { docente: docentes[1], actor: ACTORES.coordinacion, fecha: FECHA, motivo: "Renuncia del docente." };
+      const primero = cambiarDocente(asignado, solicitud);
+      if (!primero.ok) throw new Error(primero.error);
+      expect(await coordinacion.registrarCambioDocente(expediente.id, primero.valor.cambio)).toEqual({ ok: true, valor: undefined });
+
+      const guardado = await coordinacion.buscarPorId(expediente.id);
+      expect(guardado?.estado).toBe("06");
+      expect(guardado?.docente).toEqual(docentes[1]);
+      expect(guardado?.cambiosDocente).toHaveLength(1);
+      expect(guardado?.cambiosDocente[0]).toMatchObject({
+        anterior: docentes[0],
+        nuevo: docentes[1],
+        motivo: "Renuncia del docente.",
+        actor: { dependencia: "coordinacion" },
+      });
+
+      // Otra persona, con la lectura de antes (docente 0), intenta otro cambio.
+      const tardio = cambiarDocente(asignado, { ...solicitud, docente: docentes[1], motivo: "Otro motivo." });
+      if (!tardio.ok) throw new Error(tardio.error);
+      expect(await coordinacion.registrarCambioDocente(expediente.id, tardio.valor.cambio)).toEqual({
+        ok: false,
+        error: "CONFLICTO_DE_ESTADO",
+      });
+      expect((await coordinacion.buscarPorId(expediente.id))?.cambiosDocente).toHaveLength(1);
     });
 
     test("expediente inexistente", async () => {

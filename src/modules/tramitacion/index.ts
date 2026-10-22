@@ -8,11 +8,13 @@ export type {
   ExpedienteSeguimiento,
   SeguimientoModulo,
   SituacionEtapa,
+  SolicitudCambioDocente,
   SolicitudCambioEstado,
   SolicitudRecepcion,
 } from "./application";
 export { MENSAJES_DE_ERROR } from "./application";
 export {
+  cambiarDocente,
   obtenerEstudianteDeUsuario,
   obtenerSeguimientoDelEstudiante,
   registrarCambioEstado,

@@ -17,6 +17,12 @@ en Next.js + Tailwind.
 | `Requisitos.dc.html` | Cómo iniciar el trámite (informativa) | `/alumno/requisitos` |
 | `Constancia.dc.html` | Constancia lista para recoger | `/alumno/constancia/[modulo]` |
 | `Correo.dc.html` | Correo de notificación | plantilla en `modules/notificaciones` (no es una ruta) |
+| `Oficinas.html` | Bandeja, detalle del expediente y registro de recepción de las cuatro oficinas (celular y PC) | `/mesa-partes`, `/coordinacion`, `/docente`, `/bienestar` y sus subrutas (Fase 8) |
+
+`Oficinas.html` no viene del visor de diseño: es HTML con Tailwind (CDN) y los
+mismos tokens de `globals.css`. La barra superior elige la oficina y la vista; la
+variante `@5xl:` hace de `lg:`. Se puede abrir en una pantalla concreta con la
+dirección, p. ej. `Oficinas.html#oficina=docente&vista=celular&exp=x7`.
 
 `canvas.json` solo describe cómo estaban ordenadas las pantallas en el lienzo.
 

@@ -7,18 +7,22 @@
 // expediente siguió igual.
 import { beforeAll, describe, expect, test } from "bun:test";
 import { PRUEBAS_SUPABASE, clienteAdmin, clienteAnonimo, clienteComo, type Cliente } from "../../scripts/db/clientes-prueba";
-import { ESTUDIANTES_PRUEBA } from "../../scripts/db/usuarios-prueba";
+import { ESTUDIANTES_PRUEBA, USUARIOS_PRUEBA } from "../../scripts/db/usuarios-prueba";
 
 // Expedientes sembrados para las pruebas: el estudiante de prueba tiene I (10) y
-// II (08, docente R. Paredes); la estudiante ajena, I (10).
+// II (08, docente R. Paredes); la estudiante ajena, I (10) y II (05, sin docente).
 let expedienteObservado: string;
 let expedienteAjeno: string;
+let expedientePorAsignar: string;
 let admin: Cliente;
+/** Filas de `personal` (no cuentas): lo que se guarda como docente asignado. */
+let personal: Record<"docente" | "docenteAjeno" | "mesaPartes", string>;
 
 async function estadoDe(expedienteId: string) {
-  const { data } = await admin.from("expedientes").select("estado").eq("id", expedienteId).single();
+  const { data } = await admin.from("expedientes").select("estado, docente_id").eq("id", expedienteId).single();
   const { count } = await admin.from("historial").select("id", { count: "exact", head: true }).eq("expediente_id", expedienteId);
-  return { estado: data?.estado, registros: count };
+  const cambios = await admin.from("cambios_docente").select("id", { count: "exact", head: true }).eq("expediente_id", expedienteId);
+  return { estado: data?.estado, docente: data?.docente_id, registros: count, cambiosDocente: cambios.count };
 }
 
 describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y triggers)", () => {
@@ -32,6 +36,16 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
     const { data: expedientes } = await admin.from("expedientes").select("id, estudiante_id, modulo");
     expedienteObservado = expedientes!.find((e) => e.estudiante_id === id(documentos[0]) && e.modulo === "II")!.id;
     expedienteAjeno = expedientes!.find((e) => e.estudiante_id === id(documentos[1]) && e.modulo === "I")!.id;
+    expedientePorAsignar = expedientes!.find((e) => e.estudiante_id === id(documentos[1]) && e.modulo === "II")!.id;
+    const claves = ["docente", "docenteAjeno", "mesaPartes"] as const;
+    const { data: filas } = await admin
+      .from("personal")
+      .select("id, correo")
+      .in("correo", claves.map((c) => USUARIOS_PRUEBA[c].correo));
+    personal = Object.fromEntries(
+      claves.map((c) => [c, filas!.find((f) => f.correo === USUARIOS_PRUEBA[c].correo)!.id]),
+    ) as typeof personal;
+    expect((await estadoDe(expedientePorAsignar)).estado).toBe("05");
     antes = await estadoDe(expedienteObservado);
     expect(antes.estado).toBe("08");
   });
@@ -206,7 +220,132 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
     });
   });
 
+  describe("Docente Supervisor (D49)", () => {
+    test("asignar (05→06) exige un docente activo: no sirve otra persona del personal ni un id inventado", async () => {
+      const coordinacion = await clienteComo("coordinacion");
+      const antesDeAsignar = await estadoDe(expedientePorAsignar);
+      const asignar = (docenteId?: string) =>
+        coordinacion.rpc("registrar_cambio", {
+          p_expediente_id: expedientePorAsignar,
+          p_estado_anterior: "05",
+          p_estado_nuevo: "06",
+          p_docente_id: docenteId,
+        });
+
+      expect((await asignar()).error?.message).toBe("DOCENTE_REQUERIDO");
+      expect((await asignar(personal.mesaPartes)).error?.message).toBe("DOCENTE_NO_VALIDO");
+      expect((await asignar(crypto.randomUUID())).error?.message).toBe("DOCENTE_NO_VALIDO");
+      expect(await estadoDe(expedientePorAsignar)).toEqual(antesDeAsignar);
+    });
+
+    test("solo Coordinación cambia al docente; ni el propio docente ni el estudiante", async () => {
+      for (const quien of ["docente", "estudiante", "mesaPartes"] as const) {
+        const cliente = await clienteComo(quien);
+        const { error } = await cliente.rpc("cambiar_docente", {
+          p_expediente_id: expedienteObservado,
+          p_docente_anterior_id: personal.docente,
+          p_docente_nuevo_id: personal.docenteAjeno,
+          p_motivo: "Me cambio de docente.",
+        });
+        expect(error?.message).toBe("DEPENDENCIA_NO_AUTORIZADA");
+      }
+      expect(await estadoDe(expedienteObservado)).toEqual(antes);
+    });
+
+    test("no se cambia al docente fuera de la supervisión ni con una lectura vieja", async () => {
+      const coordinacion = await clienteComo("coordinacion");
+      const cambiar = (expedienteId: string, anteriorId: string) =>
+        coordinacion.rpc("cambiar_docente", {
+          p_expediente_id: expedienteId,
+          p_docente_anterior_id: anteriorId,
+          p_docente_nuevo_id: personal.docenteAjeno,
+          p_motivo: "Renuncia del docente.",
+        });
+
+      // Expediente ajeno en 10: la supervisión ya terminó.
+      expect((await cambiar(expedienteAjeno, personal.docente)).error?.message).toBe("CAMBIO_DE_DOCENTE_NO_PERMITIDO");
+      // En 08, pero diciendo que reemplaza a quien no es el docente vigente.
+      expect((await cambiar(expedienteObservado, personal.docenteAjeno)).error?.message).toBe("CONFLICTO_DE_ESTADO");
+      expect(await estadoDe(expedienteObservado)).toEqual(antes);
+    });
+
+    test("no se puede falsificar el actor, la fecha ni los nombres de un cambio de docente", async () => {
+      const coordinacion = await clienteComo("coordinacion");
+      const { error } = await coordinacion.from("cambios_docente").insert({
+        expediente_id: expedienteObservado,
+        docente_anterior_id: personal.docente,
+        docente_anterior_nombre: "Otro",
+        docente_nuevo_id: personal.docenteAjeno,
+        docente_nuevo_nombre: "Nombre inventado",
+        motivo: "Renuncia del docente.",
+        actor_id: crypto.randomUUID(),
+        actor_nombre: "Otra persona",
+        fecha: "2020-01-01T00:00:00Z",
+      });
+      expect(error?.code).toBe("42501");
+      expect(await estadoDe(expedienteObservado)).toEqual(antes);
+    });
+
+    test("la lista de docentes solo la recibe Coordinación", async () => {
+      const coordinacion = await clienteComo("coordinacion");
+      const { data: paraCoordinacion } = await coordinacion.rpc("docentes");
+      expect(paraCoordinacion?.map((d) => d.id)).toEqual(expect.arrayContaining([personal.docente, personal.docenteAjeno]));
+
+      for (const quien of ["mesaPartes", "docente", "estudiante"] as const) {
+        const { data } = await (await clienteComo(quien)).rpc("docentes");
+        expect(data).toEqual([]);
+      }
+    });
+  });
+
+  describe("Coordinación de otra carrera (D50)", () => {
+    test("no ve expedientes, historial ni estudiantes de Desarrollo de Sistemas", async () => {
+      const ajena = await clienteComo("coordinacionAjena");
+      expect((await ajena.from("expedientes").select("id")).data).toEqual([]);
+      expect((await ajena.from("historial").select("id").eq("expediente_id", expedientePorAsignar)).data).toEqual([]);
+      expect((await ajena.from("estudiantes").select("id")).data).toEqual([]);
+      expect((await ajena.rpc("buscar_estudiantes", { p_consulta: "ormeno" })).data).toEqual([]);
+    });
+
+    test("no puede registrar estados en expedientes de otra carrera", async () => {
+      const ajena = await clienteComo("coordinacionAjena");
+      const antesDeAsignar = await estadoDe(expedientePorAsignar);
+      const { error } = await ajena.rpc("registrar_cambio", {
+        p_expediente_id: expedientePorAsignar,
+        p_estado_anterior: "05",
+        p_estado_nuevo: "06",
+        p_docente_id: personal.docente,
+      });
+      expect(error?.code).toBe("42501");
+      expect(await estadoDe(expedientePorAsignar)).toEqual(antesDeAsignar);
+    });
+
+    test("la Coordinación de la carrera sí ve sus expedientes", async () => {
+      const propia = await clienteComo("coordinacion");
+      const { data } = await propia.from("expedientes").select("id").in("id", [expedienteObservado, expedientePorAsignar]);
+      expect(data).toHaveLength(2);
+    });
+  });
+
   describe("incluso con la clave secreta (servidor)", () => {
+    test("el docente del expediente solo cambia desde el historial o un cambio de docente", async () => {
+      const edicion = await admin.from("expedientes").update({ docente_id: personal.docenteAjeno }).eq("id", expedienteObservado);
+      expect(edicion.error?.message).toBe("DOCENTE_SOLO_DESDE_HISTORIAL");
+
+      // Tampoco puede nacer con docente.
+      const { data: ajena } = await admin.from("expedientes").select("estudiante_id").eq("id", expedienteAjeno).single();
+      const nacimiento = await admin.from("expedientes").insert({
+        id: crypto.randomUUID(),
+        estudiante_id: ajena!.estudiante_id,
+        modulo: "III",
+        estado: "01",
+        docente_id: personal.docente,
+        docente_nombre: "Mg. R. Paredes",
+      });
+      expect(nacimiento.error?.message).toBe("DOCENTE_SOLO_DESDE_HISTORIAL");
+      expect(await estadoDe(expedienteObservado)).toEqual(antes);
+    });
+
     test("el historial no se puede editar ni borrar", async () => {
       const { data: fila } = await admin.from("historial").select("id").eq("expediente_id", expedienteObservado).limit(1).single();
 

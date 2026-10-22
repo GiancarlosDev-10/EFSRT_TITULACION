@@ -7,20 +7,21 @@
 //   reales del .env (CUENTA_*), igual que el personal de cada oficina.
 //
 // Se puede ejecutar varias veces: reutiliza usuarios, estudiantes y expedientes
-// existentes. Vuelve a ejecutarlo después del primer ingreso de tus cuentas
-// reales: así el docente real queda asignado a los expedientes del video.
+// existentes. Si la cuenta real del docente ya ingresó al sembrar, los
+// expedientes del video se asignan a ella; si no, al docente de prueba.
 // El historial no se puede borrar (D11); para empezar de cero hay que reiniciar
 // la base del proyecto de desarrollo.
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../src/shared/lib/supabase/tipos-db";
 import { ubicacionDe, type Dependencia, type Expediente } from "../../src/modules/tramitacion/domain";
-import { EXPEDIENTES_DE_PRUEBA } from "../../src/modules/tramitacion/infrastructure/datos-prueba";
+import { EXPEDIENTES_DE_PRUEBA, EXPEDIENTE_POR_ASIGNAR } from "../../src/modules/tramitacion/infrastructure/datos-prueba";
 import {
   CUENTAS_REALES,
   ESTUDIANTES_PRUEBA,
   USUARIOS_PRUEBA,
   claveUsuariosPrueba,
   type ClaveUsuarioPrueba,
+  type UsuarioPrueba,
 } from "./usuarios-prueba";
 
 function variable(nombre: string): string {
@@ -75,17 +76,27 @@ async function asegurarUsuarioPrueba(clave: ClaveUsuarioPrueba): Promise<string>
   return creado.user.id;
 }
 
-/** Habilita un correo para un rol de oficina y, si la cuenta ya existe, la enlaza. */
-async function habilitarPersonal(correo: string, nombre: string, rol: RolOficina): Promise<string | null> {
+type PersonalHabilitado = { usuarioId: string | null; personalId: string };
+
+/**
+ * Habilita un correo para un rol de oficina y, si la cuenta ya existe, la
+ * enlaza. Coordinación lleva su carrera (D50).
+ */
+async function habilitarPersonal(
+  correo: string,
+  nombre: string,
+  rol: RolOficina,
+  carrera: string | null = rol === "coordinacion" ? CARRERA : null,
+): Promise<PersonalHabilitado> {
   const usuarioId = await idDeCuenta(correo);
-  revisar(
-    await admin
-      .from("personal")
-      .upsert({ correo: correo.toLowerCase(), nombre, rol, activo: true, usuario_id: usuarioId }, { onConflict: "correo" }),
-    `personal ${correo}`,
-  );
+  const { data: fila, error } = await admin
+    .from("personal")
+    .upsert({ correo: correo.toLowerCase(), nombre, rol, carrera, activo: true, usuario_id: usuarioId }, { onConflict: "correo" })
+    .select("id")
+    .single();
+  if (error) throw new Error(`personal ${correo}: ${error.message}`);
   if (usuarioId) revisar(await admin.from("perfiles").upsert({ id: usuarioId, nombre, rol }), `perfil de ${correo}`);
-  return usuarioId;
+  return { usuarioId, personalId: fila.id };
 }
 
 // ---------------------------------------------------------------------------
@@ -128,12 +139,11 @@ async function enlazarEstudiante(estudianteId: string, usuarioId: string | null,
 // Expedientes
 // ---------------------------------------------------------------------------
 
+/** Cuentas (perfiles) que registran cada estado y fila de `personal` del docente que se asigna en 06. */
+type Actores = { cuentas: Record<Dependencia, string>; docentePersonalId: string };
+
 /** Carga un expediente con todo su historial, como si cada oficina lo hubiera registrado. */
-async function cargarExpediente(
-  expediente: Expediente,
-  estudianteId: string,
-  actores: Record<Dependencia, string>,
-): Promise<void> {
+async function cargarExpediente(expediente: Expediente, estudianteId: string, actores: Actores): Promise<void> {
   const existente = revisar(
     await admin.from("expedientes").select("id").eq("estudiante_id", estudianteId).eq("modulo", expediente.modulo),
     "buscar expediente",
@@ -145,15 +155,14 @@ async function cargarExpediente(
 
   const id = crypto.randomUUID();
   const [apertura, ...cambios] = expediente.historial;
-  const llegoAlDocente = expediente.historial.some((r) => r.estadoNuevo === "06");
 
+  // Nace sin docente: lo asigna el registro 06, como en producción (D49).
   revisar(
     await admin.from("expedientes").insert({
       id,
       estudiante_id: estudianteId,
       modulo: expediente.modulo,
       estado: apertura.estadoNuevo,
-      docente_id: llegoAlDocente ? actores.docente : null,
       creado_en: apertura.fecha.toISOString(),
     }),
     "crear expediente",
@@ -169,10 +178,11 @@ async function cargarExpediente(
         estado_nuevo: registro.estadoNuevo,
         motivo: registro.motivo,
         fecha: registro.fecha.toISOString(),
-        actor_id: actores[dependencia],
+        actor_id: actores.cuentas[dependencia],
         // El trigger los reemplaza con los datos del perfil.
         actor_nombre: "",
         actor_dependencia: dependencia,
+        docente_id: registro.docente ? actores.docentePersonalId : null,
       }),
       `historial ${registro.estadoAnterior ?? "—"}→${registro.estadoNuevo}`,
     );
@@ -189,20 +199,29 @@ const CLAVE_DE_ROL: Record<RolOficina, ClaveUsuarioPrueba> = {
   bienestar: "bienestar",
 };
 
-async function sembrarPruebasAutomaticas(): Promise<Record<Dependencia, string>> {
+async function sembrarPruebasAutomaticas(): Promise<Actores> {
   console.log("Personal de prueba (*@efsrt.test)…");
-  const ids = {} as Record<ClaveUsuarioPrueba, string>;
-  for (const clave of ["mesaPartes", "coordinacion", "docente", "docenteAjeno", "bienestar"] as const) {
+  const ids = {} as Record<ClaveUsuarioPrueba, PersonalHabilitado>;
+  for (const clave of ["mesaPartes", "coordinacion", "coordinacionAjena", "docente", "docenteAjeno", "bienestar"] as const) {
     const { correo, nombre, rol } = USUARIOS_PRUEBA[clave];
-    await habilitarPersonal(correo, nombre, rol);
-    ids[clave] = await asegurarUsuarioPrueba(clave);
-    await habilitarPersonal(correo, nombre, rol); // enlaza la cuenta recién creada
+    const { carrera }: UsuarioPrueba = USUARIOS_PRUEBA[clave];
+    await habilitarPersonal(correo, nombre, rol, carrera);
+    await asegurarUsuarioPrueba(clave);
+    ids[clave] = await habilitarPersonal(correo, nombre, rol, carrera); // enlaza la cuenta recién creada
   }
-  const actores: Record<Dependencia, string> = {
-    "mesa-partes": ids.mesaPartes,
-    coordinacion: ids.coordinacion,
-    docente: ids.docente,
-    bienestar: ids.bienestar,
+  const cuenta = (clave: ClaveUsuarioPrueba) => {
+    const { usuarioId } = ids[clave];
+    if (!usuarioId) throw new Error(`Sin cuenta enlazada: ${clave}`);
+    return usuarioId;
+  };
+  const actores: Actores = {
+    cuentas: {
+      "mesa-partes": cuenta("mesaPartes"),
+      coordinacion: cuenta("coordinacion"),
+      docente: cuenta("docente"),
+      bienestar: cuenta("bienestar"),
+    },
+    docentePersonalId: ids.docente.personalId,
   };
 
   console.log("Estudiantes de prueba…");
@@ -215,14 +234,34 @@ async function sembrarPruebasAutomaticas(): Promise<Record<Dependencia, string>>
       correo_personal: USUARIOS_PRUEBA[clave].correo,
     });
     await enlazarEstudiante(estudianteId, await asegurarUsuarioPrueba(clave), `${datos.nombres} ${datos.apellidos}`);
-    // Mismo recorrido que Giancarlos (I conforme, II observado); la ajena, solo el I.
-    const expedientes = clave === "estudiante" ? EXPEDIENTES_DE_PRUEBA : EXPEDIENTES_DE_PRUEBA.slice(0, 1);
+    // Mismo recorrido que Giancarlos (I conforme, II observado); la ajena, el I
+    // conforme y el II en 05, por asignar (para las pruebas de seguridad).
+    const expedientes = clave === "estudiante" ? EXPEDIENTES_DE_PRUEBA : [EXPEDIENTES_DE_PRUEBA[0], EXPEDIENTE_POR_ASIGNAR];
     for (const expediente of expedientes) await cargarExpediente(expediente, estudianteId, actores);
   }
   return actores;
 }
 
-async function sembrarDatosDelVideo(actores: Record<Dependencia, string>) {
+/** Habilita tus cuentas reales; si la del docente ya ingresó, supervisa los expedientes del video. */
+async function sembrarPersonalReal(actores: Actores): Promise<Actores> {
+  console.log("Personal con tus cuentas reales…");
+  let delVideo = actores;
+  for (const rol of Object.keys(CLAVE_DE_ROL) as RolOficina[]) {
+    const correo = CUENTAS_REALES[rol];
+    if (!correo) {
+      console.log(`  · ${rol}: sin CUENTA_* en .env, se omite`);
+      continue;
+    }
+    const { usuarioId, personalId } = await habilitarPersonal(correo, USUARIOS_PRUEBA[CLAVE_DE_ROL[rol]].nombre, rol);
+    console.log(`  · ${rol}: habilitado${usuarioId ? " y enlazado" : " (se enlaza en su primer ingreso)"}`);
+    if (rol === "docente" && usuarioId) {
+      delVideo = { cuentas: { ...actores.cuentas, docente: usuarioId }, docentePersonalId: personalId };
+    }
+  }
+  return delVideo;
+}
+
+async function sembrarDatosDelVideo(actores: Actores) {
   console.log("Giancarlos Ormeño (estudiante con cuenta institucional)…");
   const correoGiancarlos = CUENTAS_REALES.estudiante ?? `gormeno${DOMINIO_INSTITUCIONAL}`;
   const giancarlos = await asegurarEstudiante({
@@ -248,34 +287,11 @@ async function sembrarDatosDelVideo(actores: Record<Dependencia, string>) {
   });
   await enlazarEstudiante(valeria, await idDeCuenta(correoValeria), "Valeria Chávez Rojas");
   await cargarExpediente(EXPEDIENTES_DE_PRUEBA[0], valeria, actores);
-
-  console.log("Personal con tus cuentas reales…");
-  for (const rol of Object.keys(CLAVE_DE_ROL) as RolOficina[]) {
-    const correo = CUENTAS_REALES[rol];
-    if (!correo) {
-      console.log(`  · ${rol}: sin CUENTA_* en .env, se omite`);
-      continue;
-    }
-    const usuarioId = await habilitarPersonal(correo, USUARIOS_PRUEBA[CLAVE_DE_ROL[rol]].nombre, rol);
-    console.log(`  · ${rol}: habilitado${usuarioId ? " y enlazado" : " (se enlaza en su primer ingreso)"}`);
-
-    // El docente real pasa a supervisar los expedientes del video.
-    if (rol === "docente" && usuarioId) {
-      revisar(
-        await admin
-          .from("expedientes")
-          .update({ docente_id: usuarioId })
-          .in("estudiante_id", [giancarlos, valeria])
-          .eq("docente_id", actores.docente),
-        "asignar docente real",
-      );
-    }
-  }
 }
 
 async function main() {
   const actores = await sembrarPruebasAutomaticas();
-  await sembrarDatosDelVideo(actores);
+  await sembrarDatosDelVideo(await sembrarPersonalReal(actores));
   console.log("Listo.");
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { ACTORES } from "../domain/ayudas-prueba";
+import { ACTORES, DOCENTES } from "../domain/ayudas-prueba";
 import { EXPEDIENTES_DE_PRUEBA } from "../infrastructure/datos-prueba";
 import { AHORA, crearDependenciasDePrueba } from "./ayudas-prueba";
 import { crearRegistrarCambioEstado } from "./registrar-cambio-estado";
@@ -54,6 +54,53 @@ describe("registrarCambioEstado", () => {
     expect(resultado).toEqual({ ok: false, error: "DEPENDENCIA_NO_AUTORIZADA" });
     expect((await dependencias.repositorio.buscarPorId("exp-giancarlos-II"))?.estado).toBe("08");
     expect(eventosPublicados).toHaveLength(0);
+  });
+
+  describe("asignación del docente (05→06)", () => {
+    // exp-giancarlos-I llega a 10; se toma su versión en 05 para asignar.
+    function enCinco() {
+      const original = EXPEDIENTES_DE_PRUEBA[0];
+      const hastaCinco = original.historial.slice(0, original.historial.findIndex((r) => r.estadoNuevo === "05") + 1);
+      return crearDependenciasDePrueba([{ ...original, estado: "05", historial: hastaCinco }]);
+    }
+
+    test("guarda el docente con el nombre del directorio, no el que mande el navegador", async () => {
+      const { dependencias, eventosPublicados } = enCinco();
+      const resultado = await crearRegistrarCambioEstado(dependencias)({
+        actor: ACTORES.coordinacion,
+        expedienteId: "exp-giancarlos-I",
+        hacia: "06",
+        docenteId: DOCENTES.vargas.id,
+      });
+
+      expect(resultado.ok).toBe(true);
+      const guardado = await dependencias.repositorio.buscarPorId("exp-giancarlos-I");
+      expect(guardado?.historial.at(-1)?.docente).toEqual(DOCENTES.vargas);
+      expect(eventosPublicados).toHaveLength(1);
+    });
+
+    test("sin docente se rechaza", async () => {
+      const { dependencias } = enCinco();
+      const resultado = await crearRegistrarCambioEstado(dependencias)({
+        actor: ACTORES.coordinacion,
+        expedienteId: "exp-giancarlos-I",
+        hacia: "06",
+      });
+      expect(resultado).toEqual({ ok: false, error: "DOCENTE_REQUERIDO" });
+    });
+
+    test.each([["doc-salazar"], ["no-existe"]])("un docente desactivado o inexistente (%s) se rechaza", async (docenteId) => {
+      const { dependencias, eventosPublicados } = enCinco();
+      const resultado = await crearRegistrarCambioEstado(dependencias)({
+        actor: ACTORES.coordinacion,
+        expedienteId: "exp-giancarlos-I",
+        hacia: "06",
+        docenteId,
+      });
+      expect(resultado).toEqual({ ok: false, error: "DOCENTE_NO_VALIDO" });
+      expect((await dependencias.repositorio.buscarPorId("exp-giancarlos-I"))?.estado).toBe("05");
+      expect(eventosPublicados).toHaveLength(0);
+    });
   });
 
   test("si otra persona cambió el estado entre la lectura y la escritura, hay conflicto", async () => {

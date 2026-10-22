@@ -2,7 +2,8 @@
 // Cada ejecución registra estudiantes "Prueba Automática" nuevos (el historial
 // no se puede borrar, D11); son datos del proyecto de desarrollo, no de producción.
 import type { Dependencia } from "../domain";
-import { PRUEBAS_SUPABASE, clienteComo } from "../../../../scripts/db/clientes-prueba";
+import { PRUEBAS_SUPABASE, clienteAdmin, clienteComo } from "../../../../scripts/db/clientes-prueba";
+import { USUARIOS_PRUEBA } from "../../../../scripts/db/usuarios-prueba";
 import { probarContratoRepositorio } from "./contrato-repositorio";
 import { crearRepositorioSupabase } from "./repositorio-supabase";
 
@@ -22,9 +23,19 @@ probarContratoRepositorio(
     const clientes = await Promise.all(dependencias.map((d) => clienteComo(USUARIO_DE[d])));
     const repositorios = new Map(dependencias.map((d, i) => [d, crearRepositorioSupabase(clientes[i])]));
     const mesa = await clienteComo("mesaPartes");
+    // Filas de `personal` de los dos docentes de prueba (las habilita db:sembrar).
+    const correos = [USUARIOS_PRUEBA.docente.correo, USUARIOS_PRUEBA.docenteAjeno.correo];
+    const { data: personal, error: errorPersonal } = await clienteAdmin().from("personal").select("id, nombre, correo").in("correo", correos);
+    if (errorPersonal) throw new Error(errorPersonal.message);
+    const docente = (correo: string) => {
+      const fila = personal.find((p) => p.correo === correo);
+      if (!fila) throw new Error(`Falta ${correo} en personal. ¿Corriste bun run db:sembrar?`);
+      return { id: fila.id, nombre: fila.nombre };
+    };
 
     return {
       repositorioDe: (dependencia) => repositorios.get(dependencia)!,
+      docentes: [docente(correos[0]), docente(correos[1])],
       // Mesa de Partes registra al estudiante, como al recibir la carpeta.
       async nuevoEstudiante() {
         const marca = `${Date.now()}${++correlativo}`;

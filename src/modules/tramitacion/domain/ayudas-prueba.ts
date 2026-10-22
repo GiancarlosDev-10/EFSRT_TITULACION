@@ -1,6 +1,11 @@
 // Datos ficticios compartidos por las pruebas del dominio. No se exporta en index.ts.
 import type { Dependencia } from "./catalogo";
-import type { Actor } from "./historial";
+import type { Actor, DocenteAsignado } from "./historial";
+
+export const DOCENTES = {
+  paredes: { id: "doc-paredes", nombre: "Mg. R. Paredes" },
+  vargas: { id: "doc-vargas", nombre: "Ing. M. Vargas" },
+} as const satisfies Record<string, DocenteAsignado>;
 
 export const ACTORES = {
   "mesa-partes": { id: "act-mp", nombre: "Mesa de Partes", dependencia: "mesa-partes" },

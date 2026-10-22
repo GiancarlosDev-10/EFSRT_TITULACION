@@ -1,3 +1,4 @@
+import { DOCENTES } from "../domain/ayudas-prueba";
 import { probarContratoRepositorio } from "./contrato-repositorio";
 import { crearRepositorioEnMemoria } from "./repositorio-en-memoria";
 
@@ -7,5 +8,6 @@ probarContratoRepositorio("en memoria", async () => {
   return {
     repositorioDe: () => repositorio,
     nuevoEstudiante: async () => crypto.randomUUID(),
+    docentes: [DOCENTES.paredes, DOCENTES.vargas],
   };
 });

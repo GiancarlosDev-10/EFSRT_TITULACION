@@ -1,0 +1,934 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Oficinas — mockup EFSRT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<!--
+  Mockup de las pantallas de oficina (Fase 8). Referencia visual y de
+  comportamiento; no es código para copiar. Usa las mismas clases y tokens que
+  src/app/globals.css. Diferencia: aquí la variante `@5xl:` (consulta de
+  contenedor, 64rem) hace de `lg:`, para poder ver la versión de celular y la de
+  PC en la misma ventana. Datos ficticios; los cambios viven solo en memoria.
+-->
+<style type="text/tailwindcss">
+  @theme {
+    --color-navy: #14246b;
+    --color-navy-hover: #0f1b52;
+    --color-ink: #0b1236;
+    --color-navy-tint: #e8ebf6;
+    --color-bg: #f3f4f8;
+    --color-line: #e2e6ee;
+    --color-muted: #586074;
+    --color-ok: #17704a;
+    --color-ok-bg: #e1f3ea;
+    --color-warn: #a64b00;
+    --color-warn-text: #6b3400;
+    --color-warn-bg: #fdebd3;
+    --color-warn-border: #f2c88f;
+    --color-pending: #cdd3df;
+    --color-neutral-bg: #eceff4;
+    --color-text-soft: #444c5e;
+    --color-warn-deep: #3d1e00;
+    --color-warn-soft: #f7d9b2;
+    --color-warn-bright: #e9a451;
+    --color-ink-raised: #141d4a;
+    --color-ink-active: #1e2e78;
+    --color-ink-line: #2a3358;
+    --color-on-ink: #c9cfe3;
+    --color-on-ink-muted: #aeb6cf;
+    --font-display: "Chivo", ui-sans-serif, system-ui, sans-serif;
+    --font-sans: "Chivo", ui-sans-serif, system-ui, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+  :focus-visible { outline: 2px solid var(--color-navy); outline-offset: 2px; }
+</style>
+</head>
+<body class="min-h-dvh bg-[#d5d9e3] font-sans text-ink">
+  <!-- Controles del mockup: no son parte del sistema. -->
+  <div id="controles" class="sticky top-0 z-20 border-b border-[#bfc4d0] bg-[#eef0f4] px-4 py-2.5 text-[13px]"></div>
+  <div class="overflow-x-auto px-4 py-6"><div id="marco"></div></div>
+
+<script>
+// ---- Catálogo (copia de src/modules/tramitacion/domain/catalogo.ts) ---------
+const DEPENDENCIAS = {
+  "mesa-partes": { nombre: "Mesa de Partes", corto: "Mesa de Partes", ubicacion: "en Mesa de Partes" },
+  coordinacion: { nombre: "Coordinación de Carrera", corto: "Coordinación", ubicacion: "en Coordinación de Carrera" },
+  docente: { nombre: "Docente Supervisor", corto: "Docente", ubicacion: "con el Docente Supervisor" },
+  bienestar: { nombre: "Bienestar y Empleabilidad", corto: "Bienestar", ubicacion: "en Bienestar y Empleabilidad" },
+};
+const ESTADOS = {
+  "01": { nombre: "Expediente recibido", dep: "mesa-partes", tipo: "proceso" },
+  "02": { nombre: "Pago observado", dep: "mesa-partes", tipo: "observacion" },
+  "03": { nombre: "Pago conforme (derivado a Coordinación)", dep: "mesa-partes", tipo: "conforme" },
+  "04": { nombre: "Requisitos observados", dep: "coordinacion", tipo: "observacion" },
+  "05": { nombre: "Requisitos conformes", dep: "coordinacion", tipo: "conforme" },
+  "06": { nombre: "Docente supervisor asignado", dep: "coordinacion", tipo: "conforme" },
+  "07": { nombre: "En supervisión", dep: "docente", tipo: "proceso" },
+  "08": { nombre: "Supervisión observada", dep: "docente", tipo: "observacion" },
+  "09": { nombre: "Supervisión aprobada", dep: "docente", tipo: "conforme" },
+  "10": { nombre: "Constancia lista para recoger", dep: "bienestar", tipo: "final" },
+};
+/** Etiqueta corta de cada estado (la `etiqueta` del catálogo). */
+const ETIQUETAS = {
+  "01": "Recibido", "02": "Observado", "03": "Conforme", "04": "Observado", "05": "Conforme",
+  "06": "Docente asignado", "07": "En supervisión", "08": "Observado", "09": "Aprobado", "10": "Constancia lista",
+};
+const TRANSICIONES = {
+  "01": ["02", "03"], "02": ["03"], "03": ["04", "05"], "04": ["05"], "05": ["06"],
+  "06": ["07"], "07": ["08", "09"], "08": ["07"], "09": ["10"], "10": [],
+};
+const MAXIMO = 150;
+
+/** Lo que la oficina puede registrar desde un estado (se deriva del catálogo). */
+const acciones = (codigo, oficina) => TRANSICIONES[codigo].filter((d) => ESTADOS[d].dep === oficina);
+
+/** Ayuda bajo cada opción: qué pasa al registrarla. La clave es "desde→hacia". */
+const AYUDA = {
+  "01→02": "El expediente queda en Mesa de Partes hasta que el estudiante corrija el pago.",
+  "01→03": "El expediente pasa a Coordinación de Carrera.",
+  "02→03": "El estudiante entregó el pago correcto. El expediente pasa a Coordinación.",
+  "03→04": "El expediente queda en tu oficina hasta que el estudiante complete los requisitos.",
+  "03→05": "Después asignarás al Docente Supervisor.",
+  "04→05": "El estudiante completó lo que faltaba. Después asignarás al Docente Supervisor.",
+  "05→06": "El expediente pasa al Docente Supervisor que elijas.",
+  "06→07": "Registra que empezaste a supervisar al estudiante.",
+  "07→08": "El expediente queda contigo hasta que el estudiante corrija lo indicado.",
+  "07→09": "El expediente pasa a Bienestar y Empleabilidad.",
+  "08→07": "El estudiante entregó la corrección. La supervisión continúa.",
+  "09→10": "El estudiante recibirá el aviso para recoger su constancia en físico.",
+};
+
+// ---- Datos ficticios --------------------------------------------------------
+const AHORA = new Date(2026, 9, 22, 10, 30);
+let minutosExtra = 0;
+const ahoraMismo = () => new Date(AHORA.getTime() + ++minutosExtra * 60000);
+
+const CARRERA = "Desarrollo de Sistemas de Información";
+const OFICINAS = {
+  "mesa-partes": { usuario: "Carla Ramírez", actor: "C. Ramírez", correo: "mesapartes@iestpgildaballivian.edu.pe" },
+  coordinacion: { usuario: "Lic. Patricia Gutiérrez", actor: "Lic. P. Gutiérrez", correo: "pgutierrez@iestpgildaballivian.edu.pe" },
+  docente: { usuario: "Mg. R. Paredes", actor: "Mg. R. Paredes", correo: "rparedes@iestpgildaballivian.edu.pe", docenteId: "d1" },
+  bienestar: { usuario: "Lic. Sofía Núñez", actor: "Lic. S. Núñez", correo: "bienestar@iestpgildaballivian.edu.pe" },
+};
+const DOCENTES = [
+  { id: "d1", nombre: "Mg. R. Paredes", activo: true },
+  { id: "d2", nombre: "Ing. M. Vargas", activo: true },
+  { id: "d4", nombre: "Lic. E. Castillo", activo: true },
+  { id: "d3", nombre: "Lic. C. Salazar", activo: false },
+];
+const ESTUDIANTES = [
+  { id: "e1", nombres: "Giancarlos", apellidos: "Ormeño", tipo: "DNI", numero: "71234568", institucional: "gormeno@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e2", nombres: "Valeria", apellidos: "Quispe Huamán", tipo: "DNI", numero: "72458190", institucional: "", personal: "valeria.quispe@gmail.com" },
+  { id: "e3", nombres: "Luis Alberto", apellidos: "Huamán Torres", tipo: "DNI", numero: "70981234", institucional: "lhuaman@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e4", nombres: "María Fernanda", apellidos: "Rojas Díaz", tipo: "DNI", numero: "73310457", institucional: "mrojas@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e5", nombres: "José Carlos", apellidos: "Mendoza Ríos", tipo: "DNI", numero: "71876520", institucional: "jmendoza@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e6", nombres: "Ana Lucía", apellidos: "Torres Vega", tipo: "DNI", numero: "74102398", institucional: "atorres@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e7", nombres: "Kevin Rafael", apellidos: "Chávez Soto", tipo: "CE", numero: "001234567", institucional: "", personal: "kevin.chavez@hotmail.com" },
+  { id: "e8", nombres: "Rosa Elena", apellidos: "Campos Ñique", tipo: "DNI", numero: "70543218", institucional: "rcampos@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e9", nombres: "Diego Armando", apellidos: "Salas Pinto", tipo: "DNI", numero: "72987601", institucional: "dsalas@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e10", nombres: "Carmen Julia", apellidos: "Ccori Mamani", tipo: "DNI", numero: "73654120", institucional: "cccori@iestpgildaballivian.edu.pe", personal: "" },
+  { id: "e11", nombres: "Jorge Luis", apellidos: "Vílchez Arana", tipo: "DNI", numero: "71230987", institucional: "jvilchez@iestpgildaballivian.edu.pe", personal: "" },
+];
+
+// [id, estudiante, módulo, docente, recorrido: [código, días atrás, hora, nota?]]
+const RECORRIDOS = [
+  ["x1", "e1", "III", null, [["01", 3, "09:12"], ["03", 2, "11:40"]]],
+  ["x12", "e1", "I", "d1", [["01", 60, "09:00"], ["03", 59, "10:10"], ["05", 55, "15:30"], ["06", 54, "09:20"], ["07", 50, "08:15"], ["09", 20, "11:00"], ["10", 15, "12:45", "Recógela en la oficina de Bienestar, de 8:00 a. m. a 1:00 p. m."]]],
+  ["x2", "e2", "I", null, [["01", 0, "08:47"]]],
+  ["x3", "e3", "II", null, [["01", 4, "10:05"], ["02", 4, "10:20", "El voucher no corresponde al concepto de EFSRT. Canjea el pago correcto en Tesorería."]]],
+  ["x4", "e4", "I", null, [["01", 8, "09:30"], ["03", 7, "15:10"], ["05", 1, "16:20"]]],
+  ["x5", "e5", "II", "d1", [["01", 12, "08:55"], ["03", 11, "10:00"], ["05", 6, "11:15"], ["06", 5, "09:40"]]],
+  ["x6", "e6", "I", "d1", [["01", 20, "09:10"], ["03", 19, "09:45"], ["05", 14, "10:30"], ["06", 12, "16:00"], ["07", 9, "08:30"]]],
+  ["x7", "e7", "III", "d1", [["01", 30, "11:00"], ["03", 29, "12:00"], ["05", 25, "10:00"], ["06", 24, "09:00"], ["07", 20, "08:00"], ["08", 2, "17:05", "Falta la firma del jefe inmediato en la ficha de evaluación."]]],
+  ["x8", "e8", "II", "d2", [["01", 40, "09:00"], ["03", 39, "10:00"], ["05", 35, "11:00"], ["06", 34, "09:00"], ["07", 30, "08:00"], ["09", 1, "12:30"]]],
+  ["x9", "e9", "I", "d2", [["01", 70, "09:00"], ["03", 69, "10:00"], ["05", 65, "11:00"], ["06", 64, "09:00"], ["07", 60, "08:00"], ["09", 30, "10:00"], ["10", 28, "09:30"]]],
+  ["x10", "e10", "II", null, [["01", 6, "09:25"], ["03", 5, "10:40"], ["04", 3, "15:50", "Falta el plan de actividades firmado por la empresa."]]],
+  ["x11", "e11", "III", "d3", [["01", 26, "09:00"], ["03", 25, "10:00"], ["05", 22, "11:00"], ["06", 21, "09:30"], ["07", 18, "08:10"]]],
+];
+
+const nombreDocente = (id) => DOCENTES.find((d) => d.id === id)?.nombre ?? "—";
+function fechaDe(diasAtras, hm) {
+  const [h, m] = hm.split(":").map(Number);
+  const f = new Date(AHORA);
+  f.setDate(f.getDate() - diasAtras);
+  f.setHours(h, m, 0, 0);
+  return f;
+}
+const EXPEDIENTES = RECORRIDOS.map(([id, est, mod, docente, ruta]) => {
+  const x = { id, est, mod, docente, historial: [] };
+  let anterior = null;
+  for (const [codigo, dias, hm, nota] of ruta) {
+    const dep = ESTADOS[codigo].dep;
+    x.historial.push({
+      tipo: "estado", anterior, codigo, fecha: fechaDe(dias, hm), nota: nota ?? "",
+      actor: dep === "docente" ? nombreDocente(docente) : OFICINAS[dep].actor,
+    });
+    anterior = codigo;
+  }
+  return x;
+});
+
+// ---- Estado de la pantalla --------------------------------------------------
+const S = {
+  oficina: "coordinacion", vista: "pc", conflicto: false,
+  pantalla: "bandeja", pestana: "atender", consulta: "", expId: null,
+  hacia: null, nota: "", docente: "", aviso: null,
+  reasignar: false, nuevoDocente: "", motivoReasignar: "",
+  rec: { paso: "buscar", consulta: "", estId: null, modulo: null, nota: "", error: "" },
+  nuevo: { tipo: "DNI", numero: "", nombres: "", apellidos: "", institucional: "", personal: "", intento: false },
+};
+
+// ---- Utilidades -------------------------------------------------------------
+const esc = (t) => String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+const MESES = ["ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "set.", "oct.", "nov.", "dic."];
+function diasDesde(f) {
+  const a = new Date(AHORA); a.setHours(0, 0, 0, 0);
+  const b = new Date(f); b.setHours(0, 0, 0, 0);
+  return Math.round((a - b) / 864e5);
+}
+const hora = (f) => f.toTimeString().slice(0, 5);
+function dia(f) {
+  const d = diasDesde(f);
+  return d === 0 ? "Hoy" : d === 1 ? "Ayer" : `${String(f.getDate()).padStart(2, "0")} ${MESES[f.getMonth()]}`;
+}
+const momento = (f) => `${dia(f)} · ${hora(f)}`;
+const normalizar = (t) => t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+
+const est = (id) => ESTUDIANTES.find((e) => e.id === id);
+const exp = (id) => EXPEDIENTES.find((x) => x.id === id);
+const nombreCompleto = (e) => `${e.nombres} ${e.apellidos}`;
+const estadosDe = (x) => x.historial.filter((h) => h.tipo === "estado");
+const estadoActual = (x) => estadosDe(x).at(-1).codigo;
+const ultimaFecha = (x) => x.historial.at(-1).fecha;
+const iniciales = (n) => n.replace(/^(Mg|Lic|Ing)\.\s*/, "").split(/\s+/).slice(0, 2).map((p) => p[0]).join("").toUpperCase();
+/** "Patricia" para "Lic. Patricia Gutiérrez"; el nombre completo si solo hay una inicial ("Mg. R. Paredes"). */
+function saludo(usuario) {
+  const nombre = usuario.replace(/^(Mg|Lic|Ing)\.\s*/, "").split(" ")[0];
+  return nombre.length <= 2 ? usuario : nombre;
+}
+const docenteInactivo = (x) => x.docente && !DOCENTES.find((d) => d.id === x.docente).activo && ["06", "07", "08"].includes(estadoActual(x));
+
+function visibles() {
+  const docenteId = OFICINAS[S.oficina].docenteId;
+  return EXPEDIENTES.filter((x) => !docenteId || x.docente === docenteId);
+}
+function tieneObservaciones(oficina) {
+  return Object.values(ESTADOS).some((e) => e.dep === oficina && e.tipo === "observacion");
+}
+function enPestana(x, pestana) {
+  const codigo = estadoActual(x);
+  const deMiOficina = ESTADOS[codigo].dep === S.oficina;
+  const observado = ESTADOS[codigo].tipo === "observacion";
+  if (pestana === "atender") {
+    return (acciones(codigo, S.oficina).length > 0 && !observado) || (S.oficina === "coordinacion" && docenteInactivo(x));
+  }
+  if (pestana === "esperando") return deMiOficina && observado;
+  return true;
+}
+function coincide(e, consulta) {
+  const q = normalizar(consulta);
+  if (!q) return true;
+  if (/^[0-9a-z]+$/.test(q) && /\d/.test(q)) return e.numero.toLowerCase().startsWith(q);
+  return normalizar(nombreCompleto(e)).includes(q) || normalizar(`${e.apellidos} ${e.nombres}`).includes(q);
+}
+
+// ---- Íconos (trazo, como src/shared/ui/iconos.tsx) ----------------------------
+const PATHS = {
+  bandeja: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  recepcion: '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="M12 11v6"/><path d="M9 14h6"/>',
+  buscar: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+  volver: '<path d="M19 12H5"/><path d="m12 19-7-7 7-7"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  alerta: '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/>',
+  salir: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+  cambiar: '<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+  derecha: '<path d="m9 18 6-6-6-6"/>',
+  reloj: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  usuario: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+};
+const icono = (n, t = 20, c = "") =>
+  `<svg width="${t}" height="${t}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="${c}">${PATHS[n]}</svg>`;
+const logo = (t = 36) =>
+  `<span class="flex shrink-0 items-center justify-center rounded-xl bg-navy text-white" style="width:${t}px;height:${t}px">${icono("bandeja", t * 0.5)}</span>`;
+
+// ---- Piezas reutilizables (equivalen a componentes de React) -------------------
+const CHIP = { proceso: "bg-neutral-bg text-text-soft", conforme: "bg-ok-bg text-ok", observado: "bg-warn text-white", subsanado: "bg-warn-bg text-warn-text" };
+const chipCodigo = (codigo, tono) =>
+  `<span class="h-fit shrink-0 rounded-md px-1.5 py-0.5 font-mono text-[10px] font-semibold ${CHIP[tono]}">${codigo}</span>`;
+function tonoActual(codigo) {
+  const t = ESTADOS[codigo].tipo;
+  return t === "observacion" ? "observado" : t === "proceso" ? "proceso" : "conforme";
+}
+const PILDORA = { "en-curso": "bg-navy-tint text-navy", observado: "bg-warn-bg text-warn-text", listo: "bg-ok-bg text-ok", neutro: "bg-neutral-bg text-text-soft" };
+const pildora = (texto, tono) => `<span class="rounded-full px-2.5 py-1 text-[11px] font-semibold whitespace-nowrap ${PILDORA[tono]}">${esc(texto)}</span>`;
+function pildoraUbicacion(codigo) {
+  const e = ESTADOS[codigo];
+  if (e.tipo === "final") return pildora("Constancia lista", "listo");
+  if (e.tipo === "observacion") return pildora(`Observado · ${DEPENDENCIAS[e.dep].corto}`, "observado");
+  return pildora(DEPENDENCIAS[e.dep].corto, "en-curso");
+}
+const boton = (texto, accion, { variante = "primario", deshabilitado = false, ancho = "", icono: ic = "" } = {}) => {
+  const estilos = {
+    primario: "bg-navy text-white hover:bg-navy-hover disabled:bg-pending disabled:text-white",
+    secundario: "border border-line bg-white text-ink hover:bg-bg",
+    texto: "text-navy hover:bg-navy-tint",
+  }[variante];
+  return `<button type="button" onclick="${accion}" ${deshabilitado ? "disabled" : ""} class="flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold disabled:cursor-not-allowed ${estilos} ${ancho}">${ic ? icono(ic, 18) : ""}${texto}</button>`;
+};
+const contador = (n) => `<span class="font-mono text-[11px] ${n >= MAXIMO ? "text-warn" : "text-muted"}">${n}/${MAXIMO}</span>`;
+const campoTexto = (id, valor, alCambiar, { etiqueta, placeholder = "", ayuda = "", error = "", tipo = "text", mono = false } = {}) => `
+  <label for="${id}" class="flex flex-col gap-1.5">
+    <span class="text-[13px] font-semibold">${etiqueta}</span>
+    <input id="${id}" type="${tipo}" value="${esc(valor)}" placeholder="${esc(placeholder)}" oninput="${alCambiar}"
+      class="min-h-11 rounded-xl border ${error ? "border-warn" : "border-line"} bg-white px-3.5 text-sm ${mono ? "font-mono" : ""} placeholder:text-muted/70 focus:border-navy" />
+    ${error ? `<span class="text-xs font-semibold text-warn">${error}</span>` : ayuda ? `<span class="text-xs text-muted">${ayuda}</span>` : ""}
+  </label>`;
+const tarjeta = (contenido, clases = "") => `<section class="rounded-2xl border border-line bg-white ${clases}">${contenido}</section>`;
+
+// ---- Controles del mockup ------------------------------------------------------
+function controles() {
+  const opcion = (activo, texto, accion) =>
+    `<button type="button" onclick="${accion}" class="rounded-lg px-2.5 py-1.5 ${activo ? "bg-ink text-white" : "bg-white text-ink hover:bg-white/60"}">${texto}</button>`;
+  return `<div class="mx-auto flex max-w-[1280px] flex-wrap items-center gap-x-5 gap-y-2">
+    <b class="mr-1">Mockup · Oficinas</b>
+    <span class="flex flex-wrap items-center gap-1"><span class="mr-1 text-muted">Entrar como</span>
+      ${Object.keys(DEPENDENCIAS).map((o) => opcion(S.oficina === o, DEPENDENCIAS[o].corto, `cambiarOficina('${o}')`)).join("")}</span>
+    <span class="flex items-center gap-1"><span class="mr-1 text-muted">Vista</span>
+      ${opcion(S.vista === "celular", "Celular", "S.vista='celular';render()")}${opcion(S.vista === "pc", "PC", "S.vista='pc';render()")}</span>
+    <label class="flex items-center gap-1.5"><input type="checkbox" ${S.conflicto ? "checked" : ""} onchange="S.conflicto=this.checked;render()" />
+      Simular que otra persona cambió el expediente</label>
+    <button type="button" onclick="location.reload()" class="ml-auto underline">Reiniciar datos</button>
+  </div>
+  <p class="mx-auto mt-1 max-w-[1280px] text-[11px] text-muted">Datos ficticios. Esta barra no es parte del sistema.</p>`;
+}
+
+// ---- Marco y navegación -----------------------------------------------------------
+function marco() {
+  const pc = S.vista === "pc";
+  return `<div class="${pc ? "h-[820px] w-[1280px] rounded-xl" : "h-[844px] w-[390px] rounded-[40px] border-[10px] border-ink"} mx-auto overflow-hidden bg-bg shadow-2xl">
+    <div class="@container flex h-full">${barraLateral()}
+      <div id="desplazable" class="flex min-w-0 grow flex-col overflow-y-auto">${encabezadoMovil()}${pantalla()}</div>
+    </div></div>`;
+}
+function itemsNavegacion() {
+  const items = [{ id: "bandeja", texto: "Bandeja", icono: "bandeja" }];
+  if (S.oficina === "mesa-partes") items.push({ id: "recepcion", texto: "Registrar recepción", icono: "recepcion" });
+  return items;
+}
+function barraLateral() {
+  const o = OFICINAS[S.oficina];
+  const activo = (id) => (S.pantalla === "detalle" ? "bandeja" : S.pantalla) === id;
+  return `<aside class="hidden w-[280px] shrink-0 flex-col gap-7 bg-ink px-[18px] py-7 text-white @5xl:flex">
+    <div class="flex items-center gap-2.5 px-2">${logo()}
+      <div class="flex flex-col gap-px"><span class="font-display text-base font-extrabold">EFSRT Seguimiento</span>
+      <span class="text-[11px] text-on-ink-muted">IESTP Gilda L. Ballivián Rosado</span></div></div>
+    <nav aria-label="Principal" class="flex flex-col gap-1">
+      ${itemsNavegacion().map((i) => `<button type="button" onclick="ir('${i.id}')" ${activo(i.id) ? 'aria-current="page"' : ""}
+        class="flex min-h-[46px] items-center gap-3 rounded-xl px-3.5 text-sm ${activo(i.id) ? "bg-ink-active font-semibold text-white" : "font-medium text-on-ink hover:bg-ink-raised"}">
+        ${icono(i.icono)}${i.texto}</button>`).join("")}
+    </nav>
+    <div class="mt-auto flex items-center gap-3 rounded-2xl bg-ink-raised p-3">
+      <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-ink-active font-display text-sm font-bold">${iniciales(o.usuario)}</span>
+      <span class="flex min-w-0 grow flex-col"><span class="truncate text-sm font-semibold">${o.usuario}</span>
+        <span class="truncate text-[11px] text-on-ink-muted">${DEPENDENCIAS[S.oficina].nombre}</span></span>
+      <button type="button" aria-label="Cerrar sesión" title="Cerrar sesión" class="flex size-11 shrink-0 items-center justify-center rounded-xl text-on-ink hover:bg-ink-active">${icono("salir", 18)}</button>
+    </div>
+  </aside>`;
+}
+function encabezadoMovil() {
+  const o = OFICINAS[S.oficina];
+  return `<header class="sticky top-0 z-10 flex items-center gap-2.5 border-b border-line bg-white px-5 py-3 @5xl:hidden">
+    ${logo(32)}<span class="flex min-w-0 grow flex-col"><span class="font-display text-sm font-extrabold">EFSRT Seguimiento</span>
+    <span class="truncate text-[11px] text-muted">${DEPENDENCIAS[S.oficina].nombre}</span></span>
+    <button type="button" aria-label="Tu cuenta" class="flex size-11 items-center justify-center rounded-full"><span class="flex size-9 items-center justify-center rounded-full bg-navy-tint font-display text-xs font-bold text-navy">${iniciales(o.usuario)}</span></button>
+  </header>`;
+}
+const marcoPagina = (contenido, ancho = "@5xl:max-w-5xl") =>
+  `<main class="px-5 pt-5 pb-8 @5xl:px-10 @5xl:pt-8"><div class="mx-auto flex w-full max-w-lg flex-col gap-4 @5xl:gap-6 ${ancho}">${contenido}</div></main>`;
+const encabezadoInterno = (titulo, subtitulo, volver) => `<div class="flex items-center gap-2">
+    <button type="button" onclick="${volver}" aria-label="Volver a la bandeja" class="-ml-2.5 flex size-11 shrink-0 items-center justify-center rounded-xl hover:bg-line">${icono("volver", 22)}</button>
+    <div class="flex min-w-0 flex-col"><h1 class="font-display text-[22px] leading-tight font-extrabold">${titulo}</h1>
+    ${subtitulo ? `<span class="text-xs text-muted">${subtitulo}</span>` : ""}</div></div>`;
+
+function pantalla() {
+  if (S.pantalla === "detalle") return detalle();
+  if (S.pantalla === "recepcion") return recepcion();
+  return bandeja();
+}
+
+// ---- Bandeja ------------------------------------------------------------------------
+function pestanas() {
+  const lista = [{ id: "atender", texto: "Por atender" }];
+  if (tieneObservaciones(S.oficina)) lista.push({ id: "esperando", texto: "Observados" });
+  lista.push({ id: "todos", texto: S.oficina === "docente" ? "Tus estudiantes" : "Estudiantes" });
+  return lista;
+}
+/** Estudiantes con al menos un expediente visible, del cambio más reciente al más antiguo. */
+function estudiantesVisibles() {
+  const ids = [...new Set(visibles().map((x) => x.est))];
+  const ultimo = (id) => Math.max(...visibles().filter((x) => x.est === id).map((x) => ultimaFecha(x).getTime()));
+  return ids.map(est).sort((a, b) => ultimo(b.id) - ultimo(a.id));
+}
+const cuentaPestana = (id) => (id === "todos" ? estudiantesVisibles().length : visibles().filter((x) => enPestana(x, id)).length);
+
+// "Estudiantes": una fila por estudiante y una celda por módulo (cada módulo es su propio expediente).
+function tablaEstudiantes() {
+  const lista = estudiantesVisibles().filter((e) => coincide(e, S.consulta));
+  if (lista.length === 0) return vacio();
+  const columnas = "@5xl:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]";
+  return `<div class="hidden gap-3 border-b border-line px-5 py-3 text-[11px] font-semibold tracking-wide text-muted uppercase @5xl:grid ${columnas}">
+      <span>Estudiante</span><span>Módulo I</span><span>Módulo II</span><span>Módulo III</span></div>
+    <ul class="divide-y divide-line">${lista.map((e) => `<li class="flex flex-col gap-3 px-5 py-4 @5xl:grid @5xl:items-center @5xl:gap-3 @5xl:py-3 ${columnas}">
+      <span class="flex min-w-0 flex-col gap-0.5"><span class="truncate text-sm font-semibold">${esc(nombreCompleto(e))}</span>
+        <span class="font-mono text-[11px] text-muted">${e.tipo} ${e.numero}</span></span>
+      <span class="grid grid-cols-3 gap-2 @5xl:contents">${["I", "II", "III"].map((m) => celdaModulo(e, m)).join("")}</span>
+    </li>`).join("")}</ul>`;
+}
+// Celular: casilla vertical con "Mód. I" arriba. PC: celda de la tabla (el encabezado ya dice el módulo).
+function celdaModulo(e, m) {
+  const x = EXPEDIENTES.find((y) => y.est === e.id && y.mod === m);
+  const rotulo = `<span class="font-mono text-[10px] font-semibold whitespace-nowrap text-muted @5xl:hidden">Mód. ${m}</span>`;
+  const base = "flex min-h-14 flex-col items-stretch gap-1 rounded-xl border px-2.5 py-2 text-left @5xl:min-h-11 @5xl:flex-row @5xl:items-center @5xl:gap-2 @5xl:px-3";
+  if (!x || !visibles().includes(x)) {
+    // El docente solo ve sus expedientes (RLS): de los demás módulos no sabe si existen.
+    const texto = S.oficina === "docente" ? "—" : `<span aria-hidden="true" class="@5xl:hidden">—</span><span class="sr-only @5xl:not-sr-only">Sin expediente</span>`;
+    return `<span class="${base} border-dashed border-line text-xs text-muted">${rotulo}${texto}</span>`;
+  }
+  const c = estadoActual(x);
+  const borde = ESTADOS[c].tipo === "observacion" ? "border-warn-border bg-warn-bg/40" : ESTADOS[c].tipo === "final" ? "border-ok/30 bg-ok-bg/40" : "border-line bg-white";
+  return `<button type="button" onclick="abrir('${x.id}')" aria-label="Módulo ${m}: ${ESTADOS[c].nombre}" class="${base} hover:border-navy ${borde}">
+    <span class="flex items-center justify-between gap-1 @5xl:contents">${rotulo}${chipCodigo(c, tonoActual(c))}</span>
+    <span class="flex min-w-0 flex-col @5xl:grow"><span class="text-xs leading-tight font-semibold @5xl:truncate @5xl:text-[13px]">${ETIQUETAS[c]}</span>
+      <span class="hidden truncate text-[11px] text-muted @5xl:block">${ESTADOS[c].tipo === "final" ? momento(ultimaFecha(x)) : DEPENDENCIAS[ESTADOS[c].dep].corto}</span></span>
+    <span class="hidden text-muted @5xl:block">${icono("derecha", 16)}</span>
+  </button>`;
+}
+function bandeja() {
+  const o = OFICINAS[S.oficina];
+  const lista = visibles()
+    .filter((x) => enPestana(x, S.pestana) && coincide(est(x.est), S.consulta))
+    .sort((a, b) => ultimaFecha(a) - ultimaFecha(b)); // lo que más espera, primero
+  const conDocente = S.oficina === "coordinacion";
+  const columnas = conDocente
+    ? "@5xl:grid-cols-[minmax(0,2fr)_70px_minmax(0,2.2fr)_minmax(0,1.2fr)_130px_20px]"
+    : "@5xl:grid-cols-[minmax(0,2fr)_70px_minmax(0,2.4fr)_130px_20px]";
+  const subtitulo = S.oficina === "coordinacion"
+    ? `${DEPENDENCIAS.coordinacion.nombre} · ${CARRERA}`
+    : S.oficina === "docente" ? "Solo ves a los estudiantes que Coordinación te asignó" : DEPENDENCIAS[S.oficina].nombre;
+
+  return marcoPagina(`
+    <div class="flex flex-col gap-3 @5xl:flex-row @5xl:items-end @5xl:justify-between">
+      <div class="flex flex-col gap-0.5">
+        <span class="text-sm text-muted">Hola, ${saludo(o.usuario)}</span>
+        <h1 class="font-display text-[26px] leading-tight font-extrabold @5xl:text-[30px]">Bandeja</h1>
+        <span class="text-xs text-muted">${subtitulo}</span>
+      </div>
+      ${S.oficina === "mesa-partes" ? boton("Registrar recepción", "ir('recepcion')", { icono: "recepcion", ancho: "w-full @5xl:w-auto" }) : ""}
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <label class="relative flex items-center">
+        <span class="pointer-events-none absolute left-3.5 text-muted">${icono("buscar", 18)}</span>
+        <span class="sr-only">Buscar estudiante</span>
+        <input id="buscar-bandeja" type="search" value="${esc(S.consulta)}" oninput="S.consulta=this.value;render()"
+          placeholder="Buscar por DNI, carné o nombre"
+          class="min-h-11 w-full rounded-xl border border-line bg-white pr-3.5 pl-10 text-sm placeholder:text-muted/70 focus:border-navy" />
+      </label>
+      <div role="tablist" aria-label="Filtrar expedientes" class="-mx-5 flex gap-1.5 overflow-x-auto px-5 @5xl:mx-0 @5xl:px-0">
+        ${pestanas().map((p) => {
+          const n = cuentaPestana(p.id);
+          const activa = S.pestana === p.id;
+          return `<button type="button" role="tab" aria-selected="${activa}" onclick="S.pestana='${p.id}';render()"
+            class="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3.5 text-[13px] font-semibold ${activa ? "bg-ink text-white" : "border border-line bg-white text-text-soft hover:bg-bg"}">
+            ${p.texto}<span class="rounded-full px-1.5 font-mono text-[11px] ${activa ? "bg-ink-active" : "bg-neutral-bg"}">${n}</span></button>`;
+        }).join("")}
+      </div>
+    </div>
+
+    ${S.pestana === "todos" ? tarjeta(tablaEstudiantes(), "overflow-hidden") : tarjeta(`
+      <div class="hidden gap-4 border-b border-line px-5 py-3 text-[11px] font-semibold tracking-wide text-muted uppercase @5xl:grid ${columnas}">
+        <span>Estudiante</span><span>Módulo</span><span>Estado</span>${conDocente ? "<span>Docente</span>" : ""}<span>Último cambio</span><span></span>
+      </div>
+      ${lista.length === 0 ? vacio() : `<ul class="divide-y divide-line">${lista.map((x) => filaBandeja(x, columnas, conDocente)).join("")}</ul>`}
+    `, "overflow-hidden")}
+  `);
+}
+function vacio() {
+  const textos = {
+    atender: "No tienes expedientes por atender.",
+    esperando: "Ningún expediente espera una corrección del estudiante.",
+    todos: "Aún no hay estudiantes con expediente.",
+  };
+  return `<p class="px-5 py-10 text-center text-sm text-muted">${S.consulta ? "Ningún estudiante coincide con la búsqueda." : textos[S.pestana]}</p>`;
+}
+function filaBandeja(x, columnas, conDocente) {
+  const e = est(x.est);
+  const codigo = estadoActual(x);
+  const espera = diasDesde(ultimaFecha(x));
+  const alertaDocente = S.oficina === "coordinacion" && docenteInactivo(x);
+  const etiquetaEspera = espera >= 3
+    ? `<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-warn">${icono("reloj", 13)}${espera} días</span>` : "";
+  return `<li><button type="button" onclick="abrir('${x.id}')"
+      class="flex w-full flex-col gap-2 px-5 py-4 text-left hover:bg-bg @5xl:grid @5xl:items-center @5xl:gap-4 @5xl:py-3.5 ${columnas}">
+    <span class="flex min-w-0 items-start justify-between gap-2">
+      <span class="flex min-w-0 flex-col gap-0.5"><span class="truncate text-sm font-semibold">${esc(nombreCompleto(e))}</span>
+      <span class="font-mono text-[11px] text-muted">${e.tipo} ${e.numero}</span></span>
+      <span class="text-muted @5xl:hidden">${icono("derecha", 18)}</span>
+    </span>
+    <span class="hidden text-sm @5xl:block">${x.mod}</span>
+    <span class="flex min-w-0 flex-col gap-1">
+      <span class="flex items-start gap-2">${chipCodigo(codigo, tonoActual(codigo))}<span class="text-[13px] font-medium leading-snug">${ESTADOS[codigo].nombre}</span></span>
+      ${alertaDocente ? `<span class="inline-flex w-fit items-center gap-1 rounded-md bg-warn-bg px-1.5 py-0.5 text-[11px] font-semibold text-warn-text">${icono("alerta", 13)}Docente desactivado · reasigna</span>` : ""}
+    </span>
+    ${conDocente ? `<span class="hidden truncate text-[13px] text-text-soft @5xl:block">${x.docente ? nombreDocente(x.docente) : "—"}</span>` : ""}
+    <span class="flex items-center justify-between gap-2 @5xl:flex-col @5xl:items-start @5xl:gap-0.5">
+      <span class="font-mono text-[11px] text-muted"><span class="@5xl:hidden">Módulo ${x.mod} · </span>${momento(ultimaFecha(x))}</span>${etiquetaEspera}
+    </span>
+    <span class="hidden text-muted @5xl:block">${icono("derecha", 18)}</span>
+  </button></li>`;
+}
+
+// ---- Detalle del expediente ---------------------------------------------------------------
+function detalle() {
+  const x = exp(S.expId);
+  const e = est(x.est);
+  const codigo = estadoActual(x);
+  return marcoPagina(`
+    ${encabezadoInterno(`Expediente del Módulo ${x.mod}`, ESTADOS[codigo].tipo === "final" ? "Trámite terminado" : `Está ${DEPENDENCIAS[ESTADOS[codigo].dep].ubicacion}`, "ir('bandeja')")}
+    ${aviso()}
+    <div class="flex flex-col gap-4 @5xl:grid @5xl:grid-cols-[minmax(0,1fr)_400px] @5xl:items-start @5xl:gap-6">
+      <div class="@5xl:col-start-1 @5xl:row-start-1">${fichaEstudiante(x, e, codigo)}</div>
+      <div class="@5xl:sticky @5xl:top-6 @5xl:col-start-2 @5xl:row-span-2 @5xl:row-start-1">${panelAccion(x, e, codigo)}</div>
+      <div class="@5xl:col-start-1 @5xl:row-start-2">${historial(x)}</div>
+    </div>
+  `, "@5xl:max-w-6xl");
+}
+function aviso() {
+  if (!S.aviso) return "";
+  if (S.aviso.tipo === "conflicto") {
+    return `<div role="alert" class="flex items-start gap-3 rounded-2xl border border-warn-border bg-warn-bg p-4 text-warn-text">
+      ${icono("alerta", 20, "mt-0.5 shrink-0 text-warn")}
+      <div class="flex grow flex-col gap-2"><b class="text-sm text-warn-deep">No se registró el cambio</b>
+      <span class="text-[13px] leading-normal">Otra persona actualizó este expediente hace un momento. Recarga para ver su estado actual y vuelve a intentarlo.</span>
+      <span>${boton("Recargar", "S.aviso=null;S.conflicto=false;render()", { variante: "secundario" })}</span></div></div>`;
+  }
+  return `<div role="status" class="flex items-start gap-3 rounded-2xl border border-ok/30 bg-ok-bg p-4 text-ok">
+    <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-ok text-white">${icono("check", 14)}</span>
+    <div class="flex flex-col gap-0.5"><b class="text-sm">${S.aviso.titulo}</b><span class="text-[13px] text-ink">${S.aviso.texto}</span></div></div>`;
+}
+function dato(etiqueta, valor, { mono = false, extra = "" } = {}) {
+  return `<div class="flex flex-col gap-0.5"><dt class="text-[11px] font-semibold tracking-wide text-muted uppercase">${etiqueta}</dt>
+    <dd class="flex flex-wrap items-center gap-x-2 text-sm ${mono ? "font-mono text-[13px]" : ""}">${valor || '<span class="text-muted">—</span>'}${extra}</dd></div>`;
+}
+function fichaEstudiante(x, e, codigo) {
+  const puedeReasignar = S.oficina === "coordinacion" && x.docente && ["06", "07", "08"].includes(codigo);
+  const inactivo = docenteInactivo(x);
+  return tarjeta(`
+    <div class="flex items-center gap-3 border-b border-line p-5">
+      <span class="flex size-12 shrink-0 items-center justify-center rounded-full bg-navy-tint font-display text-base font-bold text-navy">${iniciales(nombreCompleto(e))}</span>
+      <span class="flex min-w-0 grow flex-col gap-0.5"><span class="truncate font-display text-lg font-extrabold">${esc(nombreCompleto(e))}</span>
+      <span class="font-mono text-xs text-muted">${e.tipo} ${e.numero}</span></span>
+      ${pildoraUbicacion(codigo)}
+    </div>
+    <dl class="grid grid-cols-1 gap-4 p-5 @md:grid-cols-2">
+      ${dato("Carrera", CARRERA)}
+      ${dato("Módulo", `Módulo ${x.mod}`)}
+      ${dato("Correo institucional", esc(e.institucional), { mono: true })}
+      ${dato("Correo personal", esc(e.personal), { mono: true })}
+      ${dato("Docente Supervisor", x.docente ? nombreDocente(x.docente) : "", {
+        extra: (inactivo ? `<span class="inline-flex items-center gap-1 rounded-md bg-warn-bg px-1.5 py-0.5 text-[11px] font-semibold text-warn-text">${icono("alerta", 13)}Desactivado</span>` : "")
+          + (puedeReasignar && !S.reasignar ? `<button type="button" onclick="S.reasignar=true;render()" class="-my-2 inline-flex min-h-11 items-center gap-1 rounded-lg px-2 text-[13px] font-semibold text-navy hover:bg-navy-tint">${icono("cambiar", 15)}Cambiar</button>` : ""),
+      })}
+    </dl>
+    ${S.reasignar ? formularioReasignar(x) : ""}
+  `);
+}
+// Validación: los botones nunca se desactivan (un botón gris no explica qué
+// falta y el teclado no lo alcanza). Al pulsar, se marca cada campo pendiente
+// con su mensaje y el foco salta al primero.
+const mensajeError = (id, texto) => (texto
+  ? `<span id="${id}-error" class="flex items-center gap-1 text-xs font-semibold text-warn">${icono("alerta", 13, "shrink-0")}${texto}</span>` : "");
+const atributosError = (id, texto) => (texto ? `aria-invalid="true" aria-describedby="${id}-error"` : "");
+function enfocarPrimerError(errores, ids) {
+  const primero = Object.keys(ids).find((k) => errores[k]);
+  if (primero) document.getElementById(ids[primero])?.focus();
+}
+
+function erroresReasignar() {
+  return {
+    docente: S.nuevoDocente ? "" : "Elige al nuevo docente.",
+    motivo: S.motivoReasignar.trim() ? "" : "Escribe por qué cambias al docente.",
+  };
+}
+function formularioReasignar(x) {
+  const opciones = DOCENTES.filter((d) => d.activo && d.id !== x.docente);
+  const err = S.intento ? erroresReasignar() : {};
+  return `<div class="flex flex-col gap-3 border-t border-line bg-bg/60 p-5">
+    <div class="flex flex-col gap-0.5"><b class="text-sm">Cambiar Docente Supervisor</b>
+    <span class="text-xs text-muted">Por ejemplo, si el docente renunció. El estado del expediente no cambia; el cambio queda en el historial.</span></div>
+    ${selectorDocente("reasignar-docente", S.nuevoDocente, "S.nuevoDocente=this.value;render()", opciones, err.docente)}
+    ${areaTexto("motivo-reasignar", S.motivoReasignar, "S.motivoReasignar=this.value;render()", "Motivo (obligatorio)", "Por ejemplo: renuncia del docente.", err.motivo)}
+    <div class="flex gap-2">${boton("Cancelar", "cerrarReasignar()", { variante: "secundario" })}${boton("Guardar cambio", "reasignar()", { ancho: "grow" })}</div>
+  </div>`;
+}
+function selectorDocente(id, valor, alCambiar, opciones, error = "") {
+  return `<label for="${id}" class="flex flex-col gap-1.5"><span class="text-[13px] font-semibold">Docente Supervisor</span>
+    <select id="${id}" onchange="${alCambiar}" ${atributosError(id, error)} class="min-h-11 rounded-xl border ${error ? "border-warn" : "border-line"} bg-white px-3 text-sm focus:border-navy">
+      <option value="">Elige un docente</option>
+      ${opciones.map((d) => {
+        const carga = EXPEDIENTES.filter((x) => x.docente === d.id && ["06", "07", "08"].includes(estadoActual(x))).length;
+        return `<option value="${d.id}" ${valor === d.id ? "selected" : ""}>${d.nombre} · ${carga} en supervisión</option>`;
+      }).join("")}
+    </select>${mensajeError(id, error)}</label>`;
+}
+function areaTexto(id, valor, alCambiar, etiqueta, placeholder, error = "") {
+  return `<label for="${id}" class="flex flex-col gap-1.5">
+    <span class="flex items-baseline justify-between gap-2"><span class="text-[13px] font-semibold">${etiqueta}</span>${contador(valor.length)}</span>
+    <textarea id="${id}" rows="3" maxlength="${MAXIMO}" oninput="${alCambiar}" placeholder="${esc(placeholder)}" ${atributosError(id, error)}
+      class="resize-none rounded-xl border ${error ? "border-warn" : "border-line"} bg-white px-3.5 py-2.5 text-sm leading-normal placeholder:text-muted/70 focus:border-navy">${esc(valor)}</textarea>
+    ${mensajeError(id, error)}
+  </label>`;
+}
+/** Opción elegida: la marcada o, si solo hay una, esa. */
+function opcionElegida(codigo) {
+  const opciones = acciones(codigo, S.oficina);
+  return S.hacia && opciones.includes(S.hacia) ? S.hacia : opciones.length === 1 ? opciones[0] : null;
+}
+function erroresAccion(codigo) {
+  const elegido = opcionElegida(codigo);
+  if (!elegido) return { hacia: "Elige qué registras." };
+  return {
+    docente: elegido === "06" && !S.docente ? "Elige al Docente Supervisor." : "",
+    nota: ESTADOS[elegido].tipo === "observacion" && !S.nota.trim() ? "Escribe qué debe corregir el estudiante." : "",
+  };
+}
+function panelAccion(x, e, codigo) {
+  const opciones = acciones(codigo, S.oficina);
+  if (opciones.length === 0) {
+    const final = ESTADOS[codigo].tipo === "final";
+    return tarjeta(`<div class="flex flex-col gap-2 p-5">
+      <b class="text-sm">${final ? "Trámite terminado" : "Sin acciones para tu oficina"}</b>
+      <span class="text-[13px] leading-normal text-muted">${final
+        ? "La constancia está lista para que el estudiante la recoja."
+        : docenteInactivo(x) && S.oficina === "coordinacion"
+          ? "El Docente Supervisor fue desactivado. Usa <b>Cambiar</b> en la ficha para asignar a otro y que la supervisión continúe."
+          : `El expediente está ${DEPENDENCIAS[ESTADOS[codigo].dep].ubicacion}. Podrás registrar algo cuando vuelva a tu oficina.`}</span></div>`);
+  }
+  const elegido = opcionElegida(codigo);
+  const observacion = elegido && ESTADOS[elegido].tipo === "observacion";
+  const err = S.intento ? erroresAccion(codigo) : {};
+  const esperando = ESTADOS[codigo].tipo === "observacion";
+  return tarjeta(`
+    <div class="flex flex-col gap-1 border-b border-line p-5">
+      <span class="text-[11px] font-semibold tracking-wide text-muted uppercase">Estado actual</span>
+      <span class="flex items-start gap-2">${chipCodigo(codigo, tonoActual(codigo))}<b class="text-sm leading-snug">${ESTADOS[codigo].nombre}</b></span>
+      ${esperando ? `<span class="mt-1 text-xs leading-normal text-warn-text">Esperando que el estudiante entregue la corrección.</span>` : ""}
+    </div>
+    <fieldset class="flex flex-col gap-4 p-5">
+      <legend class="sr-only">Registrar un cambio</legend>
+      <span class="font-display text-base font-extrabold">${esperando ? "¿El estudiante entregó la corrección?" : "¿Qué registras?"}</span>
+      <div class="flex flex-col gap-2">
+        ${opciones.map((d, i) => {
+          const marcado = elegido === d;
+          const obs = ESTADOS[d].tipo === "observacion";
+          return `<label class="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border p-3.5 ${marcado ? (obs ? "border-warn bg-warn-bg/50" : "border-navy bg-navy-tint/50") : err.hacia ? "border-warn" : "border-line hover:bg-bg"}">
+            <input type="radio" name="hacia" value="${d}" ${i === 0 ? 'id="opcion-hacia"' : ""} ${atributosError("opcion-hacia", err.hacia)} ${marcado ? "checked" : ""} onchange="S.hacia='${d}';render()" class="mt-1 size-4 accent-navy" />
+            <span class="flex flex-col gap-1"><span class="flex items-start gap-2">${chipCodigo(d, obs ? "observado" : tonoActual(d))}<span class="text-sm font-semibold leading-snug">${ESTADOS[d].nombre}</span></span>
+            <span class="text-xs leading-normal text-muted">${AYUDA[`${codigo}→${d}`]}</span></span>
+          </label>`;
+        }).join("")}
+        ${mensajeError("opcion-hacia", err.hacia)}
+      </div>
+      ${elegido === "06" ? selectorDocente("asignar-docente", S.docente, "S.docente=this.value;render()", DOCENTES.filter((d) => d.activo), err.docente) : ""}
+      ${elegido ? areaTexto("nota", S.nota, "S.nota=this.value;render()",
+        observacion ? "Motivo de la observación (obligatorio)" : "Nota (opcional)",
+        observacion ? "Qué debe corregir el estudiante. Lo leerá tal cual." : "Algo que el estudiante deba saber.", err.nota) : ""}
+      ${boton(elegido ? `Registrar ${elegido} · ${ESTADOS[elegido].nombre.replace(/ \(.*\)$/, "")}` : "Registrar", "registrar()", { ancho: "w-full" })}
+      <p class="text-[11px] leading-normal text-muted">Quedará registrado a tu nombre, con la fecha y hora de hoy, y no se puede editar ni borrar. ${esc(e.nombres.split(" ")[0])} recibirá un correo con el cambio.</p>
+    </fieldset>
+  `);
+}
+function historial(x) {
+  const ultimoEstado = estadosDe(x).at(-1);
+  const filas = [...x.historial].reverse().map((h) => {
+    if (h.tipo === "reasignacion") {
+      return `<li class="flex gap-3 py-3"><span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-md bg-navy-tint text-navy">${icono("cambiar", 13)}</span>
+        <span class="flex min-w-0 flex-col gap-0.5"><b class="text-[13px]">Docente Supervisor cambiado</b>
+        <span class="text-[13px] text-text-soft">${h.de} → ${h.a}</span>
+        <span class="font-mono text-[11px] text-muted">${momento(h.fecha)} · ${h.actor}</span>
+        <span class="text-xs leading-normal text-text-soft">${esc(h.nota)}</span></span></li>`;
+    }
+    const obs = ESTADOS[h.codigo].tipo === "observacion";
+    const tono = obs ? (h === ultimoEstado ? "observado" : "subsanado") : tonoActual(h.codigo);
+    return `<li class="flex gap-3 py-3"><span class="mt-0.5 w-6 shrink-0">${chipCodigo(h.codigo, tono)}</span>
+      <span class="flex min-w-0 flex-col gap-0.5"><b class="text-[13px] ${tono === "subsanado" ? "text-muted line-through" : ""}">${ESTADOS[h.codigo].nombre}</b>
+      <span class="font-mono text-[11px] text-muted">${momento(h.fecha)} · ${h.actor}</span>
+      ${h.codigo === "06" && h.docente ? `<span class="text-xs text-text-soft">Docente: ${h.docente}</span>` : ""}
+      ${h.nota ? `<span class="text-xs leading-normal text-text-soft">${esc(h.nota)}</span>` : ""}</span></li>`;
+  });
+  return tarjeta(`<div class="flex items-baseline justify-between gap-2 border-b border-line px-5 py-4">
+      <h2 class="font-display text-base font-extrabold">Historial</h2><span class="text-[11px] text-muted">Lo más reciente primero</span></div>
+    <ol class="divide-y divide-line px-5">${filas.join("")}</ol>`);
+}
+
+// ---- Mesa de Partes: registrar recepción ---------------------------------------------------
+function recepcion() {
+  const r = S.rec;
+  let cuerpo;
+  if (r.paso === "nuevo") cuerpo = formularioNuevo();
+  else if (r.paso === "modulo") cuerpo = elegirModulo();
+  else cuerpo = buscarEstudiante();
+  const pasos = ["Estudiante", "Módulo"];
+  const actual = r.paso === "modulo" ? 1 : 0;
+  return marcoPagina(`
+    ${encabezadoInterno("Registrar recepción", "Cuando recibes la carpeta física. El expediente nace en 01 Expediente recibido.", "ir('bandeja')")}
+    <ol class="flex items-center gap-2 text-[13px]" aria-label="Pasos">
+      ${pasos.map((p, i) => `<li class="flex items-center gap-2 ${i <= actual ? "font-semibold text-ink" : "text-muted"}">
+        <span class="flex size-6 items-center justify-center rounded-full text-[11px] font-bold ${i < actual ? "bg-ok text-white" : i === actual ? "bg-navy text-white" : "border-2 border-pending"}">${i < actual ? icono("check", 12) : i + 1}</span>${p}</li>
+        ${i < pasos.length - 1 ? '<li aria-hidden="true" class="h-px w-8 bg-line"></li>' : ""}`).join("")}
+    </ol>
+    ${cuerpo}
+  `, "@5xl:max-w-3xl");
+}
+function chipsModulos(e) {
+  return ["I", "II", "III"].map((m) => {
+    const x = EXPEDIENTES.find((y) => y.est === e.id && y.mod === m);
+    if (!x) return `<span class="rounded-md border border-dashed border-pending px-1.5 py-0.5 font-mono text-[10px] text-muted">${m} · libre</span>`;
+    const c = estadoActual(x);
+    return `<span class="rounded-md px-1.5 py-0.5 font-mono text-[10px] font-semibold ${CHIP[tonoActual(c)]}">${m} · ${c}</span>`;
+  }).join("");
+}
+function buscarEstudiante() {
+  const r = S.rec;
+  const resultados = r.consulta.trim().length >= 2 ? ESTUDIANTES.filter((e) => coincide(e, r.consulta)) : [];
+  return tarjeta(`<div class="flex flex-col gap-4 p-5">
+      <label class="relative flex flex-col gap-1.5"><span class="text-[13px] font-semibold">Busca al estudiante</span>
+        <span class="relative flex items-center"><span class="pointer-events-none absolute left-3.5 text-muted">${icono("buscar", 18)}</span>
+        <input id="buscar-recepcion" type="search" value="${esc(r.consulta)}" oninput="S.rec.consulta=this.value;render()" placeholder="DNI, carné de extranjería o nombre"
+          class="min-h-11 w-full rounded-xl border border-line bg-white pr-3.5 pl-10 text-sm placeholder:text-muted/70 focus:border-navy" /></span>
+        <span class="text-xs text-muted">Prueba con "Ormeño", "7245" o "Kevin".</span></label>
+      ${r.consulta.trim().length >= 2 ? `<ul class="flex flex-col gap-2">
+        ${resultados.length === 0 ? `<li class="rounded-xl bg-bg px-4 py-5 text-center text-[13px] text-muted">Ningún estudiante coincide. Revisa el número o búscalo por nombre.</li>` : ""}
+        ${resultados.map((e) => `<li><button type="button" onclick="elegirEstudiante('${e.id}')" class="flex w-full items-center gap-3 rounded-xl border border-line p-3.5 text-left hover:bg-bg">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-navy-tint font-display text-sm font-bold text-navy">${iniciales(nombreCompleto(e))}</span>
+          <span class="flex min-w-0 grow flex-col gap-1"><span class="truncate text-sm font-semibold">${esc(nombreCompleto(e))}</span>
+          <span class="font-mono text-[11px] text-muted">${e.tipo} ${e.numero}</span>
+          <span class="flex flex-wrap gap-1">${chipsModulos(e)}</span></span>
+          <span class="text-muted">${icono("derecha", 18)}</span></button></li>`).join("")}
+      </ul>` : ""}
+    </div>
+    <div class="flex flex-col items-start gap-1 border-t border-line p-5">
+      <span class="text-[13px] text-muted">¿Es la primera vez que trae su carpeta y no aparece?</span>
+      ${boton("Registrar estudiante nuevo", "S.rec.paso='nuevo';render()", { variante: "texto", icono: "usuario" })}
+    </div>`);
+}
+function erroresNuevo() {
+  const n = S.nuevo;
+  const err = {};
+  const numero = n.numero.trim();
+  if (!numero) err.numero = "Escribe el número de documento.";
+  else if (n.tipo === "DNI" && !/^\d{8}$/.test(numero)) err.numero = "El DNI tiene 8 dígitos.";
+  else if (n.tipo === "CE" && !/^[A-Za-z0-9]{1,12}$/.test(numero)) err.numero = "El carné tiene hasta 12 letras o números.";
+  else if (ESTUDIANTES.some((e) => e.tipo === n.tipo && e.numero === numero)) err.numero = "Ya hay un estudiante con ese documento. Búscalo en el paso anterior.";
+  if (!n.nombres.trim()) err.nombres = "Escribe los nombres.";
+  if (!n.apellidos.trim()) err.apellidos = "Escribe los apellidos.";
+  if (n.institucional && !/@iestpgildaballivian\.edu\.pe$/i.test(n.institucional.trim())) err.institucional = "Debe terminar en @iestpgildaballivian.edu.pe.";
+  if (n.personal && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(n.personal.trim())) err.personal = "Revisa el correo.";
+  if (!n.institucional.trim() && !n.personal.trim()) err.personal = "Escribe al menos un correo.";
+  return err;
+}
+function formularioNuevo() {
+  const n = S.nuevo;
+  const err = n.intento ? erroresNuevo() : {};
+  const tipoBoton = (t, texto) => `<button type="button" aria-pressed="${n.tipo === t}" onclick="S.nuevo.tipo='${t}';render()"
+    class="min-h-11 flex-1 rounded-lg text-[13px] font-semibold ${n.tipo === t ? "bg-white text-ink shadow-sm" : "text-muted"}">${texto}</button>`;
+  return tarjeta(`<div class="flex flex-col gap-4 p-5">
+    <div class="flex flex-col gap-0.5"><b class="font-display text-base font-extrabold">Estudiante nuevo</b>
+    <span class="text-xs text-muted">Con estos datos podrá entrar al sistema y recibirá los avisos de su trámite.</span></div>
+    <div class="flex flex-col gap-1.5"><span class="text-[13px] font-semibold">Documento de identidad</span>
+      <div class="flex gap-1 rounded-xl bg-neutral-bg p-1">${tipoBoton("DNI", "DNI")}${tipoBoton("CE", "Carné de extranjería")}</div></div>
+    ${campoTexto("nuevo-numero", n.numero, "S.nuevo.numero=this.value;render()", { etiqueta: "Número", mono: true, placeholder: n.tipo === "DNI" ? "8 dígitos" : "Hasta 12 caracteres", error: err.numero })}
+    <div class="grid grid-cols-1 gap-4 @md:grid-cols-2">
+      ${campoTexto("nuevo-nombres", n.nombres, "S.nuevo.nombres=this.value;render()", { etiqueta: "Nombres", error: err.nombres })}
+      ${campoTexto("nuevo-apellidos", n.apellidos, "S.nuevo.apellidos=this.value;render()", { etiqueta: "Apellidos", error: err.apellidos })}
+    </div>
+    <label class="flex flex-col gap-1.5"><span class="text-[13px] font-semibold">Carrera</span>
+      <select class="min-h-11 rounded-xl border border-line bg-white px-3 text-sm"><option>${CARRERA}</option></select></label>
+    ${campoTexto("nuevo-institucional", n.institucional, "S.nuevo.institucional=this.value;render()", { etiqueta: "Correo institucional", tipo: "email", mono: true, placeholder: "usuario@iestpgildaballivian.edu.pe", error: err.institucional })}
+    ${campoTexto("nuevo-personal", n.personal, "S.nuevo.personal=this.value;render()", { etiqueta: "Correo personal", tipo: "email", mono: true, placeholder: "nombre@gmail.com", error: err.personal,
+      ayuda: "Al menos uno de los dos. Pide el personal si el estudiante ya egresó o no usa su cuenta institucional." })}
+  </div>
+  <div class="flex gap-2 border-t border-line p-5">${boton("Cancelar", "S.rec.paso='buscar';render()", { variante: "secundario" })}${boton("Guardar y continuar", "guardarNuevo()", { ancho: "grow" })}</div>`);
+}
+function elegirModulo() {
+  const r = S.rec;
+  const e = est(r.estId);
+  return `${tarjeta(`<div class="flex items-center gap-3 p-4">
+      <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-navy-tint font-display text-sm font-bold text-navy">${iniciales(nombreCompleto(e))}</span>
+      <span class="flex min-w-0 grow flex-col"><span class="truncate text-sm font-semibold">${esc(nombreCompleto(e))}</span><span class="font-mono text-[11px] text-muted">${e.tipo} ${e.numero}</span></span>
+      ${boton("Cambiar", "S.rec.paso='buscar';S.rec.modulo=null;render()", { variante: "texto" })}</div>`)}
+    ${tarjeta(`<fieldset class="flex flex-col gap-4 p-5"><legend class="sr-only">Módulo</legend>
+      <span class="font-display text-base font-extrabold">¿De qué módulo es la carpeta?</span>
+      <div class="flex flex-col gap-2">
+      ${["I", "II", "III"].map((m) => {
+        const x = EXPEDIENTES.find((y) => y.est === e.id && y.mod === m);
+        const marcado = r.modulo === m;
+        const primeroLibre = m === ["I", "II", "III"].find((n) => !EXPEDIENTES.some((y) => y.est === e.id && y.mod === n));
+        const errorModulo = S.intento && !r.modulo;
+        if (x) {
+          const c = estadoActual(x);
+          return `<div class="flex min-h-11 items-start gap-3 rounded-xl border border-line bg-bg p-3.5 text-muted">
+            <input type="radio" disabled class="mt-1 size-4" /><span class="flex flex-col gap-1"><span class="text-sm font-semibold">Módulo ${m}</span>
+            <span class="flex items-start gap-2 text-xs">Ya tiene expediente: ${chipCodigo(c, tonoActual(c))} ${ESTADOS[c].nombre}</span></span></div>`;
+        }
+        return `<label class="flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border p-3.5 ${marcado ? "border-navy bg-navy-tint/50" : errorModulo ? "border-warn" : "border-line hover:bg-bg"}">
+          <input type="radio" name="modulo" ${primeroLibre ? 'id="opcion-modulo"' : ""} ${atributosError("opcion-modulo", errorModulo ? "x" : "")} ${marcado ? "checked" : ""} onchange="S.rec.modulo='${m}';render()" class="size-4 accent-navy" />
+          <span class="text-sm font-semibold">Módulo ${m}</span></label>`;
+      }).join("")}
+      ${mensajeError("opcion-modulo", S.intento && !r.modulo ? "Elige el módulo de la carpeta." : "")}
+      </div>
+      ${areaTexto("nota-recepcion", r.nota, "S.rec.nota=this.value;render()", "Nota (opcional)", "Por ejemplo: entregó la carpeta sin la copia del DNI.")}
+      ${boton("Registrar recepción", "registrarRecepcion()", { ancho: "w-full" })}
+      <p class="text-[11px] leading-normal text-muted">Después revisarás el pago desde el expediente.</p>
+    </fieldset>`)}`;
+}
+
+// ---- Acciones ----------------------------------------------------------------------------
+function limpiarFormulario() {
+  Object.assign(S, { hacia: null, nota: "", docente: "", reasignar: false, nuevoDocente: "", motivoReasignar: "", intento: false });
+}
+function cambiarOficina(o) {
+  limpiarFormulario();
+  Object.assign(S, { oficina: o, pantalla: "bandeja", pestana: "atender", consulta: "", aviso: null });
+  render();
+}
+function ir(pantalla) {
+  limpiarFormulario();
+  S.pantalla = pantalla;
+  S.aviso = null;
+  if (pantalla === "recepcion") S.rec = { paso: "buscar", consulta: "", estId: null, modulo: null, nota: "" };
+  render();
+  document.getElementById("desplazable")?.scrollTo(0, 0);
+}
+function abrir(id) {
+  limpiarFormulario();
+  Object.assign(S, { pantalla: "detalle", expId: id, aviso: null });
+  render();
+  document.getElementById("desplazable")?.scrollTo(0, 0);
+}
+function registrar() {
+  const x = exp(S.expId);
+  const desde = estadoActual(x);
+  const errores = erroresAccion(desde);
+  if (Object.values(errores).some(Boolean)) {
+    S.intento = true;
+    render();
+    enfocarPrimerError(errores, { hacia: "opcion-hacia", docente: "asignar-docente", nota: "nota" });
+    return;
+  }
+  const hacia = opcionElegida(desde);
+  if (S.conflicto) {
+    S.aviso = { tipo: "conflicto" };
+    render();
+    return;
+  }
+  const entrada = { tipo: "estado", anterior: desde, codigo: hacia, fecha: ahoraMismo(), nota: S.nota.trim(), actor: OFICINAS[S.oficina].actor };
+  if (hacia === "06") {
+    x.docente = S.docente;
+    entrada.docente = nombreDocente(S.docente);
+  }
+  x.historial.push(entrada);
+  const e = est(x.est);
+  S.aviso = { tipo: "ok", titulo: `Registraste ${hacia} · ${ESTADOS[hacia].nombre}`, texto: `Le avisamos a ${e.nombres.split(" ")[0]} por correo.` };
+  limpiarFormulario();
+  render();
+}
+function cerrarReasignar() {
+  Object.assign(S, { reasignar: false, nuevoDocente: "", motivoReasignar: "", intento: false });
+  render();
+}
+function reasignar() {
+  const errores = erroresReasignar();
+  if (Object.values(errores).some(Boolean)) {
+    S.intento = true;
+    render();
+    enfocarPrimerError(errores, { docente: "reasignar-docente", motivo: "motivo-reasignar" });
+    return;
+  }
+  const x = exp(S.expId);
+  x.historial.push({ tipo: "reasignacion", fecha: ahoraMismo(), actor: OFICINAS.coordinacion.actor, de: nombreDocente(x.docente), a: nombreDocente(S.nuevoDocente), nota: S.motivoReasignar.trim() });
+  x.docente = S.nuevoDocente;
+  S.aviso = { tipo: "ok", titulo: `Docente Supervisor: ${nombreDocente(x.docente)}`, texto: "Desde ahora este expediente aparece en su bandeja." };
+  cerrarReasignar();
+}
+function elegirEstudiante(id) {
+  Object.assign(S.rec, { paso: "modulo", estId: id, modulo: null });
+  S.intento = false;
+  render();
+}
+function guardarNuevo() {
+  S.nuevo.intento = true;
+  const errores = erroresNuevo();
+  if (Object.keys(errores).length > 0) {
+    render();
+    enfocarPrimerError(errores, { numero: "nuevo-numero", nombres: "nuevo-nombres", apellidos: "nuevo-apellidos", institucional: "nuevo-institucional", personal: "nuevo-personal" });
+    return;
+  }
+  const n = S.nuevo;
+  const e = { id: `e${ESTUDIANTES.length + 1}`, nombres: n.nombres.trim(), apellidos: n.apellidos.trim(), tipo: n.tipo, numero: n.numero.trim(), institucional: n.institucional.trim(), personal: n.personal.trim() };
+  ESTUDIANTES.push(e);
+  S.nuevo = { tipo: "DNI", numero: "", nombres: "", apellidos: "", institucional: "", personal: "", intento: false };
+  elegirEstudiante(e.id);
+}
+function registrarRecepcion() {
+  const r = S.rec;
+  if (!r.modulo) {
+    S.intento = true;
+    render();
+    document.getElementById("opcion-modulo")?.focus();
+    return;
+  }
+  const x = { id: `x${EXPEDIENTES.length + 100}`, est: r.estId, mod: r.modulo, docente: null,
+    historial: [{ tipo: "estado", anterior: null, codigo: "01", fecha: ahoraMismo(), nota: r.nota.trim(), actor: OFICINAS["mesa-partes"].actor }] };
+  EXPEDIENTES.push(x);
+  abrir(x.id);
+  S.aviso = { tipo: "ok", titulo: "Registraste 01 · Expediente recibido", texto: "Ahora revisa el pago y registra si está conforme u observado." };
+  render();
+}
+
+// ---- Dibujo (conserva el foco y el cursor al volver a dibujar) ------------------------
+function render() {
+  const activo = document.activeElement;
+  const foco = activo && activo.id ? { id: activo.id, inicio: activo.selectionStart, fin: activo.selectionEnd } : null;
+  const desplazamiento = document.getElementById("desplazable")?.scrollTop ?? 0;
+  document.getElementById("controles").innerHTML = controles();
+  document.getElementById("marco").innerHTML = marco();
+  const desplazable = document.getElementById("desplazable");
+  if (desplazable) desplazable.scrollTop = desplazamiento;
+  if (foco) {
+    const el = document.getElementById(foco.id);
+    if (el) {
+      el.focus({ preventScroll: true });
+      try { if (foco.inicio != null) el.setSelectionRange(foco.inicio, foco.fin); } catch {}
+    }
+  }
+}
+
+// Pantalla inicial desde la dirección, p. ej. Oficinas.html#oficina=docente&vista=celular&exp=x7
+// (también pantalla=recepcion y consulta=… para la búsqueda de Mesa de Partes).
+const inicial = new URLSearchParams(location.hash.slice(1));
+if (DEPENDENCIAS[inicial.get("oficina")]) S.oficina = inicial.get("oficina");
+if (["pc", "celular"].includes(inicial.get("vista"))) S.vista = inicial.get("vista");
+if (exp(inicial.get("exp"))) Object.assign(S, { pantalla: "detalle", expId: inicial.get("exp") });
+if (inicial.get("pantalla") === "recepcion") S.pantalla = "recepcion";
+if (inicial.get("consulta")) S.rec.consulta = inicial.get("consulta");
+if (["atender", "esperando", "todos"].includes(inicial.get("pestana"))) S.pestana = inicial.get("pestana");
+render();
+</script>
+</body>
+</html>

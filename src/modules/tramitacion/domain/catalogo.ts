@@ -105,6 +105,9 @@ export type CodigoEstado = keyof typeof ESTADOS;
 /** Estado con el que nace todo expediente (Mesa de Partes recibe la carpeta física). */
 export const ESTADO_INICIAL = "01" satisfies CodigoEstado;
 
+/** Estado en el que se elige al Docente Supervisor: registrarlo exige indicar quién es (D49). */
+export const ESTADO_ASIGNACION_DOCENTE = "06" satisfies CodigoEstado;
+
 /** Transiciones permitidas: estado actual → estados a los que puede pasar. */
 export const TRANSICIONES = {
   "01": ["02", "03"],

@@ -1,3 +1,4 @@
+export * from "./cambiar-docente";
 export * from "./mensajes";
 export * from "./obtener-seguimiento";
 export * from "./puertos";

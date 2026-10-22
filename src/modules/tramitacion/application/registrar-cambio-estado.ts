@@ -1,14 +1,16 @@
 import {
   aplicarCambioEstado,
+  exigeDocente,
   exito,
   fallo,
   type Actor,
   type CodigoEstado,
+  type DocenteAsignado,
   type Expediente,
   type Resultado,
 } from "../domain";
 import type { ErrorTramitacion } from "./mensajes";
-import type { DependenciasTramitacion } from "./puertos";
+import { buscarDocenteActivo, type DependenciasTramitacion } from "./puertos";
 
 export type SolicitudCambioEstado = {
   /** Lo pone el servidor desde la sesión, nunca el cliente. */
@@ -16,6 +18,8 @@ export type SolicitudCambioEstado = {
   expedienteId: string;
   hacia: CodigoEstado;
   motivo?: string;
+  /** Docente elegido al asignar (06). El nombre se toma del directorio, no del navegador. */
+  docenteId?: string;
 };
 
 /**
@@ -24,6 +28,7 @@ export type SolicitudCambioEstado = {
  */
 export function crearRegistrarCambioEstado({
   repositorio,
+  docentes,
   publicador,
   reloj,
 }: Omit<DependenciasTramitacion, "ids">) {
@@ -32,11 +37,18 @@ export function crearRegistrarCambioEstado({
     expedienteId,
     hacia,
     motivo,
+    docenteId,
   }: SolicitudCambioEstado): Promise<Resultado<Expediente, ErrorTramitacion>> {
     const expediente = await repositorio.buscarPorId(expedienteId);
     if (!expediente) return fallo("EXPEDIENTE_NO_ENCONTRADO");
 
-    const cambio = aplicarCambioEstado(expediente, { hacia, actor, fecha: reloj.ahora(), motivo });
+    let docente: DocenteAsignado | undefined;
+    if (exigeDocente(hacia) && docenteId) {
+      docente = (await buscarDocenteActivo(docentes, docenteId)) ?? undefined;
+      if (!docente) return fallo("DOCENTE_NO_VALIDO");
+    }
+
+    const cambio = aplicarCambioEstado(expediente, { hacia, actor, fecha: reloj.ahora(), motivo, docente });
     if (!cambio.ok) return cambio;
 
     const guardado = await repositorio.registrarCambio(expedienteId, cambio.valor.evento.registro);

@@ -4,13 +4,15 @@
 // la aplicación se usa con Google o enlace al correo (cuentas reales, abajo).
 import type { Rol } from "../../src/modules/auth/roles";
 
-export type UsuarioPrueba = { correo: string; nombre: string; rol: Rol };
+export type UsuarioPrueba = { correo: string; nombre: string; rol: Rol; carrera?: string };
 
 export const USUARIOS_PRUEBA = {
   estudiante: { correo: "estudiante@efsrt.test", nombre: "Giancarlos Ormeño", rol: "estudiante" },
   estudianteAjeno: { correo: "estudiante-ajeno@efsrt.test", nombre: "Valeria Chávez Rojas", rol: "estudiante" },
   mesaPartes: { correo: "mesa-partes@efsrt.test", nombre: "A. Quispe", rol: "mesa-partes" },
-  coordinacion: { correo: "coordinacion@efsrt.test", nombre: "Lic. M. Torres", rol: "coordinacion" },
+  coordinacion: { correo: "coordinacion@efsrt.test", nombre: "Lic. M. Torres", rol: "coordinacion", carrera: "desarrollo-sistemas" },
+  // De otra carrera: no debe ver los expedientes de Desarrollo de Sistemas (D50).
+  coordinacionAjena: { correo: "coordinacion-ajena@efsrt.test", nombre: "Lic. J. Ramos", rol: "coordinacion", carrera: "contabilidad" },
   docente: { correo: "docente@efsrt.test", nombre: "Mg. R. Paredes", rol: "docente" },
   docenteAjeno: { correo: "docente-ajeno@efsrt.test", nombre: "Mg. L. Vargas", rol: "docente" },
   bienestar: { correo: "bienestar@efsrt.test", nombre: "Lic. P. Salazar", rol: "bienestar" },

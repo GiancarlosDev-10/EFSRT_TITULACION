@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      cambios_docente: {
+        Row: {
+          actor_id: string
+          actor_nombre: string
+          docente_anterior_id: string
+          docente_anterior_nombre: string
+          docente_nuevo_id: string
+          docente_nuevo_nombre: string
+          expediente_id: string
+          fecha: string
+          id: number
+          motivo: string
+        }
+        Insert: {
+          actor_id: string
+          actor_nombre: string
+          docente_anterior_id: string
+          docente_anterior_nombre: string
+          docente_nuevo_id: string
+          docente_nuevo_nombre: string
+          expediente_id: string
+          fecha?: string
+          id?: never
+          motivo: string
+        }
+        Update: {
+          actor_id?: string
+          actor_nombre?: string
+          docente_anterior_id?: string
+          docente_anterior_nombre?: string
+          docente_nuevo_id?: string
+          docente_nuevo_nombre?: string
+          expediente_id?: string
+          fecha?: string
+          id?: never
+          motivo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cambios_docente_actor_id_fkey"
+            columns: ["actor_id"]
+            isOneToOne: false
+            referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cambios_docente_docente_anterior_id_fkey"
+            columns: ["docente_anterior_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cambios_docente_docente_nuevo_id_fkey"
+            columns: ["docente_nuevo_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cambios_docente_expediente_id_fkey"
+            columns: ["expediente_id"]
+            isOneToOne: false
+            referencedRelation: "expedientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       dependencias: {
         Row: {
           codigo: string
@@ -111,6 +179,7 @@ export type Database = {
           actualizado_en: string
           creado_en: string
           docente_id: string | null
+          docente_nombre: string | null
           estado: string
           estudiante_id: string
           id: string
@@ -120,6 +189,7 @@ export type Database = {
           actualizado_en?: string
           creado_en?: string
           docente_id?: string | null
+          docente_nombre?: string | null
           estado: string
           estudiante_id: string
           id: string
@@ -129,6 +199,7 @@ export type Database = {
           actualizado_en?: string
           creado_en?: string
           docente_id?: string | null
+          docente_nombre?: string | null
           estado?: string
           estudiante_id?: string
           id?: string
@@ -139,7 +210,7 @@ export type Database = {
             foreignKeyName: "expedientes_docente_id_fkey"
             columns: ["docente_id"]
             isOneToOne: false
-            referencedRelation: "perfiles"
+            referencedRelation: "personal"
             referencedColumns: ["id"]
           },
           {
@@ -170,6 +241,8 @@ export type Database = {
           actor_dependencia: string
           actor_id: string
           actor_nombre: string
+          docente_id: string | null
+          docente_nombre: string | null
           estado_anterior: string | null
           estado_nuevo: string
           expediente_id: string
@@ -181,6 +254,8 @@ export type Database = {
           actor_dependencia: string
           actor_id: string
           actor_nombre: string
+          docente_id?: string | null
+          docente_nombre?: string | null
           estado_anterior?: string | null
           estado_nuevo: string
           expediente_id: string
@@ -192,6 +267,8 @@ export type Database = {
           actor_dependencia?: string
           actor_id?: string
           actor_nombre?: string
+          docente_id?: string | null
+          docente_nombre?: string | null
           estado_anterior?: string | null
           estado_nuevo?: string
           expediente_id?: string
@@ -212,6 +289,13 @@ export type Database = {
             columns: ["actor_id"]
             isOneToOne: false
             referencedRelation: "perfiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "historial_docente_id_fkey"
+            columns: ["docente_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
             referencedColumns: ["id"]
           },
           {
@@ -276,6 +360,7 @@ export type Database = {
       personal: {
         Row: {
           activo: boolean
+          carrera: string | null
           correo: string
           creado_en: string
           id: string
@@ -285,6 +370,7 @@ export type Database = {
         }
         Insert: {
           activo?: boolean
+          carrera?: string | null
           correo: string
           creado_en?: string
           id?: string
@@ -294,6 +380,7 @@ export type Database = {
         }
         Update: {
           activo?: boolean
+          carrera?: string | null
           correo?: string
           creado_en?: string
           id?: string
@@ -369,6 +456,24 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      cambiar_docente: {
+        Args: {
+          p_docente_anterior_id: string
+          p_docente_nuevo_id: string
+          p_expediente_id: string
+          p_motivo: string
+        }
+        Returns: undefined
+      }
+      docentes: {
+        Args: never
+        Returns: {
+          activo: boolean
+          en_supervision: number
+          id: string
+          nombre: string
+        }[]
+      }
       mi_perfil: {
         Args: never
         Returns: {
@@ -378,6 +483,7 @@ export type Database = {
       }
       registrar_cambio: {
         Args: {
+          p_docente_id?: string
           p_estado_anterior: string
           p_estado_nuevo: string
           p_expediente_id: string
