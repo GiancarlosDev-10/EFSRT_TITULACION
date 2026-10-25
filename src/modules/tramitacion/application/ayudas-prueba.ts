@@ -2,6 +2,7 @@
 import type { Expediente, ExpedienteCambioDeEstado } from "../domain";
 import { DOCENTES } from "../domain/ayudas-prueba";
 import { crearConsultasEnMemoria } from "../infrastructure/consultas-en-memoria";
+import { crearDirectorioEnMemoria } from "../infrastructure/directorio-en-memoria";
 import { ESTUDIANTE_DE_PRUEBA } from "../infrastructure/datos-prueba";
 import { crearRepositorioEnMemoria } from "../infrastructure/repositorio-en-memoria";
 import type { DependenciasTramitacion, DocenteDelDirectorio, FichaEstudiante } from "./puertos";
@@ -37,6 +38,7 @@ export function crearDependenciasDePrueba(
 
   const dependencias: DependenciasTramitacion = {
     repositorio,
+    estudiantes: crearDirectorioEnMemoria(estudiantes, () => `est-${++contador}`),
     consultas: crearConsultasEnMemoria(repositorio, estudiantes),
     docentes: { listar: async () => DOCENTES_DEL_DIRECTORIO },
     publicador: { publicar: async (evento) => void eventosPublicados.push(evento) },

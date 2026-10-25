@@ -1,14 +1,29 @@
 // Layout de las cuatro oficinas: barra lateral en PC y barra superior oscura en
-// celular. No decide el acceso: cada página exige su rol (D46).
+// celular. No decide el acceso: cada página exige su rol (D46). Mesa de
+// Partes suma "Registrar recepción" (D52).
 import { Suspense, type ReactNode } from "react";
 import { BotonCerrarSesion, obtenerUsuarioActual } from "@/modules/auth";
-import { DEPENDENCIAS, RUTAS_OFICINA, type Dependencia } from "@/modules/tramitacion";
-import { Avatar, BarraLateral, IconoBandeja, Logo, NavegacionLateral, type ItemNavegacion } from "@/shared";
+import {
+  DEPENDENCIAS,
+  ESTADO_INICIAL,
+  RUTAS_OFICINA,
+  RUTAS_RECEPCION,
+  puedeRegistrar,
+  type Dependencia,
+} from "@/modules/tramitacion";
+import { Avatar, BarraLateral, IconoBandeja, IconoCarpeta, Logo, NavegacionLateral, type ItemNavegacion } from "@/shared";
 
 type Props = { dependencia: Dependencia; children: ReactNode };
 
 function navegacion(dependencia: Dependencia): ItemNavegacion[] {
-  return [{ href: RUTAS_OFICINA.bandeja(dependencia), etiqueta: "Bandeja", icono: <IconoBandeja /> }];
+  const bandeja: ItemNavegacion = { href: RUTAS_OFICINA.bandeja(dependencia), etiqueta: "Bandeja", icono: <IconoBandeja /> };
+  // Quien abre los expedientes (estado inicial) recibe las carpetas. La recepción
+  // cuelga de la misma ruta: "Bandeja" se marca solo en la suya, no en la recepción.
+  if (!puedeRegistrar(dependencia, ESTADO_INICIAL)) return [bandeja];
+  return [
+    { ...bandeja, exacto: true },
+    { href: RUTAS_RECEPCION.buscar, etiqueta: "Registrar recepción", icono: <IconoCarpeta /> },
+  ];
 }
 
 async function TarjetaUsuario({ dependencia }: { dependencia: Dependencia }) {

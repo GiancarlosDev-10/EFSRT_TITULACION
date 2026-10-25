@@ -1,11 +1,15 @@
 export { BandejaOficina } from "./BandejaOficina";
-export { nombreDeCarrera, nombresDeModulos } from "./contenido";
+export { carrerasRegistradas, nombreDeCarrera, nombresDeModulos } from "./contenido";
 export { DetalleExpedienteOficina } from "./DetalleExpedienteOficina";
+export { DocenteEnFicha } from "./DocenteEnFicha";
+export { FormularioEstudianteNuevo, type EstadoAltaEstudiante } from "./FormularioEstudianteNuevo";
+export { FormularioRecepcion } from "./FormularioRecepcion";
 export { subitemsDeConstancias, subitemsDeModulos } from "./navegacion";
 export { PanelAccion, type DocenteParaElegir, type EstadoPanelAccion } from "./PanelAccion";
 export { detalleDeObservacion } from "./presentacion";
 export { esVistaBandeja, opcionesDeAccion, registraObservaciones, type VistaBandeja } from "./presentacion-oficina";
-export { RUTAS_ALUMNO, RUTAS_OFICINA } from "./rutas";
+export { ChipsModulos, PasosRecepcion, RecepcionBuscar } from "./RecepcionBuscar";
+export { RUTAS_ALUMNO, RUTAS_OFICINA, RUTAS_RECEPCION } from "./rutas";
 export { SeguimientoDeModulo } from "./SeguimientoDeModulo";
 export { VistaConstancia } from "./VistaConstancia";
 export { SeguimientoEscritorio, SeguimientoMovil } from "./VistaEstudiante";

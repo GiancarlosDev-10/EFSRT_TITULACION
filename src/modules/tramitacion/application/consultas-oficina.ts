@@ -5,6 +5,7 @@ import {
   ESTADO_ASIGNACION_DOCENTE,
   MODULOS,
   esObservacion,
+  limpiarDocumento,
   permiteCambiarDocente,
   puedeRegistrar,
   transicionesDisponibles,
@@ -62,7 +63,6 @@ export function nombreCompleto({ nombres, apellidos }: Pick<FichaEstudiante, "no
 }
 
 const sinTildes = (texto: string) => texto.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
-const soloDocumento = (texto: string) => texto.replace(/[\s.-]/g, "").toUpperCase();
 
 /**
  * Mismo criterio que `buscar_estudiantes` en la base (D38): si el texto lleva
@@ -73,7 +73,7 @@ export function coincideConEstudiante(estudiante: FichaEstudiante, consulta: str
   const texto = consulta.trim();
   if (texto === "") return true;
   if (/\d/.test(texto)) {
-    const documento = soloDocumento(texto);
+    const documento = limpiarDocumento(texto);
     const numero = estudiante.numeroDocumento;
     return numero.startsWith(documento) || numero.replace(/^0+/, "").startsWith(documento.replace(/^0+/, ""));
   }

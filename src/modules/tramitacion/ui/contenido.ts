@@ -17,6 +17,11 @@ const CARRERAS: Record<string, { nombre: string; modulos: Record<Modulo, string>
   },
 };
 
+/** Carreras para elegir al registrar un estudiante: solo las registradas aquí. */
+export function carrerasRegistradas(): { id: string; nombre: string }[] {
+  return Object.entries(CARRERAS).map(([id, { nombre }]) => ({ id, nombre }));
+}
+
 /** "Desarrollo de Sistemas"; si la carrera no está registrada, su identificador. */
 export function nombreDeCarrera(carrera: string): string {
   return CARRERAS[carrera]?.nombre ?? carrera;

@@ -8,13 +8,17 @@ import { crearBusEnMemoria } from "@/shared";
 import { crearClienteServidor } from "@/shared/lib/supabase/servidor";
 import type { Dependencia, ExpedienteCambioDeEstado } from "../domain";
 import {
+  crearBuscarParaRecepcion,
   crearCambiarDocente,
   crearObtenerBandeja,
+  crearObtenerCandidatoRecepcion,
   crearObtenerExpedienteDeOficina,
   crearObtenerSeguimientoDelEstudiante,
   crearRegistrarCambioEstado,
+  crearRegistrarEstudiante,
   crearRegistrarRecepcion,
   type DependenciasTramitacion,
+  type SolicitudAltaEstudiante,
   type SolicitudCambioDocente,
   type SolicitudCambioEstado,
   type SolicitudRecepcion,
@@ -33,6 +37,7 @@ const cliente = cache(crearClienteServidor);
 const dependencias = cache(
   async (): Promise<DependenciasTramitacion> => ({
     repositorio: crearRepositorioSupabase(await cliente()),
+    estudiantes: crearDirectorioSupabase(await cliente()),
     consultas: crearConsultasSupabase(await cliente()),
     docentes: crearDirectorioDocentesSupabase(await cliente()),
     publicador: bus,
@@ -59,6 +64,20 @@ export async function obtenerBandeja(dependencia: Dependencia, consulta?: string
 /** Detalle de un expediente para una oficina; `null` si no existe o la sesión no lo ve. */
 export async function obtenerExpedienteDeOficina(expedienteId: string, dependencia: Dependencia) {
   return crearObtenerExpedienteDeOficina(await dependencias())(expedienteId, dependencia);
+}
+
+/** Mesa de Partes: estudiantes que coinciden con la búsqueda, con lo que tiene en cada módulo. */
+export async function buscarParaRecepcion(consulta: string) {
+  return crearBuscarParaRecepcion(await dependencias())(consulta);
+}
+
+/** Mesa de Partes: un estudiante con sus módulos, para elegir el módulo de la carpeta. */
+export async function obtenerCandidatoRecepcion(estudianteId: string) {
+  return crearObtenerCandidatoRecepcion(await dependencias())(estudianteId);
+}
+
+export async function registrarEstudiante(solicitud: SolicitudAltaEstudiante) {
+  return crearRegistrarEstudiante(await dependencias())(solicitud);
 }
 
 export async function registrarRecepcion(solicitud: SolicitudRecepcion) {

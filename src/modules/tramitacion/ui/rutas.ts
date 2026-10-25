@@ -18,3 +18,10 @@ export const RUTAS_OFICINA = {
   bandeja: (dependencia: Dependencia) => `/${dependencia}`,
   expediente: (dependencia: Dependencia, expedienteId: string) => `/${dependencia}/expediente/${expedienteId}`,
 } as const;
+
+/** Rutas de la recepción de carpetas (solo Mesa de Partes). */
+export const RUTAS_RECEPCION = {
+  buscar: "/mesa-partes/recepcion",
+  modulo: (estudianteId: string) => `/mesa-partes/recepcion?estudiante=${estudianteId}`,
+  estudianteNuevo: "/mesa-partes/recepcion/nuevo",
+} as const;

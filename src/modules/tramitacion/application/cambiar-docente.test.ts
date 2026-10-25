@@ -30,6 +30,14 @@ describe("cambiarDocente", () => {
     ]);
   });
 
+  test("solo la oficina que asigna al docente puede cambiarlo; nada se guarda", async () => {
+    const { dependencias, cambiarDocente } = preparar();
+    for (const actor of [ACTORES["mesa-partes"], ACTORES.bienestar, ACTORES.docente]) {
+      expect(await cambiarDocente({ ...solicitud, actor })).toEqual({ ok: false, error: "DEPENDENCIA_NO_AUTORIZADA" });
+    }
+    expect((await dependencias.repositorio.buscarPorId("exp-giancarlos-II"))?.cambiosDocente).toEqual([]);
+  });
+
   test("no acepta un docente desactivado", async () => {
     const { cambiarDocente } = preparar();
     expect(await cambiarDocente({ ...solicitud, docenteId: "doc-salazar" })).toEqual({ ok: false, error: "DOCENTE_NO_VALIDO" });
@@ -68,5 +76,17 @@ describe("cambiarDocente", () => {
     const resultado = await cambiarDocente({ ...solicitud, docenteId: DOCENTES.vargas.id });
     expect(resultado).toEqual({ ok: false, error: "CONFLICTO_DE_ESTADO" });
     expect((await repositorio.buscarPorId("exp-giancarlos-II"))?.cambiosDocente).toHaveLength(1);
+  });
+
+  test("si el docente que se vio en pantalla ya no es el vigente, hay conflicto y no se guarda", async () => {
+    const { dependencias, cambiarDocente } = preparar();
+    const resultado = await cambiarDocente({ ...solicitud, docenteAnteriorId: DOCENTES.vargas.id });
+    expect(resultado).toEqual({ ok: false, error: "CONFLICTO_DE_ESTADO" });
+    expect((await dependencias.repositorio.buscarPorId("exp-giancarlos-II"))?.docente).toEqual(DOCENTES.paredes);
+  });
+
+  test("si el docente que se vio en pantalla es el vigente, guarda", async () => {
+    const { cambiarDocente } = preparar();
+    expect((await cambiarDocente({ ...solicitud, docenteAnteriorId: DOCENTES.paredes.id })).ok).toBe(true);
   });
 });

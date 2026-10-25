@@ -25,6 +25,7 @@ import {
   CUENTAS_REALES,
   DOCENTES_CONTRATO,
   ESTUDIANTES_PRUEBA,
+  NOMBRES_DEL_VIDEO,
   USUARIOS_PRUEBA,
   claveUsuariosPrueba,
   type ClaveUsuarioPrueba,
@@ -275,7 +276,7 @@ async function sembrarPersonalReal(actores: Actores): Promise<Actores> {
       console.log(`  · ${rol}: sin CUENTA_* en .env, se omite`);
       continue;
     }
-    const { usuarioId, personalId } = await habilitarPersonal(correo, USUARIOS_PRUEBA[CLAVE_DE_ROL[rol]].nombre, rol);
+    const { usuarioId, personalId } = await habilitarPersonal(correo, NOMBRES_DEL_VIDEO[rol], rol);
     console.log(`  · ${rol}: habilitado${usuarioId ? " y enlazado" : " (se enlaza en su primer ingreso)"}`);
     if (rol === "docente" && usuarioId) {
       delVideo = { cuentas: { ...actores.cuentas, docente: usuarioId }, docentePersonalId: personalId };

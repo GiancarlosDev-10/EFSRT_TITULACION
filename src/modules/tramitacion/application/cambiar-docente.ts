@@ -6,6 +6,11 @@ export type SolicitudCambioDocente = {
   /** Lo pone el servidor desde la sesión, nunca el cliente. */
   actor: Actor;
   expedienteId: string;
+  /**
+   * Docente que la oficina vio en pantalla. Si ya no es el vigente, otra
+   * persona lo cambió mientras tanto: CONFLICTO_DE_ESTADO (como `desde`).
+   */
+  docenteAnteriorId?: string;
   docenteId: string;
   motivo?: string;
 };
@@ -19,11 +24,15 @@ export function crearCambiarDocente({
   return async function cambiarDocente({
     actor,
     expedienteId,
+    docenteAnteriorId,
     docenteId,
     motivo,
   }: SolicitudCambioDocente): Promise<Resultado<Expediente, ErrorTramitacion>> {
     const expediente = await repositorio.buscarPorId(expedienteId);
     if (!expediente) return fallo("EXPEDIENTE_NO_ENCONTRADO");
+    if (docenteAnteriorId !== undefined && docenteAnteriorId !== expediente.docente?.id) {
+      return fallo("CONFLICTO_DE_ESTADO");
+    }
 
     const docente = await buscarDocenteActivo(docentes, docenteId);
     if (!docente) return fallo("DOCENTE_NO_VALIDO");

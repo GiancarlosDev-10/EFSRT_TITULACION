@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { exigirRol } from "@/modules/auth";
 import {
   DetalleExpedienteOficina,
+  DocenteEnFicha,
   PanelAccion,
   esCodigoEstado,
   obtenerExpedienteDeOficina,
@@ -12,7 +13,7 @@ import {
   type Dependencia,
 } from "@/modules/tramitacion";
 import { CargandoPagina, MarcoPagina, esUuid } from "@/shared";
-import { registrarCambioDeOficina } from "./acciones";
+import { cambiarDocenteDeOficina, registrarCambioDeOficina } from "./acciones";
 
 type Props = {
   dependencia: Dependencia;
@@ -37,13 +38,28 @@ async function Contenido({ dependencia, params, searchParams }: Props) {
   const expediente = await obtenerExpedienteDeOficina(id, dependencia);
   if (!expediente) notFound();
 
-  const { registrado } = await searchParams;
+  const { registrado, docente } = await searchParams;
   return (
     <DetalleExpedienteOficina
       expediente={expediente}
       dependencia={dependencia}
       ahora={new Date()}
       registrado={esCodigoEstado(registrado) ? registrado : null}
+      docenteCambiado={docente === "cambiado"}
+      cambioDocente={
+        expediente.puedeCambiarDocente &&
+        expediente.docente && (
+          // `key`: al cambiar de docente, el diálogo se cierra y empieza de cero.
+          <DocenteEnFicha
+            key={expediente.docente.id}
+            expedienteId={expediente.id}
+            docente={expediente.docente}
+            desactivado={expediente.docenteDesactivado}
+            docentes={expediente.docentesDisponibles}
+            accion={cambiarDocenteDeOficina}
+          />
+        )
+      }
       panel={
         // `key`: al cambiar el estado, el formulario empieza de cero.
         <PanelAccion

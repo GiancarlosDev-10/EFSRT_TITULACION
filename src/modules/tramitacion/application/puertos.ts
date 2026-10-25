@@ -3,6 +3,7 @@
 // de memoria.
 import type {
   CambioDocente,
+  DatosEstudiante,
   DocenteAsignado,
   Expediente,
   ExpedienteCambioDeEstado,
@@ -49,22 +50,21 @@ export type EstudianteRegistrado = {
   carrera: string;
 };
 
+/** Datos del estudiante que ve una oficina (D38). */
+export type FichaEstudiante = DatosEstudiante & { id: string };
+
+export type ErrorRegistroEstudiante = "DOCUMENTO_YA_REGISTRADO" | "CORREO_YA_REGISTRADO";
+
 export interface DirectorioEstudiantes {
   /** Estudiante enlazado a la cuenta `usuarioId`, o `null` si no hay ninguno. */
   buscarPorUsuario(usuarioId: string): Promise<EstudianteRegistrado | null>;
+  /** Búsqueda de Mesa de Partes (D38): por documento si lleva dígitos; si no, por nombre. Hasta 20. */
+  buscar(consulta: string): Promise<readonly FichaEstudiante[]>;
+  /** `null` si no existe o la sesión no puede verlo. */
+  buscarPorId(id: string): Promise<FichaEstudiante | null>;
+  /** Registra a un estudiante nuevo. Falla si su documento o alguno de sus correos ya está registrado. */
+  registrar(datos: DatosEstudiante): Promise<Resultado<FichaEstudiante, ErrorRegistroEstudiante>>;
 }
-
-/** Datos del estudiante que ve una oficina (D38). */
-export type FichaEstudiante = {
-  id: string;
-  nombres: string;
-  apellidos: string;
-  tipoDocumento: "DNI" | "CE";
-  numeroDocumento: string;
-  carrera: string;
-  correoInstitucional: string | null;
-  correoPersonal: string | null;
-};
 
 export type ExpedienteConEstudiante = {
   expediente: Expediente;
@@ -105,6 +105,7 @@ export interface GeneradorDeIds {
 /** Todo lo que pueden necesitar los casos de uso; cada uno toma solo lo suyo. */
 export type DependenciasTramitacion = {
   repositorio: ExpedienteRepository;
+  estudiantes: DirectorioEstudiantes;
   consultas: ConsultasDeOficina;
   docentes: DirectorioDocentes;
   publicador: PublicadorDeEventos;

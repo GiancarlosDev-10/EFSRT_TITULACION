@@ -6,6 +6,8 @@ import { Avatar, EncabezadoPagina, IconoAlerta, IconoCambiar, IconoCheck } from 
 import { ESTADOS, esFinal, ubicacionDe, type CodigoEstado, type Dependencia } from "../domain";
 import { nombreCompleto, type ExpedienteDeOficina, type MovimientoDeOficina } from "../application";
 import { ChipCodigo } from "./ChipCodigo";
+import { CorreoPartible } from "./CorreoPartible";
+import { DatoFicha } from "./DatoFicha";
 import { nombreDeCarrera, nombresDeModulos } from "./contenido";
 import { PildoraEstado } from "./PildoraEstado";
 import { momento, type TonoEvento } from "./presentacion";
@@ -18,11 +20,23 @@ type Props = {
   ahora: Date;
   /** Estado recién registrado (para el aviso de éxito); `null` si no hay aviso. */
   registrado: CodigoEstado | null;
+  /** Se acaba de cambiar al Docente Supervisor (para el aviso de éxito). */
+  docenteCambiado: boolean;
   /** Formulario de acción (componente de cliente con su Server Action). */
   panel: ReactNode;
+  /** Docente con "Cambiar" y su diálogo (solo si esta oficina puede cambiarlo ahora); si no, la ficha lo muestra sin botón. */
+  cambioDocente?: ReactNode;
 };
 
-export function DetalleExpedienteOficina({ expediente, dependencia, ahora, registrado, panel }: Props) {
+export function DetalleExpedienteOficina({
+  expediente,
+  dependencia,
+  ahora,
+  registrado,
+  docenteCambiado,
+  panel,
+  cambioDocente,
+}: Props) {
   const ubicacion = esFinal(expediente.estado) ? "Trámite terminado" : `Está ${UBICACION_DE[ubicacionDe(expediente.estado)]}`;
   return (
     <>
@@ -34,24 +48,19 @@ export function DetalleExpedienteOficina({ expediente, dependencia, ahora, regis
       />
 
       {registrado && (
-        <div role="status" className="flex items-start gap-3 rounded-2xl border border-ok/30 bg-ok-bg p-4 text-ok">
-          <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-ok text-white">
-            <IconoCheck tamano={14} />
-          </span>
-          <div className="flex flex-col gap-0.5">
-            <b className="text-sm">
-              Registraste {registrado} · {nombreBreve(registrado)}
-            </b>
-            <span className="text-[13px] text-ink">
-              {expediente.estudiante.nombres.split(" ")[0]} ya lo ve en su seguimiento.
-            </span>
-          </div>
-        </div>
+        <AvisoExito titulo={`Registraste ${registrado} · ${nombreBreve(registrado)}`}>
+          {expediente.estudiante.nombres.split(" ")[0]} ya lo ve en su seguimiento.
+        </AvisoExito>
+      )}
+      {docenteCambiado && expediente.docente && (
+        <AvisoExito titulo="Cambiaste al Docente Supervisor">
+          Ahora supervisa {expediente.docente.nombre}. El cambio quedó en el historial.
+        </AvisoExito>
       )}
 
       <div className="flex flex-col gap-4 lg:grid lg:grid-cols-[minmax(0,1fr)_400px] lg:items-start lg:gap-6">
         <div className="lg:col-start-1 lg:row-start-1">
-          <FichaEstudiante expediente={expediente} />
+          <FichaEstudiante expediente={expediente} cambioDocente={cambioDocente} />
         </div>
         <div className="lg:sticky lg:top-6 lg:col-start-2 lg:row-span-2 lg:row-start-1">
           <section aria-label="Registrar un cambio" className="rounded-2xl border border-line bg-white">
@@ -73,32 +82,43 @@ export function DetalleExpedienteOficina({ expediente, dependencia, ahora, regis
   );
 }
 
+function AvisoExito({ titulo, children }: { titulo: string; children: ReactNode }) {
+  return (
+    // Ancho de su texto, no de la pantalla.
+    <div role="status" className="flex w-fit max-w-full items-start gap-3 rounded-2xl border border-ok/30 bg-ok-bg py-3 pr-5 pl-4 text-ok">
+      <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-ok text-white">
+        <IconoCheck tamano={14} />
+      </span>
+      <div className="flex flex-col gap-0.5">
+        <b className="text-sm">{titulo}</b>
+        <span className="text-[13px] text-ink">{children}</span>
+      </div>
+    </div>
+  );
+}
+
 function SinAcciones({ expediente }: { expediente: ExpedienteDeOficina }) {
   const final = esFinal(expediente.estado);
   return (
     <div className="flex flex-col gap-2 p-5">
       <b className="text-sm">{final ? "Trámite terminado" : "Sin acciones para tu oficina"}</b>
       <span className="text-[13px] leading-normal text-muted">
-        {final
-          ? "La constancia está lista para que el estudiante la recoja."
-          : `El expediente está ${UBICACION_DE[ubicacionDe(expediente.estado)]}. Podrás registrar algo cuando vuelva a tu oficina.`}
+        {final ? (
+          "La constancia está lista para que el estudiante la recoja."
+        ) : expediente.docenteDesactivado ? (
+          <>
+            El Docente Supervisor fue desactivado. Usa <b>Cambiar</b> en la ficha para asignar a otro y que la
+            supervisión continúe.
+          </>
+        ) : (
+          `El expediente está ${UBICACION_DE[ubicacionDe(expediente.estado)]}. Podrás registrar algo cuando vuelva a tu oficina.`
+        )}
       </span>
     </div>
   );
 }
 
-function Dato({ etiqueta, children, mono = false }: { etiqueta: string; children: ReactNode; mono?: boolean }) {
-  return (
-    <div className="flex min-w-0 flex-col gap-0.5">
-      <dt className="text-[11px] font-semibold tracking-wide text-muted uppercase">{etiqueta}</dt>
-      <dd className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-sm break-all ${mono ? "font-mono text-[13px]" : ""}`}>
-        {children || <span className="text-muted">—</span>}
-      </dd>
-    </div>
-  );
-}
-
-function FichaEstudiante({ expediente }: { expediente: ExpedienteDeOficina }) {
+function FichaEstudiante({ expediente, cambioDocente }: { expediente: ExpedienteDeOficina; cambioDocente?: ReactNode }) {
   const { estudiante, modulo, estado, docente, docenteDesactivado } = expediente;
   const nombre = nombreCompleto(estudiante);
   const nombreModulo = nombresDeModulos(estudiante.carrera)?.[modulo];
@@ -115,27 +135,33 @@ function FichaEstudiante({ expediente }: { expediente: ExpedienteDeOficina }) {
         <PildoraEstado texto={textoDePildora(estado)} tono={tonoDePildora(estado)} />
       </div>
       <dl className="grid grid-cols-1 gap-4 p-5 md:grid-cols-2">
-        <Dato etiqueta="Carrera">{nombreDeCarrera(estudiante.carrera)}</Dato>
-        <Dato etiqueta="Módulo">{nombreModulo ? `Módulo ${modulo} · ${nombreModulo}` : `Módulo ${modulo}`}</Dato>
-        <Dato etiqueta="Correo institucional" mono>
-          {estudiante.correoInstitucional}
-        </Dato>
-        <Dato etiqueta="Correo personal" mono>
-          {estudiante.correoPersonal}
-        </Dato>
-        <Dato etiqueta="Docente Supervisor">
-          {docente && (
-            <>
-              {docente.nombre}
-              {docenteDesactivado && (
-                <span className="inline-flex items-center gap-1 rounded-md bg-warn-bg px-1.5 py-0.5 text-[11px] font-semibold text-warn-text">
-                  <IconoAlerta tamano={13} />
-                  Desactivado
-                </span>
-              )}
-            </>
-          )}
-        </Dato>
+        <DatoFicha etiqueta="Carrera">{nombreDeCarrera(estudiante.carrera)}</DatoFicha>
+        <DatoFicha etiqueta="Módulo">{nombreModulo ? `Módulo ${modulo} · ${nombreModulo}` : `Módulo ${modulo}`}</DatoFicha>
+        {/* Al menos uno de los dos correos existe (D52); el que falta no se muestra. */}
+        {estudiante.correoInstitucional && (
+          <DatoFicha etiqueta="Correo institucional" mono>
+            <CorreoPartible correo={estudiante.correoInstitucional} />
+          </DatoFicha>
+        )}
+        {estudiante.correoPersonal && (
+          <DatoFicha etiqueta="Correo personal" mono>
+            <CorreoPartible correo={estudiante.correoPersonal} />
+          </DatoFicha>
+        )}
+        <DatoFicha etiqueta="Docente Supervisor">
+          {cambioDocente ||
+            (docente && (
+              <>
+                {docente.nombre}
+                {docenteDesactivado && (
+                  <span className="inline-flex items-center gap-1 rounded-md bg-warn-bg px-1.5 py-0.5 text-[11px] font-semibold text-warn-text">
+                    <IconoAlerta tamano={13} />
+                    Desactivado
+                  </span>
+                )}
+              </>
+            ))}
+        </DatoFicha>
       </dl>
     </section>
   );

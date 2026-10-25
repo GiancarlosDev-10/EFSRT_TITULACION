@@ -1,16 +1,21 @@
 // Página de bandeja, común a las cuatro oficinas. Cada ruta la usa con su
-// dependencia; el rol se exige aquí, en cada petición (D46).
+// dependencia; el rol se exige aquí, en cada petición (D46). La bandeja de
+// Mesa de Partes lleva el botón "Registrar recepción" (D52).
+import Link from "next/link";
 import { Suspense } from "react";
 import { exigirRol } from "@/modules/auth";
 import {
   BandejaOficina,
+  ESTADO_INICIAL,
+  RUTAS_RECEPCION,
   esVistaBandeja,
   obtenerBandeja,
+  puedeRegistrar,
   registraObservaciones,
   type Dependencia,
   type VistaBandeja,
 } from "@/modules/tramitacion";
-import { CargandoPagina, MarcoPagina } from "@/shared";
+import { CargandoPagina, IconoCarpeta, MarcoPagina } from "@/shared";
 
 type Parametros = Promise<Record<string, string | string[] | undefined>>;
 type Props = { dependencia: Dependencia; searchParams: Parametros };
@@ -45,6 +50,18 @@ async function Contenido({ dependencia, searchParams }: Props) {
       consulta={consulta}
       nombreUsuario={usuario.nombre}
       ahora={new Date()}
+      accion={
+        // Quien abre los expedientes (estado inicial) recibe las carpetas.
+        puedeRegistrar(dependencia, ESTADO_INICIAL) && (
+          <Link
+            href={RUTAS_RECEPCION.buscar}
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 text-sm font-semibold text-white hover:bg-navy-hover lg:w-auto"
+          >
+            <IconoCarpeta tamano={18} />
+            Registrar recepción
+          </Link>
+        )
+      }
     />
   );
 }

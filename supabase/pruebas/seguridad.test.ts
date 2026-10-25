@@ -10,9 +10,9 @@ import { PRUEBAS_SUPABASE, clienteAdmin, clienteAnonimo, clienteComo, type Clien
 import { ESTUDIANTES_PRUEBA, USUARIOS_PRUEBA } from "../../scripts/db/usuarios-prueba";
 
 // Expedientes sembrados para las pruebas: el estudiante de prueba tiene I (10) y
-// II (08, docente R. Paredes), en la carrera real; la estudiante ajena, en la
-// carrera de pruebas (la coordina el usuario de prueba), I (10), II (05, sin
-// docente) y III (08, docente R. Paredes).
+// II (08, con el docente de prueba), en la carrera real; la estudiante ajena, en
+// la carrera de pruebas (la coordina el usuario de prueba), I (10), II (05, sin
+// docente) y III (08, con el docente de prueba).
 let expedienteObservado: string;
 let expedienteAjeno: string;
 let expedientePorAsignar: string;
@@ -141,6 +141,36 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
   });
 
   describe("con sesión de una oficina", () => {
+    test("solo Mesa de Partes registra estudiantes y abre expedientes", async () => {
+      const { data: ajena } = await admin
+        .from("estudiantes")
+        .select("id")
+        .eq("numero_documento", ESTUDIANTES_PRUEBA.estudianteAjeno.numero_documento)
+        .single();
+      for (const quien of ["coordinacion", "docente", "bienestar"] as const) {
+        const cliente = await clienteComo(quien);
+        const registro = await cliente.from("estudiantes").insert({
+          tipo_documento: "DNI",
+          numero_documento: "80000001",
+          nombres: "Falso",
+          apellidos: "Registro",
+          carrera: "pruebas-automaticas",
+          correo_personal: `falso-${quien}@efsrt.test`,
+        });
+        expect(registro.error?.code).toBe("42501");
+
+        // La función rechaza por la oficina antes de mirar nada más.
+        const apertura = await cliente.rpc("abrir_expediente", {
+          p_id: crypto.randomUUID(),
+          p_estudiante_id: ajena!.id,
+          p_modulo: "III",
+        });
+        expect(apertura.error?.message).toBe("DEPENDENCIA_NO_AUTORIZADA");
+      }
+      const { count } = await admin.from("estudiantes").select("id", { count: "exact", head: true }).eq("numero_documento", "80000001");
+      expect(count).toBe(0);
+    });
+
     test("Coordinación no puede registrar un estado del Docente Supervisor", async () => {
       const coordinacion = await clienteComo("coordinacion");
       const { error } = await coordinacion.rpc("registrar_cambio", {
@@ -354,7 +384,7 @@ describe.skipIf(!PRUEBAS_SUPABASE)("Seguridad de la base (RLS, permisos y trigge
         modulo: "III",
         estado: "01",
         docente_id: personal.docente,
-        docente_nombre: "Mg. R. Paredes",
+        docente_nombre: USUARIOS_PRUEBA.docente.nombre,
       });
       expect(nacimiento.error?.message).toBe("DOCENTE_SOLO_DESDE_HISTORIAL");
       expect(await estadoDe(expedienteObservado)).toEqual(antes);

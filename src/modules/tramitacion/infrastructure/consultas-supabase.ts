@@ -1,36 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/shared";
-import type { ConsultasDeOficina, ExpedienteConEstudiante, FichaEstudiante } from "../application";
+import type { ConsultasDeOficina, ExpedienteConEstudiante } from "../application";
+import { aFicha, type FilaEstudiante } from "./fila-estudiante";
 import { aExpediente, consultaExpedientes, errorDeBase } from "./repositorio-supabase";
 
-type FilaConEstudiante = Parameters<typeof aExpediente>[0] & {
-  estudiante: {
-    id: string;
-    nombres: string;
-    apellidos: string;
-    tipo_documento: string;
-    numero_documento: string;
-    carrera: string;
-    correo_institucional: string | null;
-    correo_personal: string | null;
-  } | null;
-};
-
-function aFicha(estudiante: NonNullable<FilaConEstudiante["estudiante"]>): FichaEstudiante {
-  if (estudiante.tipo_documento !== "DNI" && estudiante.tipo_documento !== "CE") {
-    throw new Error(`Tipo de documento desconocido en la base: ${estudiante.tipo_documento}`);
-  }
-  return {
-    id: estudiante.id,
-    nombres: estudiante.nombres,
-    apellidos: estudiante.apellidos,
-    tipoDocumento: estudiante.tipo_documento,
-    numeroDocumento: estudiante.numero_documento,
-    carrera: estudiante.carrera,
-    correoInstitucional: estudiante.correo_institucional,
-    correoPersonal: estudiante.correo_personal,
-  };
-}
+type FilaConEstudiante = Parameters<typeof aExpediente>[0] & { estudiante: FilaEstudiante | null };
 
 // El RLS del estudiante deja ver sus datos a quien ve el expediente; si aun
 // así llegara sin estudiante, el expediente se omite en vez de mostrarse a medias.

@@ -16,17 +16,27 @@ export const CARRERA_REAL = "desarrollo-sistemas";
  */
 export const CARRERA_DE_PRUEBAS = "pruebas-automaticas";
 
+// Nombres distintos de los del video (NOMBRES_DEL_VIDEO): si coincidieran, en
+// las listas de la aplicación saldrían dos "Mg. R. Paredes".
 export const USUARIOS_PRUEBA = {
-  estudiante: { correo: "estudiante@efsrt.test", nombre: "Giancarlos Ormeño", rol: "estudiante" },
-  estudianteAjeno: { correo: "estudiante-ajeno@efsrt.test", nombre: "Valeria Chávez Rojas", rol: "estudiante" },
-  mesaPartes: { correo: "mesa-partes@efsrt.test", nombre: "A. Quispe", rol: "mesa-partes" },
-  coordinacion: { correo: "coordinacion@efsrt.test", nombre: "Lic. M. Torres", rol: "coordinacion", carrera: CARRERA_DE_PRUEBAS },
+  estudiante: { correo: "estudiante@efsrt.test", nombre: "Estudiante De Prueba", rol: "estudiante" },
+  estudianteAjeno: { correo: "estudiante-ajeno@efsrt.test", nombre: "Estudiante Ajena De Prueba", rol: "estudiante" },
+  mesaPartes: { correo: "mesa-partes@efsrt.test", nombre: "R. Huamán", rol: "mesa-partes" },
+  coordinacion: { correo: "coordinacion@efsrt.test", nombre: "Lic. E. Flores", rol: "coordinacion", carrera: CARRERA_DE_PRUEBAS },
   // De otra carrera: no debe ver los expedientes de Desarrollo de Sistemas (D50).
   coordinacionAjena: { correo: "coordinacion-ajena@efsrt.test", nombre: "Lic. J. Ramos", rol: "coordinacion", carrera: "contabilidad" },
-  docente: { correo: "docente@efsrt.test", nombre: "Mg. R. Paredes", rol: "docente" },
+  docente: { correo: "docente@efsrt.test", nombre: "Mg. D. Castillo", rol: "docente" },
   docenteAjeno: { correo: "docente-ajeno@efsrt.test", nombre: "Mg. L. Vargas", rol: "docente" },
-  bienestar: { correo: "bienestar@efsrt.test", nombre: "Lic. P. Salazar", rol: "bienestar" },
+  bienestar: { correo: "bienestar@efsrt.test", nombre: "Lic. N. Mendoza", rol: "bienestar" },
 } as const satisfies Record<string, UsuarioPrueba>;
+
+/** Nombres de tus cuentas reales, las del video (CLAUDE.md: docente "Mg. R. Paredes"). */
+export const NOMBRES_DEL_VIDEO = {
+  "mesa-partes": "A. Quispe",
+  coordinacion: "Lic. M. Torres",
+  docente: "Mg. R. Paredes",
+  bienestar: "Lic. P. Salazar",
+} as const satisfies Record<Exclude<Rol, "estudiante">, string>;
 
 export type ClaveUsuarioPrueba = keyof typeof USUARIOS_PRUEBA;
 

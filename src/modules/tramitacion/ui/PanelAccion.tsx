@@ -4,9 +4,9 @@
 // El botón nunca se desactiva: al pulsarlo se marca lo que falta y el foco va
 // al primer campo pendiente. La Server Action vuelve a validar todo (capa 2) y
 // la base, otra vez (capa 3); esta validación solo ahorra un viaje al servidor.
-import { useActionState, useRef, useState, type FormEvent } from "react";
-import { IconoAlerta } from "@/shared";
+import { startTransition, useActionState, useRef, useState, type FormEvent } from "react";
 import { LONGITUD_MAXIMA_MOTIVO, type CodigoEstado } from "../domain";
+import { AlertaServidor, MensajeError } from "./avisos-formulario";
 import { ChipCodigo } from "./ChipCodigo";
 import type { OpcionAccion } from "./presentacion-oficina";
 
@@ -46,6 +46,10 @@ export function PanelAccion({ expedienteId, estado, opciones, docentes, nombreEs
   const elegida = opciones.find((opcion) => opcion.codigo === hacia) ?? null;
 
   function validar(evento: FormEvent<HTMLFormElement>) {
+    // Se envía a mano: con `action={…}`, React vacía el formulario tras cada
+    // envío y, si el servidor rechaza, los campos quedarían en blanco mientras
+    // el estado aún recuerda lo elegido.
+    evento.preventDefault();
     const nuevos: Errores = {};
     if (!elegida) nuevos.hacia = "Elige qué registras.";
     else {
@@ -56,30 +60,19 @@ export function PanelAccion({ expedienteId, estado, opciones, docentes, nombreEs
     const campos = { hacia: campoHacia, docente: campoDocente, motivo: campoMotivo };
     const primero = (["hacia", "docente", "motivo"] as const).find((campo) => nuevos[campo]);
     if (primero) {
-      evento.preventDefault();
       campos[primero].current?.focus();
+      return;
     }
+    const datos = new FormData(evento.currentTarget);
+    startTransition(() => enviar(datos));
   }
 
   return (
-    <form action={enviar} onSubmit={validar} noValidate className="flex flex-col gap-4 p-5">
+    <form onSubmit={validar} noValidate className="flex flex-col gap-4 p-5">
       <input type="hidden" name="expedienteId" value={expedienteId} />
       <input type="hidden" name="desde" value={estado} />
 
-      {respuesta.error && (
-        <div role="alert" className="flex items-start gap-2.5 rounded-xl border border-warn-border bg-warn-bg p-3.5 text-warn-text">
-          <IconoAlerta tamano={18} className="mt-0.5 shrink-0 text-warn" />
-          <div className="flex flex-col gap-1.5 text-[13px] leading-normal">
-            <span>{respuesta.error}</span>
-            {respuesta.conflicto && (
-              // Enlace normal: recarga la página con el estado actual.
-              <a href="" className="w-fit font-semibold text-navy underline">
-                Recargar
-              </a>
-            )}
-          </div>
-        </div>
-      )}
+      <AlertaServidor {...respuesta} />
 
       <fieldset className="flex flex-col gap-2" aria-describedby={errores.hacia ? "error-hacia" : undefined}>
         <legend className="mb-2 font-display text-base font-extrabold">¿Qué registras?</legend>
@@ -181,15 +174,5 @@ export function PanelAccion({ expedienteId, estado, opciones, docentes, nombreEs
         el cambio en su seguimiento.
       </p>
     </form>
-  );
-}
-
-function MensajeError({ id, texto }: { id: string; texto?: string }) {
-  if (!texto) return null;
-  return (
-    <span id={id} className="flex items-center gap-1 text-xs font-semibold text-warn">
-      <IconoAlerta tamano={13} className="shrink-0" />
-      {texto}
-    </span>
   );
 }
