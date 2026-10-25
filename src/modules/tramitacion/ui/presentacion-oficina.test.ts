@@ -6,8 +6,22 @@ import {
   nombreBreve,
   nombreParaSaludo,
   registraObservaciones,
+  situacionDelExpediente,
   textoDePildora,
 } from "./presentacion-oficina";
+
+describe("situacionDelExpediente", () => {
+  test.each([
+    ["01", "está en Mesa de Partes"],
+    ["03", "pasó a Coordinación de Carrera"],
+    ["05", "está en Coordinación de Carrera"],
+    ["06", "pasó al Docente Supervisor"],
+    ["08", "está con el Docente Supervisor"],
+    ["09", "pasó a Bienestar y Empleabilidad"],
+  ] as const)("%s", (codigo, esperado) => {
+    expect(situacionDelExpediente(codigo)).toBe(esperado);
+  });
+});
 
 describe("ayudaDeAccion", () => {
   test.each([
@@ -32,7 +46,9 @@ describe("textos", () => {
   });
 
   test("píldora: oficina, observación o constancia lista", () => {
-    expect(textoDePildora("03")).toBe("Mesa de Partes");
+    expect(textoDePildora("01")).toBe("Mesa de Partes");
+    // En 03 ya pasó a Coordinación (D56).
+    expect(textoDePildora("03")).toBe("Coordinación");
     expect(textoDePildora("08")).toBe("Observado · Docente");
     expect(textoDePildora("10")).toBe("Constancia lista");
   });

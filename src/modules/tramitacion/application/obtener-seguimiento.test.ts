@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+import { abrirExpediente, aplicarCambioEstado, exigeDocente, ubicacionDe, type CodigoEstado } from "../domain";
+import { ACTORES, DOCENTES, FECHA } from "../domain/ayudas-prueba";
 import { EXPEDIENTES_DE_PRUEBA, ESTUDIANTE_DE_PRUEBA } from "../infrastructure/datos-prueba";
 import { crearDependenciasDePrueba } from "./ayudas-prueba";
 import { crearObtenerSeguimientoDelEstudiante, type SeguimientoModulo } from "./obtener-seguimiento";
@@ -62,6 +64,46 @@ describe("obtenerSeguimientoDelEstudiante (datos del mockup)", () => {
   test("Módulo III: sin expediente", async () => {
     const [, , moduloIII] = await seguimientoDelEstudiante();
     expect(moduloIII).toEqual({ modulo: "III", expediente: null });
+  });
+
+  describe("cuando el expediente ya pasó a la oficina siguiente (D56)", () => {
+    /** Módulo III de Giancarlos, llevado por el camino sin observaciones hasta `hasta`. */
+    async function seguimientoEn(hasta: CodigoEstado) {
+      const camino: CodigoEstado[] = ["03", "05", "06", "07", "09", "10"];
+      let expediente = abrirExpediente(
+        { id: "exp-III", estudianteId: ESTUDIANTE_DE_PRUEBA.id, modulo: "III" },
+        { actor: ACTORES["mesa-partes"], fecha: FECHA },
+      );
+      for (const hacia of camino.slice(0, camino.indexOf(hasta) + 1)) {
+        if (!expediente.ok) break;
+        expediente = aplicarCambioEstado(expediente.valor.expediente, {
+          hacia,
+          actor: ACTORES[ubicacionDe(hacia)],
+          fecha: FECHA,
+          docente: exigeDocente(hacia) ? DOCENTES.paredes : undefined,
+        });
+      }
+      if (!expediente.ok) throw new Error(expediente.error);
+      const { dependencias } = crearDependenciasDePrueba([expediente.valor.expediente]);
+      const [, , moduloIII] = await crearObtenerSeguimientoDelEstudiante(dependencias)(ESTUDIANTE_DE_PRUEBA.id);
+      return moduloIII.expediente!;
+    }
+
+    test.each([
+      ["03", "coordinacion", ["completada", "actual", "pendiente", "pendiente"]],
+      ["06", "docente", ["completada", "completada", "actual", "pendiente"]],
+      ["09", "bienestar", ["completada", "completada", "completada", "actual"]],
+    ] as const)("en %s ya está en %s", async (codigo, dependencia, situaciones) => {
+      const expediente = await seguimientoEn(codigo);
+      expect(expediente.ubicacion.dependencia).toBe(dependencia);
+      expect(expediente.etapas.map((e) => e.situacion)).toEqual([...situaciones]);
+    });
+
+    test("el registro sigue en la etapa de la oficina que lo hizo", async () => {
+      const [mesaPartes, coordinacion] = (await seguimientoEn("03")).etapas;
+      expect(mesaPartes.eventos.map((e) => e.codigo)).toEqual(["01", "03"]);
+      expect(coordinacion.eventos).toEqual([]);
+    });
   });
 
   test("un estudiante no ve expedientes de otro", async () => {

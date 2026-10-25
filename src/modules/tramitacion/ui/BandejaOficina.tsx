@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { IconoAlerta, IconoBuscar, IconoChevronDerecha, IconoReloj } from "@/shared";
-import { DEPENDENCIAS, ESTADOS, MODULOS, ubicacionDe, type Dependencia, type Modulo } from "../domain";
+import { DEPENDENCIAS, ESTADOS, MODULOS, dondeEsta, type Dependencia, type Modulo } from "../domain";
 import type { Bandeja, FilaBandeja, FilaEstudiante } from "../application";
 import { momento } from "./presentacion";
 import {
@@ -282,11 +282,13 @@ function CeldaModulo({
 
   const { tipo, etiqueta, nombre } = ESTADOS[fila.estado];
   const borde = tipo === "observacion" ? BORDE_CELDA.observado : tipo === "final" ? BORDE_CELDA.conforme : BORDE_CELDA.normal;
-  const detalle = tipo === "final" ? momento(fila.ultimoCambio, ahora) : DEPENDENCIAS[ubicacionDe(fila.estado)].nombreCorto;
+  // Dónde está para mostrarlo (D56): en 03 ya está en Coordinación.
+  const lugar = dondeEsta(fila.estado);
+  const detalle = tipo === "final" ? momento(fila.ultimoCambio, ahora) : DEPENDENCIAS[lugar].nombreCorto;
   return (
     <Link
       href={RUTAS_OFICINA.expediente(dependencia, fila.expedienteId)}
-      aria-label={`Módulo ${modulo}: ${nombre}, ${UBICACION_DE[ubicacionDe(fila.estado)]}`}
+      aria-label={`Módulo ${modulo}: ${nombre}, ${UBICACION_DE[lugar]}`}
       className={`${base} hover:border-navy ${borde}`}
     >
       <span className="flex items-center justify-between gap-1 lg:contents">

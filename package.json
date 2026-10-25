@@ -8,18 +8,21 @@
     "start": "next start",
     "lint": "eslint",
     "test": "bun test",
-    "test:db": "PRUEBAS_SUPABASE=1 bun test --timeout 30000",
+    "test:db": "PRUEBAS_SUPABASE=1 bun test --timeout 30000 && bun run db:limpiar-pruebas",
     "db:nueva": "bun scripts/db/nueva-migracion.ts",
     "db:catalogo": "bun scripts/db/generar-catalogo.ts",
     "db:aplicar": "supabase db push",
     "db:tipos": "supabase gen types typescript --linked --schema public > src/shared/lib/supabase/tipos-db.ts",
     "db:sembrar": "bun scripts/db/sembrar.ts",
-    "seguridad:acciones": "bun scripts/seguridad/atacar-acciones.ts"
+    "db:limpiar-pruebas": "bun scripts/db/limpiar-pruebas.ts",
+    "seguridad:acciones": "bun scripts/seguridad/atacar-acciones.ts",
+    "notificaciones:reintentar": "bun scripts/notificaciones/reintentar.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.3",
     "next": "16.4.3",
+    "nodemailer": "^10.2.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "server-only": "^0.0.1"
@@ -28,6 +31,7 @@
     "@tailwindcss/turbopack": "^4",
     "@types/bun": "^1.4.2",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

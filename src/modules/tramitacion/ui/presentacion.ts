@@ -60,7 +60,9 @@ export function textoSubsanado(evento: EventoSeguimiento, ahora: Date): string |
 /** "Conforme · 11 jun.", "Observado · hoy, 09:40" o "Pendiente". */
 export function resumenDeEtapa(etapa: EtapaSeguimiento, ahora: Date): string {
   const ultimo = etapa.eventos.at(-1);
-  if (etapa.situacion === "pendiente" || !ultimo) return "Pendiente";
+  if (etapa.situacion === "pendiente") return "Pendiente";
+  // Etapa actual sin registros: la oficina anterior ya se la pasó (D56).
+  if (!ultimo) return "En curso";
   return `${ESTADOS[ultimo.codigo].etiqueta} · ${cuando(ultimo.fecha, ahora)}`;
 }
 
@@ -71,9 +73,18 @@ const TEXTO_ETAPA_PENDIENTE: Record<EtapaSeguimiento["dependencia"], string> = {
   bienestar: "Cuando la supervisión esté aprobada, Bienestar registrará el visto bueno final.",
 };
 
+/** Etapa actual que aún no tiene registros: el expediente acaba de llegar a esa oficina (D56). */
+const TEXTO_ETAPA_ACTUAL: Record<EtapaSeguimiento["dependencia"], string> = {
+  "mesa-partes": "Mesa de Partes revisará tu pago.",
+  coordinacion: "Coordinación de Carrera revisará tus requisitos.",
+  docente: "Tu Docente Supervisor iniciará la supervisión.",
+  bienestar: "Bienestar y Empleabilidad registrará el visto bueno final.",
+};
+
 /** Texto de una etapa sin eventos. */
 export function textoEtapaVacia(etapa: EtapaSeguimiento, hayExpediente: boolean): string {
-  return hayExpediente ? TEXTO_ETAPA_PENDIENTE[etapa.dependencia] : "Aún no hay movimientos.";
+  if (!hayExpediente) return "Aún no hay movimientos.";
+  return etapa.situacion === "actual" ? TEXTO_ETAPA_ACTUAL[etapa.dependencia] : TEXTO_ETAPA_PENDIENTE[etapa.dependencia];
 }
 
 /** Las cuatro etapas de un módulo; todas pendientes si aún no hay expediente. */

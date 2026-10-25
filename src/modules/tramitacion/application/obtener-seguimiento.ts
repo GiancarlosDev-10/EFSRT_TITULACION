@@ -3,6 +3,7 @@ import {
   ESTADOS,
   MODULOS,
   ORDEN_DEPENDENCIAS,
+  dondeEsta,
   esFinal,
   esObservacion,
   ubicacionDe,
@@ -54,9 +55,11 @@ export type SeguimientoModulo = {
   expediente: ExpedienteSeguimiento | null;
 };
 
+// La etapa actual es donde está el expediente para el estudiante (D56): en 03
+// ya está en Coordinación, aunque el 03 lo registró Mesa de Partes.
 function situacionDe(dependencia: Dependencia, estado: CodigoEstado): SituacionEtapa {
   const etapa = ORDEN_DEPENDENCIAS.indexOf(dependencia);
-  const actual = ORDEN_DEPENDENCIAS.indexOf(ubicacionDe(estado));
+  const actual = ORDEN_DEPENDENCIAS.indexOf(dondeEsta(estado));
   if (etapa < actual || (etapa === actual && esFinal(estado))) return "completada";
   if (etapa > actual) return "pendiente";
   return esObservacion(estado) ? "observada" : "actual";
@@ -76,7 +79,7 @@ function aEvento(registro: RegistroHistorial, siguiente: RegistroHistorial | und
 
 function aSeguimiento({ id, estado, historial }: Expediente): ExpedienteSeguimiento {
   const eventos = historial.map((registro, i) => aEvento(registro, historial[i + 1]));
-  const ubicacion = ubicacionDe(estado);
+  const ubicacion = dondeEsta(estado);
 
   return {
     id,

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { CODIGOS_ESTADO, LONGITUD_MAXIMA_MOTIVO, type CodigoEstado, type Dependencia } from "./catalogo";
 import {
+  dondeEsta,
   esCodigoEstado,
   esModulo,
   estadoAlSubsanar,
@@ -8,6 +9,7 @@ import {
   permiteCambiarDocente,
   estaPermitida,
   indicacionDe,
+  pasaA,
   transicionesDisponibles,
   ubicacionDe,
   validarTransicion,
@@ -23,6 +25,19 @@ const PERMITIDAS = [
 const todasLasCombinaciones = CODIGOS_ESTADO.flatMap((desde) =>
   CODIGOS_ESTADO.map((hacia) => [desde, hacia] as const),
 );
+
+describe("pasaA", () => {
+  // Lo siguiente lo registra otra oficina: el expediente ya va hacia ella.
+  const PASA_A: Partial<Record<CodigoEstado, Dependencia>> = { "03": "coordinacion", "06": "docente", "09": "bienestar" };
+
+  test.each(CODIGOS_ESTADO)("%s", (codigo) => {
+    expect(pasaA(codigo)).toBe(PASA_A[codigo] ?? null);
+  });
+
+  test.each(CODIGOS_ESTADO)("dondeEsta %s: a donde pasó o, si no, la oficina del estado", (codigo) => {
+    expect(dondeEsta(codigo)).toBe(PASA_A[codigo] ?? ubicacionDe(codigo));
+  });
+});
 
 describe("estaPermitida", () => {
   test.each(todasLasCombinaciones)("%s→%s", (desde, hacia) => {

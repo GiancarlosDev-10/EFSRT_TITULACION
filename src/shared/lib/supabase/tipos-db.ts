@@ -336,6 +336,85 @@ export type Database = {
         }
         Relationships: []
       }
+      notificaciones: {
+        Row: {
+          actualizado_en: string
+          apertura: boolean
+          carrera: string
+          destinatarios: string[]
+          enviado_en: string | null
+          envio: string
+          estado_codigo: string
+          estudiante_id: string
+          fecha: string
+          historial_id: number
+          id: number
+          intentos: number
+          modulo: string
+          motivo: string | null
+          nombres: string
+          ultimo_error: string | null
+        }
+        Insert: {
+          actualizado_en?: string
+          apertura: boolean
+          carrera: string
+          destinatarios: string[]
+          enviado_en?: string | null
+          envio?: string
+          estado_codigo: string
+          estudiante_id: string
+          fecha: string
+          historial_id: number
+          id?: never
+          intentos?: number
+          modulo: string
+          motivo?: string | null
+          nombres: string
+          ultimo_error?: string | null
+        }
+        Update: {
+          actualizado_en?: string
+          apertura?: boolean
+          carrera?: string
+          destinatarios?: string[]
+          enviado_en?: string | null
+          envio?: string
+          estado_codigo?: string
+          estudiante_id?: string
+          fecha?: string
+          historial_id?: number
+          id?: never
+          intentos?: number
+          modulo?: string
+          motivo?: string | null
+          nombres?: string
+          ultimo_error?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notificaciones_estado_codigo_fkey"
+            columns: ["estado_codigo"]
+            isOneToOne: false
+            referencedRelation: "estados"
+            referencedColumns: ["codigo"]
+          },
+          {
+            foreignKeyName: "notificaciones_estudiante_id_fkey"
+            columns: ["estudiante_id"]
+            isOneToOne: false
+            referencedRelation: "estudiantes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notificaciones_historial_id_fkey"
+            columns: ["historial_id"]
+            isOneToOne: true
+            referencedRelation: "historial"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       perfiles: {
         Row: {
           creado_en: string
@@ -474,12 +553,40 @@ export type Database = {
           nombre: string
         }[]
       }
+      limpiar_datos_de_prueba: { Args: never; Returns: number }
       mi_perfil: {
         Args: never
         Returns: {
           nombre: string
           rol: string
         }[]
+      }
+      reclamar_notificaciones: {
+        Args: { p_limite?: number; p_max_intentos?: number }
+        Returns: {
+          actualizado_en: string
+          apertura: boolean
+          carrera: string
+          destinatarios: string[]
+          enviado_en: string | null
+          envio: string
+          estado_codigo: string
+          estudiante_id: string
+          fecha: string
+          historial_id: number
+          id: number
+          intentos: number
+          modulo: string
+          motivo: string | null
+          nombres: string
+          ultimo_error: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "notificaciones"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       registrar_cambio: {
         Args: {

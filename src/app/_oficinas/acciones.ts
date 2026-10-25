@@ -3,7 +3,8 @@
 // cada una valida la sesión y cada dato por sí misma. La dependencia y el
 // actor salen de la sesión verificada, nunca del formulario. Cubren el cambio
 // de estado (D51), el cambio de docente (D53), la recepción y el alta de
-// estudiantes (D52).
+// estudiantes (D52). Cada cambio de estado avisa al estudiante por correo (D55).
+import "./avisos";
 import { redirect } from "next/navigation";
 import { obtenerUsuarioActual } from "@/modules/auth";
 import {

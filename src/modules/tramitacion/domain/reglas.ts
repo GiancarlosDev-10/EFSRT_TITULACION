@@ -38,6 +38,26 @@ export function ubicacionDe(estado: CodigoEstado): Dependencia {
   return ESTADOS[estado].dependencia;
 }
 
+/**
+ * Oficina a la que ya pasó el expediente: todas las salidas del estado las
+ * registra otra oficina (03 → Coordinación, 06 → Docente, 09 → Bienestar).
+ * `null` si lo siguiente lo registra la misma oficina o si es el estado final.
+ */
+export function pasaA(estado: CodigoEstado): Dependencia | null {
+  const siguientes = new Set<Dependencia>(TRANSICIONES[estado].map(ubicacionDe));
+  const [unica] = siguientes;
+  return siguientes.size === 1 && unica !== ubicacionDe(estado) ? unica : null;
+}
+
+/**
+ * Dónde está el expediente, para mostrarlo (D56): la oficina a la que pasó
+ * (03, 06, 09) o, si no, la del estado actual. Solo para la interfaz y los
+ * avisos; quién registra cada estado lo sigue diciendo `ubicacionDe`.
+ */
+export function dondeEsta(estado: CodigoEstado): Dependencia {
+  return pasaA(estado) ?? ubicacionDe(estado);
+}
+
 export function esObservacion(estado: CodigoEstado): boolean {
   return ESTADOS[estado].tipo === "observacion";
 }

@@ -16,6 +16,7 @@ import {
   progresoDeExpediente,
   resumenDeConstancia,
   resumenDeEtapa,
+  textoEtapaVacia,
   textoSubsanado,
   tonoDeEvento,
   ubicacionDeModulo,
@@ -121,6 +122,17 @@ describe("tracker", () => {
   test("un módulo sin expediente muestra cuatro etapas pendientes", () => {
     const etapas = etapasDe(moduloIII.expediente);
     expect(etapas.map((e) => e.situacion)).toEqual(["pendiente", "pendiente", "pendiente", "pendiente"]);
+  });
+
+  test("etapa actual sin registros (el expediente acaba de pasar a esa oficina, D56)", () => {
+    const [, coordinacion, docente] = moduloII.expediente!.etapas;
+    const recienLlegado = { ...coordinacion, situacion: "actual" as const, eventos: [] };
+    expect(resumenDeEtapa(recienLlegado, MISMO_DIA)).toBe("En curso");
+    expect(textoEtapaVacia(recienLlegado, true)).toBe("Coordinación de Carrera revisará tus requisitos.");
+    // Una etapa pendiente conserva su texto de "cuando…".
+    expect(textoEtapaVacia({ ...docente, situacion: "pendiente", eventos: [] }, true)).toBe(
+      "Cuando Coordinación asigne a tu Docente Supervisor, empezará la supervisión.",
+    );
   });
 });
 

@@ -9,7 +9,9 @@ import {
   TRANSICIONES,
   esFinal,
   esObservacion,
+  dondeEsta,
   exigeDocente,
+  pasaA,
   ubicacionDe,
   type CodigoEstado,
   type Dependencia,
@@ -25,12 +27,21 @@ export const UBICACION_DE: Record<Dependencia, string> = {
 };
 
 /** A quién pasa, para "El expediente pasa al Docente Supervisor". */
-const DESTINO_DE: Record<Dependencia, string> = {
+export const DESTINO_DE: Record<Dependencia, string> = {
   "mesa-partes": "a Mesa de Partes",
   coordinacion: "a Coordinación de Carrera",
   docente: "al Docente Supervisor",
   bienestar: "a Bienestar y Empleabilidad",
 };
+
+/**
+ * "está en Mesa de Partes" o, si lo siguiente ya lo registra otra oficina,
+ * "pasó a Coordinación de Carrera" (03 "Pago conforme (derivado a Coordinación)").
+ */
+export function situacionDelExpediente(codigo: CodigoEstado): string {
+  const destino = pasaA(codigo);
+  return destino ? `pasó ${DESTINO_DE[destino]}` : `está ${UBICACION_DE[ubicacionDe(codigo)]}`;
+}
 
 /** "Pago conforme (derivado a Coordinación)" → "Pago conforme": para botones. */
 export function nombreBreve(codigo: CodigoEstado): string {
@@ -62,10 +73,10 @@ export function tonoDePildora(codigo: CodigoEstado): TonoExpediente {
   return esFinal(codigo) ? "listo" : "en-curso";
 }
 
-/** "Constancia lista", "Observado · Coordinación" o "Mesa de Partes". */
+/** "Constancia lista", "Observado · Coordinación" o "Mesa de Partes" (dónde está, D56). */
 export function textoDePildora(codigo: CodigoEstado): string {
   if (esFinal(codigo)) return ESTADOS[codigo].etiqueta;
-  const lugar = DEPENDENCIAS[ubicacionDe(codigo)].nombreCorto;
+  const lugar = DEPENDENCIAS[dondeEsta(codigo)].nombreCorto;
   return esObservacion(codigo) ? `Observado · ${lugar}` : lugar;
 }
 

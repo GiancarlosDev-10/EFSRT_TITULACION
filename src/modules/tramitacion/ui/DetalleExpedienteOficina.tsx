@@ -2,8 +2,8 @@
 // estudiante, panel de acción e historial. En PC el panel va a la derecha y
 // queda fijo al desplazarse; en celular va entre la ficha y el historial.
 import type { ReactNode } from "react";
-import { Avatar, EncabezadoPagina, IconoAlerta, IconoCambiar, IconoCheck } from "@/shared";
-import { ESTADOS, esFinal, ubicacionDe, type CodigoEstado, type Dependencia } from "../domain";
+import { Avatar, EncabezadoPagina, IconoAlerta, IconoCambiar, IconoCheck, capitalizar } from "@/shared";
+import { ESTADOS, esFinal, pasaA, ubicacionDe, type CodigoEstado, type Dependencia } from "../domain";
 import { nombreCompleto, type ExpedienteDeOficina, type MovimientoDeOficina } from "../application";
 import { ChipCodigo } from "./ChipCodigo";
 import { CorreoPartible } from "./CorreoPartible";
@@ -11,7 +11,7 @@ import { DatoFicha } from "./DatoFicha";
 import { nombreDeCarrera, nombresDeModulos } from "./contenido";
 import { PildoraEstado } from "./PildoraEstado";
 import { momento, type TonoEvento } from "./presentacion";
-import { UBICACION_DE, nombreBreve, textoDePildora, tonoDeEstado, tonoDePildora } from "./presentacion-oficina";
+import { nombreBreve, situacionDelExpediente, textoDePildora, tonoDeEstado, tonoDePildora } from "./presentacion-oficina";
 import { RUTAS_OFICINA } from "./rutas";
 
 type Props = {
@@ -37,7 +37,7 @@ export function DetalleExpedienteOficina({
   panel,
   cambioDocente,
 }: Props) {
-  const ubicacion = esFinal(expediente.estado) ? "Trámite terminado" : `Está ${UBICACION_DE[ubicacionDe(expediente.estado)]}`;
+  const ubicacion = esFinal(expediente.estado) ? "Trámite terminado" : capitalizar(situacionDelExpediente(expediente.estado));
   return (
     <>
       <EncabezadoPagina
@@ -71,7 +71,7 @@ export function DetalleExpedienteOficina({
                 <b className="text-sm leading-snug">{ESTADOS[expediente.estado].nombre}</b>
               </span>
             </div>
-            {expediente.acciones.length > 0 ? panel : <SinAcciones expediente={expediente} />}
+            {expediente.acciones.length > 0 ? panel : <SinAcciones expediente={expediente} dependencia={dependencia} />}
           </section>
         </div>
         <div className="lg:col-start-1 lg:row-start-2">
@@ -97,8 +97,10 @@ function AvisoExito({ titulo, children }: { titulo: string; children: ReactNode 
   );
 }
 
-function SinAcciones({ expediente }: { expediente: ExpedienteDeOficina }) {
+function SinAcciones({ expediente, dependencia }: { expediente: ExpedienteDeOficina; dependencia: Dependencia }) {
   const final = esFinal(expediente.estado);
+  // La oficina que acaba de derivarlo (p. ej. Mesa de Partes en 03) ya hizo su parte.
+  const yaDerivo = pasaA(expediente.estado) !== null && ubicacionDe(expediente.estado) === dependencia;
   return (
     <div className="flex flex-col gap-2 p-5">
       <b className="text-sm">{final ? "Trámite terminado" : "Sin acciones para tu oficina"}</b>
@@ -111,7 +113,9 @@ function SinAcciones({ expediente }: { expediente: ExpedienteDeOficina }) {
             supervisión continúe.
           </>
         ) : (
-          `El expediente está ${UBICACION_DE[ubicacionDe(expediente.estado)]}. Podrás registrar algo cuando vuelva a tu oficina.`
+          `El expediente ${situacionDelExpediente(expediente.estado)}. ${
+            yaDerivo ? "Tu oficina ya registró su parte." : "Podrás registrar algo cuando llegue a tu oficina."
+          }`
         )}
       </span>
     </div>
