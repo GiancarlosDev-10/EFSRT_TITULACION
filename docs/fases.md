@@ -17,6 +17,7 @@ bitácora (`docs/decisiones.md`, D01…).
 | 7. Ingreso | Google y enlace al correo, tabla `personal`, `exigirRol` | D45–D48 |
 | 8. Vistas de las oficinas | Bandeja y detalle comunes, recepción en Mesa de Partes, asignación y cambio de Docente Supervisor, prueba de ataque a las Server Actions | D49–D54 |
 | 9. Notificaciones por correo | Aviso al estudiante en cada cambio de estado (Gmail), bandeja de salida con reintento, "pasó a…" en 03/06/09, limpieza de los datos de prueba | D55–D57 |
+| 10. Campana de notificaciones | Avisos dentro del sistema para el estudiante, Coordinación, el Docente Supervisor y Bienestar; correo del cambio de docente; carrera en la vista del estudiante; barra superior del estudiante en celular | D58 |
 
 ### Fase 8 por partes
 
@@ -38,14 +39,26 @@ bitácora (`docs/decisiones.md`, D01…).
 | 9.4 | Prueba manual con el Módulo II de Valeria, incluida una falla de Gmail y su reintento |
 | 9.5 | "Pasó a…" y ubicación que se muestra en 03, 06 y 09 (D56); limpieza de los datos de prueba (D57) |
 
+### Fase 10 por partes
+
+| Parte | Qué se hizo |
+|---|---|
+| 10.0 | Mockup de la campana en las oficinas (`Oficinas.html`) |
+| 10.1 | Tabla `avisos` (bandeja de entrada) con triggers en el historial y en los cambios de docente; RLS y `marcar_avisos_leidos` |
+| 10.2 | Módulo: textos de cada aviso, `obtenerCampana` y `marcarAvisosLeidos`; correo del cambio de docente (sin el motivo) |
+| 10.3 | Componente `CampanaNotificaciones` en el estudiante y en las oficinas (Mesa de Partes sin campana); carrera en la vista del estudiante |
+| 10.4 | Ataque con las acciones de la campana: 10/10 rechazados con un aviso ajeno sin leer (`docs/evidencias/2026-10-27-ataque-campana.md`) |
+| 10.5 | Prueba manual con las cuentas del video (Módulo III de Valeria, de 01 a 10) y sus ajustes: barra superior del estudiante, pestañas y "Tus estudiantes" del docente en la bandeja (bitácora, "Ajustes de la Fase 10") |
+
 ## Pendientes
 
 | Fase | Qué falta |
 |---|---|
-| 10. Reportes (opcional) | Módulo `reportes`: tiempos por oficina, expedientes detenidos (según el alcance de la tesis) |
-| Entrevistas | Validar con los actores los nombres de estados y transiciones, la regla del estado destino, qué estados "pasan" a la oficina siguiente (D56), el límite de 150 caracteres, si los docentes pertenecen a una carrera y si el estudiante debe enterarse del cambio de docente |
+| 11. Reportes (opcional) | Módulo `reportes`: tiempos por oficina, expedientes detenidos (según el alcance de la tesis) |
+| Entrevistas | Validar con los actores los nombres de estados y transiciones, la regla del estado destino, el límite de 150 caracteres, si el estudiante conserva al docente en los 3 módulos y si los docentes pertenecen a una carrera (preguntas en `decisiones.md`) |
 | Proveedor de correo | Definitivo si el sistema se implanta (hoy Gmail, D48 y D55) |
 | Video de demostración | Entrar con cada perfil usando las cuentas reales (D48) |
+| Revisión de la interfaz en celular | Al terminar todas las fases, el usuario revisa y mejora la interfaz en celular || Capturas de evidencia | Repetir el ataque (`bun run seguridad:acciones` y el `curl` con sesión de estudiante) y guardar las capturas en `docs/evidencias/` (D54); figuras de las pantallas para la tesis en `docs/diseno/capturas/` |
 
 ## Cómo verificar cada fase
 

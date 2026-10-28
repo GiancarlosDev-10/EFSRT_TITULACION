@@ -13,6 +13,8 @@ const datos: DatosAviso = {
   motivo: null,
   subsanar: null,
   constancia: null,
+  docenteAsignado: null,
+  cambioDeDocente: null,
   fecha: new Date("2026-10-25T19:39:00Z"),
   enlace: "http://localhost:3000/alumno/seguimiento/I",
 };

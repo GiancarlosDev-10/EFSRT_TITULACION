@@ -11,7 +11,12 @@ export async function ContenidoSeguimiento({ modulo }: { modulo: Modulo | null }
   return (
     <>
       <div className="mx-auto flex w-full max-w-lg flex-col gap-4 lg:hidden">
-        <SeguimientoDeModulo seguimiento={seguimiento} modulo={modulo} nombresModulo={nombresModulo} ahora={ahora} />
+        <SeguimientoDeModulo
+          seguimiento={seguimiento}
+          modulo={modulo}
+          nombresModulo={nombresModulo}
+          ahora={ahora}
+        />
       </div>
       <SeguimientoEscritorio
         seguimiento={seguimiento}

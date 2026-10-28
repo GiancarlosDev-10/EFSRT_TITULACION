@@ -15,13 +15,16 @@ export { esUuid } from "./lib/validacion";
 export { Avatar } from "./ui/Avatar";
 export { BarraLateral } from "./ui/BarraLateral";
 export { CargandoPagina } from "./ui/CargandoPagina";
+export { BarraSuperior } from "./ui/BarraSuperior";
 export { EncabezadoPagina } from "./ui/EncabezadoPagina";
 export {
   IconoAlerta,
   IconoBandeja,
   IconoBuscar,
   IconoCambiar,
+  IconoCampana,
   IconoCarpeta,
+  IconoCerrar,
   IconoCheck,
   IconoCheckCirculo,
   IconoConstancia,

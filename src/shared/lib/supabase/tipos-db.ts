@@ -14,6 +14,113 @@ export type Database = {
   }
   public: {
     Tables: {
+      avisos: {
+        Row: {
+          cambio_docente_id: number | null
+          carrera: string | null
+          docente_anterior_nombre: string | null
+          docente_id: string | null
+          docente_nombre: string | null
+          estado_codigo: string
+          estudiante_id: string | null
+          estudiante_nombre: string
+          expediente_id: string
+          fecha: string
+          historial_id: number | null
+          id: number
+          leido_en: string | null
+          modulo: string
+          motivo: string | null
+          oficina: string | null
+        }
+        Insert: {
+          cambio_docente_id?: number | null
+          carrera?: string | null
+          docente_anterior_nombre?: string | null
+          docente_id?: string | null
+          docente_nombre?: string | null
+          estado_codigo: string
+          estudiante_id?: string | null
+          estudiante_nombre: string
+          expediente_id: string
+          fecha: string
+          historial_id?: number | null
+          id?: never
+          leido_en?: string | null
+          modulo: string
+          motivo?: string | null
+          oficina?: string | null
+        }
+        Update: {
+          cambio_docente_id?: number | null
+          carrera?: string | null
+          docente_anterior_nombre?: string | null
+          docente_id?: string | null
+          docente_nombre?: string | null
+          estado_codigo?: string
+          estudiante_id?: string | null
+          estudiante_nombre?: string
+          expediente_id?: string
+          fecha?: string
+          historial_id?: number | null
+          id?: never
+          leido_en?: string | null
+          modulo?: string
+          motivo?: string | null
+          oficina?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avisos_cambio_docente_id_fkey"
+            columns: ["cambio_docente_id"]
+            isOneToOne: false
+            referencedRelation: "cambios_docente"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_docente_id_fkey"
+            columns: ["docente_id"]
+            isOneToOne: false
+            referencedRelation: "personal"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_estado_codigo_fkey"
+            columns: ["estado_codigo"]
+            isOneToOne: false
+            referencedRelation: "estados"
+            referencedColumns: ["codigo"]
+          },
+          {
+            foreignKeyName: "avisos_estudiante_id_fkey"
+            columns: ["estudiante_id"]
+            isOneToOne: false
+            referencedRelation: "estudiantes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_expediente_id_fkey"
+            columns: ["expediente_id"]
+            isOneToOne: false
+            referencedRelation: "expedientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_historial_id_fkey"
+            columns: ["historial_id"]
+            isOneToOne: false
+            referencedRelation: "historial"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avisos_oficina_fkey"
+            columns: ["oficina"]
+            isOneToOne: false
+            referencedRelation: "dependencias"
+            referencedColumns: ["codigo"]
+          },
+        ]
+      }
       cambios_docente: {
         Row: {
           actor_id: string
@@ -340,14 +447,17 @@ export type Database = {
         Row: {
           actualizado_en: string
           apertura: boolean
+          cambio_docente_id: number | null
           carrera: string
           destinatarios: string[]
+          docente_anterior_nombre: string | null
+          docente_nombre: string | null
           enviado_en: string | null
           envio: string
           estado_codigo: string
           estudiante_id: string
           fecha: string
-          historial_id: number
+          historial_id: number | null
           id: number
           intentos: number
           modulo: string
@@ -358,14 +468,17 @@ export type Database = {
         Insert: {
           actualizado_en?: string
           apertura: boolean
+          cambio_docente_id?: number | null
           carrera: string
           destinatarios: string[]
+          docente_anterior_nombre?: string | null
+          docente_nombre?: string | null
           enviado_en?: string | null
           envio?: string
           estado_codigo: string
           estudiante_id: string
           fecha: string
-          historial_id: number
+          historial_id?: number | null
           id?: never
           intentos?: number
           modulo: string
@@ -376,14 +489,17 @@ export type Database = {
         Update: {
           actualizado_en?: string
           apertura?: boolean
+          cambio_docente_id?: number | null
           carrera?: string
           destinatarios?: string[]
+          docente_anterior_nombre?: string | null
+          docente_nombre?: string | null
           enviado_en?: string | null
           envio?: string
           estado_codigo?: string
           estudiante_id?: string
           fecha?: string
-          historial_id?: number
+          historial_id?: number | null
           id?: never
           intentos?: number
           modulo?: string
@@ -392,6 +508,13 @@ export type Database = {
           ultimo_error?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "notificaciones_cambio_docente_id_fkey"
+            columns: ["cambio_docente_id"]
+            isOneToOne: true
+            referencedRelation: "cambios_docente"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "notificaciones_estado_codigo_fkey"
             columns: ["estado_codigo"]
@@ -554,6 +677,7 @@ export type Database = {
         }[]
       }
       limpiar_datos_de_prueba: { Args: never; Returns: number }
+      marcar_avisos_leidos: { Args: { p_hasta_id: number }; Returns: number }
       mi_perfil: {
         Args: never
         Returns: {
@@ -566,14 +690,17 @@ export type Database = {
         Returns: {
           actualizado_en: string
           apertura: boolean
+          cambio_docente_id: number | null
           carrera: string
           destinatarios: string[]
+          docente_anterior_nombre: string | null
+          docente_nombre: string | null
           enviado_en: string | null
           envio: string
           estado_codigo: string
           estudiante_id: string
           fecha: string
-          historial_id: number
+          historial_id: number | null
           id: number
           intentos: number
           modulo: string

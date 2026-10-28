@@ -1,12 +1,13 @@
 // Layout de todas las páginas del estudiante: barra lateral en PC (módulos bajo
-// "Mi seguimiento" y constancias listas bajo "Mis constancias") y navegación
-// inferior en celular.
+// "Mi seguimiento" y constancias listas bajo "Mis constancias"); en celular,
+// barra superior y navegación inferior.
 import { Suspense, type ReactNode } from "react";
 import { BotonCerrarSesion } from "@/modules/auth";
 import { RUTAS_ALUMNO, subitemsDeConstancias, subitemsDeModulos } from "@/modules/tramitacion";
 import {
   Avatar,
   BarraLateral,
+  BarraSuperior,
   IconoConstancia,
   IconoInicio,
   IconoRequisitos,
@@ -16,6 +17,7 @@ import {
   type ItemNavegacion,
   type SubitemNavegacion,
 } from "@/shared";
+import { CampanaDeSesion } from "../_campana/CampanaDeSesion";
 import { datosDelEstudiante } from "./alumno/_datos";
 
 function navegacionPC(modulos?: SubitemNavegacion[], constancias: SubitemNavegacion[] = []): ItemNavegacion[] {
@@ -54,6 +56,8 @@ async function TarjetaUsuario() {
       <Avatar nombre={usuario.nombre} variante="claro" className="size-[38px] text-[13px]" />
       <div className="flex min-w-0 flex-col gap-px group-data-[contraida=true]/barra:sr-only">
         <span className="truncate text-[13px] font-semibold">{usuario.nombre}</span>
+        {/* D24: la carrera, como en el mockup; el correo sigue para saber con qué cuenta se entró. */}
+        <span className="truncate text-[11px] text-on-ink">{usuario.carrera}</span>
         <span className="truncate font-mono text-[11px] text-on-ink-muted">{usuario.correo}</span>
       </div>
       <div className="ml-auto shrink-0 group-data-[contraida=true]/barra:hidden">
@@ -78,6 +82,11 @@ export default function LayoutAlumno({ children }: { children: ReactNode }) {
         </Suspense>
       </BarraLateral>
       <div className="flex min-w-0 grow flex-col">
+        {/* Celular: barra superior con la campana (D58) y "Salir", como en las oficinas. */}
+        <BarraSuperior subtitulo="Estudiante">
+          <CampanaDeSesion enBarra />
+          <BotonCerrarSesion variante="barra" />
+        </BarraSuperior>
         <div className="grow">{children}</div>
         <NavegacionInferior items={NAVEGACION_MOVIL} className="lg:hidden" />
       </div>

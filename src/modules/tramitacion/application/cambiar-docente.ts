@@ -19,8 +19,9 @@ export type SolicitudCambioDocente = {
 export function crearCambiarDocente({
   repositorio,
   docentes,
+  publicador,
   reloj,
-}: Pick<DependenciasTramitacion, "repositorio" | "docentes" | "reloj">) {
+}: Pick<DependenciasTramitacion, "repositorio" | "docentes" | "publicador" | "reloj">) {
   return async function cambiarDocente({
     actor,
     expedienteId,
@@ -42,6 +43,14 @@ export function crearCambiarDocente({
 
     const guardado = await repositorio.registrarCambioDocente(expedienteId, cambio.valor.cambio);
     if (!guardado.ok) return guardado;
+    // Después de guardar (D16): si no se guardó, nadie se entera.
+    await publicador.publicar({
+      tipo: "DocenteDelExpedienteCambiado",
+      expedienteId,
+      estudianteId: expediente.estudianteId,
+      modulo: expediente.modulo,
+      cambio: cambio.valor.cambio,
+    });
     return exito(cambio.valor.expediente);
   };
 }

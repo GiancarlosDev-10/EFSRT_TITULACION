@@ -40,10 +40,16 @@ export function datosDelAviso(fila: FilaNotificacion, sitio: string): DatosAviso
     ahora: pasa ? `pasa ${DESTINO_DE[pasa]}` : `está ${UBICACION_DE[ubicacionDe(codigo)]}`,
     motivo: fila.motivo,
     // La corrección se entrega a la oficina que observó.
-    subsanar: indicacion ? { indicacion, entregarA: DEPENDENCIAS[estado.dependencia].conPreposicion } : null,
+    subsanar: indicacion && fila.cambio_docente_id === null ? { indicacion, entregarA: DEPENDENCIAS[estado.dependencia].conPreposicion } : null,
     constancia:
       estado.tipo === "final"
         ? { lugar: bienestar.nombre, ubicacion: bienestar.ubicacion, horario: bienestar.horario, queLlevar: bienestar.queLlevar }
+        : null,
+    // Un cambio de docente no es un cambio de estado: la fila no viene del historial.
+    docenteAsignado: fila.cambio_docente_id === null ? fila.docente_nombre : null,
+    cambioDeDocente:
+      fila.cambio_docente_id !== null && fila.docente_nombre && fila.docente_anterior_nombre
+        ? { nuevo: fila.docente_nombre, anterior: fila.docente_anterior_nombre }
         : null,
     fecha: new Date(fila.fecha),
     enlace: `${sitio}${RUTAS_ALUMNO.seguimiento(modulo)}`,

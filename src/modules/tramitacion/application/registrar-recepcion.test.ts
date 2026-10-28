@@ -15,7 +15,7 @@ describe("registrarRecepcion", () => {
     expect(guardado?.estado).toBe("01");
     expect(guardado?.historial[0].fecha).toBe(AHORA);
     expect(eventosPublicados).toHaveLength(1);
-    expect(eventosPublicados[0].registro.estadoNuevo).toBe("01");
+    expect(eventosPublicados[0]).toMatchObject({ tipo: "ExpedienteCambioDeEstado", registro: { estadoNuevo: "01" } });
   });
 
   test("rechaza un segundo expediente para el mismo estudiante y módulo", async () => {

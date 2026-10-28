@@ -6,7 +6,7 @@ import "server-only";
 import { cache } from "react";
 import { crearBusEnMemoria } from "@/shared";
 import { crearClienteServidor } from "@/shared/lib/supabase/servidor";
-import type { Dependencia, ExpedienteCambioDeEstado } from "../domain";
+import type { Dependencia, EventoTramitacion } from "../domain";
 import {
   crearBuscarParaRecepcion,
   crearCambiarDocente,
@@ -29,7 +29,7 @@ import { crearDirectorioSupabase } from "./directorio-supabase";
 import { crearRepositorioSupabase } from "./repositorio-supabase";
 
 // Uno solo para toda la aplicación: así los suscriptores reciben todos los cambios.
-const bus = crearBusEnMemoria<ExpedienteCambioDeEstado>();
+const bus = crearBusEnMemoria<EventoTramitacion>();
 
 // El cliente lleva la sesión de quien pide: se arma en cada petición (cache: una vez por petición).
 const cliente = cache(crearClienteServidor);
@@ -92,5 +92,5 @@ export async function cambiarDocente(solicitud: SolicitudCambioDocente) {
   return crearCambiarDocente(await dependencias())(solicitud);
 }
 
-/** Otros módulos (p. ej. notificaciones) escuchan aquí los cambios de estado. */
-export const suscribirseACambiosDeEstado = bus.suscribir;
+/** Otros módulos (p. ej. notificaciones) escuchan aquí los cambios de estado y de docente. */
+export const suscribirseAEventos = bus.suscribir;

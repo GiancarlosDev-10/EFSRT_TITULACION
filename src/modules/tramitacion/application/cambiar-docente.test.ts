@@ -6,8 +6,8 @@ import { crearCambiarDocente } from "./cambiar-docente";
 
 // En los datos de prueba, exp-giancarlos-II está en 08 con Mg. R. Paredes.
 function preparar() {
-  const { dependencias } = crearDependenciasDePrueba(EXPEDIENTES_DE_PRUEBA);
-  return { dependencias, cambiarDocente: crearCambiarDocente(dependencias) };
+  const { dependencias, eventosPublicados } = crearDependenciasDePrueba(EXPEDIENTES_DE_PRUEBA);
+  return { dependencias, eventosPublicados, cambiarDocente: crearCambiarDocente(dependencias) };
 }
 
 const solicitud = {
@@ -30,12 +30,28 @@ describe("cambiarDocente", () => {
     ]);
   });
 
-  test("solo la oficina que asigna al docente puede cambiarlo; nada se guarda", async () => {
-    const { dependencias, cambiarDocente } = preparar();
+  test("después de guardar avisa a los demás módulos (el estudiante recibe un correo, D58)", async () => {
+    const { eventosPublicados, cambiarDocente } = preparar();
+
+    await cambiarDocente(solicitud);
+    expect(eventosPublicados).toEqual([
+      {
+        tipo: "DocenteDelExpedienteCambiado",
+        expedienteId: "exp-giancarlos-II",
+        estudianteId: "est-giancarlos-ormeno",
+        modulo: "II",
+        cambio: { anterior: DOCENTES.paredes, nuevo: DOCENTES.vargas, motivo: "Renuncia del docente.", actor: ACTORES.coordinacion, fecha: AHORA },
+      },
+    ]);
+  });
+
+  test("solo la oficina que asigna al docente puede cambiarlo; nada se guarda ni se avisa", async () => {
+    const { dependencias, eventosPublicados, cambiarDocente } = preparar();
     for (const actor of [ACTORES["mesa-partes"], ACTORES.bienestar, ACTORES.docente]) {
       expect(await cambiarDocente({ ...solicitud, actor })).toEqual({ ok: false, error: "DEPENDENCIA_NO_AUTORIZADA" });
     }
     expect((await dependencias.repositorio.buscarPorId("exp-giancarlos-II"))?.cambiosDocente).toEqual([]);
+    expect(eventosPublicados).toHaveLength(0);
   });
 
   test("no acepta un docente desactivado", async () => {

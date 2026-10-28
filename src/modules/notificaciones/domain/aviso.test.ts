@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { redactarAviso, type DatosAviso } from "./aviso";
+import { PALETA_CORREO } from "./paleta-correo";
 
 // 25 oct. 2026, 14:39 en Lima (UTC−5).
 const FECHA = new Date("2026-10-25T19:39:00Z");
@@ -14,6 +15,8 @@ const base: DatosAviso = {
   motivo: null,
   subsanar: null,
   constancia: null,
+  docenteAsignado: null,
+  cambioDeDocente: null,
   fecha: FECHA,
   enlace: "http://localhost:3000/alumno/seguimiento/II",
 };
@@ -80,6 +83,38 @@ describe("redactarAviso", () => {
     expect(asunto).toBe("Tu constancia del Módulo II está lista para recoger");
     expect(texto).toContain("Dónde: Unidad de Bienestar y Empleabilidad (Primer piso).");
     expect(texto).toContain("Qué llevar: Solo tu DNI.");
+  });
+
+  test("asignación (06): dice quién será su Docente Supervisor", () => {
+    const { texto } = redactarAviso({
+      ...base,
+      estado: { codigo: "06", nombre: "Docente supervisor asignado", tipo: "conforme" },
+      ahora: "pasa al Docente Supervisor",
+      docenteAsignado: "Mg. R. Paredes",
+    });
+    expect(texto).toContain("Ahora pasa al Docente Supervisor. Tu Docente Supervisor es Mg. R. Paredes.");
+  });
+
+  test("cambio de docente: quién es ahora, quién era antes y que el estado no cambió", () => {
+    const { asunto, texto } = redactarAviso({
+      ...base,
+      estado: { codigo: "07", nombre: "En supervisión", tipo: "proceso" },
+      cambioDeDocente: { nuevo: "Ing. M. Vargas", anterior: "Mg. R. Paredes" },
+    });
+    expect(asunto).toBe("Cambió tu Docente Supervisor del Módulo II");
+    expect(texto).toContain("ahora es Ing. M. Vargas (antes, Mg. R. Paredes)");
+    expect(texto).toContain("sigue en el mismo estado: 07 · En supervisión.");
+  });
+
+  test("cambio de docente con el expediente observado: no repite la observación", () => {
+    const { asunto, html } = redactarAviso({
+      ...observacion,
+      motivo: null,
+      subsanar: null,
+      cambioDeDocente: { nuevo: "Ing. M. Vargas", anterior: "Mg. R. Paredes" },
+    });
+    expect(asunto).toBe("Cambió tu Docente Supervisor del Módulo II");
+    expect(html).not.toContain(PALETA_CORREO.warnBg);
   });
 
   test("sin nombre del módulo, solo el número", () => {

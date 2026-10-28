@@ -23,7 +23,9 @@ type NombreAccion =
   | "registrarCambioDeOficina"
   | "cambiarDocenteDeOficina"
   | "registrarRecepcionDeOficina"
-  | "registrarEstudianteDeOficina";
+  | "registrarEstudianteDeOficina"
+  | "leerCampana"
+  | "marcarCampanaLeida";
 
 // ---- Sesión: la cookie que guardaría el navegador -----------------------------
 
@@ -64,7 +66,12 @@ function cuerpo(campos: Record<string, string>): FormData {
 
 type Respuesta = { estado: number; redirigeA: string | null; texto: string };
 
-async function llamar(ruta: string, accion: NombreAccion, campos: Record<string, string>, cookie?: string): Promise<Respuesta> {
+/**
+ * `campos`: formulario de `useActionState` (acciones de las oficinas).
+ * `unknown[]`: argumentos sueltos (acciones de la campana); React los envía como JSON.
+ */
+async function llamar(ruta: string, accion: NombreAccion, campos: Record<string, string> | unknown[], cookie?: string): Promise<Respuesta> {
+  const argumentos = Array.isArray(campos);
   const respuesta = await fetch(`${SITIO}${ruta}`, {
     method: "POST",
     redirect: "manual",
@@ -72,9 +79,10 @@ async function llamar(ruta: string, accion: NombreAccion, campos: Record<string,
       "Next-Action": await idDeAccion(accion),
       Accept: "text/x-component",
       Origin: SITIO,
+      ...(argumentos ? { "Content-Type": "text/plain;charset=UTF-8" } : {}),
       ...(cookie ? { Cookie: cookie } : {}),
     },
-    body: cuerpo(campos),
+    body: argumentos ? JSON.stringify(campos) : cuerpo(campos),
   });
   return {
     estado: respuesta.status,
@@ -92,14 +100,29 @@ async function contar(tabla: "historial" | "cambios_docente" | "expedientes" | "
   return count ?? 0;
 }
 
-async function fotoDeLaBase() {
-  const [historial, cambiosDocente, expedientes, estudiantes] = await Promise.all([
+/**
+ * Avisos de la campana (D58) que NO son del estudiante atacante y ya están
+ * leídos: marcar los suyos es legítimo; tocar los ajenos, no.
+ */
+async function avisosAjenosLeidos(alumnoId: string): Promise<number> {
+  const { count, error } = await admin
+    .from("avisos")
+    .select("*", { count: "exact", head: true })
+    .not("leido_en", "is", null)
+    .or(`estudiante_id.is.null,estudiante_id.neq.${alumnoId}`);
+  if (error) throw new Error(`contar avisos: ${error.message}`);
+  return count ?? 0;
+}
+
+async function fotoDeLaBase(alumnoId: string) {
+  const [historial, cambiosDocente, expedientes, estudiantes, avisosAjenos] = await Promise.all([
     contar("historial"),
     contar("cambios_docente"),
     contar("expedientes"),
     contar("estudiantes"),
+    avisosAjenosLeidos(alumnoId),
   ]);
-  return { historial, cambiosDocente, expedientes, estudiantes };
+  return { historial, cambiosDocente, expedientes, estudiantes, avisosAjenos };
 }
 
 // ---- Datos de prueba que se atacan -------------------------------------------------
@@ -132,7 +155,9 @@ type Caso = {
   usuario: ClaveUsuarioPrueba | null;
   ruta: string;
   accion: NombreAccion;
-  campos: Record<string, string>;
+  campos: Record<string, string> | unknown[];
+  /** Para acciones que solo leen: qué NO debe aparecer en la respuesta. */
+  noDebeMostrar?: RegExp;
 };
 
 /** Primer mensaje de error que devolvió la acción (o qué la detuvo antes). */
@@ -141,11 +166,23 @@ function motivoDelRechazo({ estado, redirigeA, texto }: Respuesta): string {
   const mensaje = texto.match(/"error":"([^"]+)"/)?.[1];
   if (mensaje) return mensaje;
   if (/server action not found|Failed to find Server Action/i.test(texto)) return "Next no encontró la acción en esa ruta";
+  // Acciones de la campana: lo que devolvió (la línea "1:" de la respuesta de React).
+  const valor = texto.match(/^1:(true|false|null)$/m)?.[1];
+  if (valor) return `La acción devolvió ${valor}`;
   return `HTTP ${estado}`;
 }
 
 async function main() {
   const { alumnoId, expediente, otroDocenteId } = await prepararDatos();
+  // El aviso más reciente de la base: "marcar hasta aquí" abarca todos los avisos.
+  const { data: ultimo } = await admin.from("avisos").select("id").order("id", { ascending: false }).limit(1);
+  const ultimoAviso = ultimo?.[0]?.id ?? 1;
+  const { count: ajenosSinLeer } = await admin
+    .from("avisos")
+    .select("*", { count: "exact", head: true })
+    .is("leido_en", null)
+    .or(`estudiante_id.is.null,estudiante_id.neq.${alumnoId}`);
+  if (!ajenosSinLeer) console.warn("Aviso: no hay avisos ajenos sin leer; los casos de la campana no demuestran mucho. Registra un cambio desde una oficina y vuelve a correrlo.\n");
   const ruta = `/coordinacion/expediente/${expediente.id}`;
   const cambioEstado = { expedienteId: expediente.id, desde: expediente.estado, hacia: "07" };
   const cambioDocente = {
@@ -168,6 +205,20 @@ async function main() {
       accion: "registrarEstudianteDeOficina",
       campos: { tipoDocumento: "DNI", numeroDocumento: "79999999", nombres: "Intruso", apellidos: "De Prueba", carrera: "desarrollo-sistemas", correoInstitucional: "", correoPersonal: "intruso@efsrt.test" },
     },
+    // Campana (D58): cualquier sesión puede leer y marcar SUS avisos; nunca los ajenos.
+    { quien: "Sin sesión", intenta: "Leer avisos de la campana", usuario: null, ruta: "/alumno", accion: "leerCampana", campos: [] },
+    { quien: "Sin sesión", intenta: "Marcar avisos como leídos", usuario: null, ruta: "/alumno", accion: "marcarCampanaLeida", campos: [ultimoAviso] },
+    {
+      quien: "Estudiante",
+      intenta: "Leer avisos de oficinas o docentes",
+      usuario: "estudiante",
+      ruta: "/alumno",
+      accion: "leerCampana",
+      campos: [],
+      noDebeMostrar: /Llegó el expediente|Te asignaron/,
+    },
+    { quien: "Estudiante", intenta: "Marcar como leídos los avisos de todos", usuario: "estudiante", ruta: "/alumno", accion: "marcarCampanaLeida", campos: [ultimoAviso] },
+    { quien: "Estudiante", intenta: "Marcar con un id que no es número", usuario: "estudiante", ruta: "/alumno", accion: "marcarCampanaLeida", campos: ["1 or 1=1"] },
   ];
 
   const cookies = new Map<ClaveUsuarioPrueba, string>();
@@ -181,18 +232,20 @@ async function main() {
   const filas = [];
   let fallidos = 0;
   for (const caso of casos) {
-    const antes = await fotoDeLaBase();
+    const antes = await fotoDeLaBase(alumnoId);
     const respuesta = await llamar(caso.ruta, caso.accion, caso.campos, await sesion(caso.usuario));
-    const despues = await fotoDeLaBase();
+    const despues = await fotoDeLaBase(alumnoId);
     const baseIgual = JSON.stringify(antes) === JSON.stringify(despues);
     const ejecutada = Boolean(respuesta.redirigeA) && !respuesta.redirigeA!.includes("/login");
-    const rechazado = baseIgual && !ejecutada;
+    const filtro = Boolean(caso.noDebeMostrar?.test(respuesta.texto));
+    const rechazado = baseIgual && !ejecutada && !filtro;
     if (!rechazado) fallidos++;
+    const leyoSoloLosSuyos = caso.noDebeMostrar && respuesta.estado === 200 && !filtro;
     filas.push({
       Resultado: rechazado ? "RECHAZADO" : "¡PASÓ!",
       Quién: caso.quien,
       Intenta: caso.intenta,
-      Respuesta: motivoDelRechazo(respuesta),
+      Respuesta: leyoSoloLosSuyos ? "Solo recibió sus propios avisos" : motivoDelRechazo(respuesta),
       "Base sin cambios": baseIgual ? "sí" : "NO",
     });
   }

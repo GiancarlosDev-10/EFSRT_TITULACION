@@ -39,7 +39,8 @@ const VACIO: Record<VistaBandeja, string> = {
 };
 
 export function BandejaOficina({ dependencia, bandeja, vista, consulta, nombreUsuario, ahora, accion }: Props) {
-  const pestanas: { vista: VistaBandeja; texto: string; cantidad: number }[] = [
+  // `corto`: etiqueta para celular cuando el nombre completo no entra en un tercio del ancho.
+  const pestanas: { vista: VistaBandeja; texto: string; corto?: string; cantidad: number }[] = [
     { vista: "atender", texto: "Por atender", cantidad: bandeja.porAtender.length },
     ...(registraObservaciones(dependencia)
       ? [{ vista: "observados" as const, texto: "Observados", cantidad: bandeja.observados.length }]
@@ -47,6 +48,7 @@ export function BandejaOficina({ dependencia, bandeja, vista, consulta, nombreUs
     {
       vista: "estudiantes",
       texto: dependencia === "docente" ? "Tus estudiantes" : "Estudiantes",
+      corto: dependencia === "docente" ? "Estudiantes" : undefined,
       cantidad: bandeja.estudiantes.length,
     },
   ];
@@ -88,7 +90,8 @@ export function BandejaOficina({ dependencia, bandeja, vista, consulta, nombreUs
           />
         </form>
 
-        <nav aria-label="Filtrar expedientes" className="-mx-5 flex gap-1.5 overflow-x-auto px-5 lg:mx-0 lg:px-0">
+        {/* Celular: columnas iguales al ancho del buscador, número debajo. PC: fila de píldoras. */}
+        <nav aria-label="Filtrar expedientes" className="grid auto-cols-fr grid-flow-col gap-1.5 lg:flex">
           {pestanas.map((pestana) => {
             const activa = pestana.vista === vista;
             return (
@@ -96,11 +99,20 @@ export function BandejaOficina({ dependencia, bandeja, vista, consulta, nombreUs
                 key={pestana.vista}
                 href={enlaceDe(pestana.vista)}
                 aria-current={activa ? "page" : undefined}
-                className={`flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3.5 text-[13px] font-semibold ${
+                className={`flex min-h-11 min-w-0 flex-col items-center justify-center gap-0.5 rounded-xl px-1.5 py-1.5 text-center text-xs leading-tight font-semibold lg:shrink-0 lg:flex-row lg:gap-2 lg:px-3.5 lg:py-0 lg:text-[13px] lg:leading-normal ${
                   activa ? "bg-ink text-white" : "border border-line bg-white text-text-soft hover:bg-bg"
                 }`}
               >
-                {pestana.texto}
+                {pestana.corto ? (
+                  <>
+                    <span aria-hidden="true" className="lg:hidden">
+                      {pestana.corto}
+                    </span>
+                    <span className="sr-only lg:not-sr-only">{pestana.texto}</span>
+                  </>
+                ) : (
+                  pestana.texto
+                )}
                 <span className={`rounded-full px-1.5 font-mono text-[11px] ${activa ? "bg-ink-active" : "bg-neutral-bg"}`}>
                   {pestana.cantidad}
                 </span>
@@ -209,33 +221,49 @@ function FilaExpediente({ dependencia, fila, ahora }: { dependencia: Dependencia
 // ---- Estudiantes: una fila por estudiante, una celda por módulo --------------
 
 const COLUMNAS_ESTUDIANTES = "lg:grid-cols-[minmax(0,1.4fr)_repeat(3,minmax(0,1fr))]";
+/** Docente: estudiante y, en una sola columna, sus casillas (cada una de un tercio, como en las otras oficinas). */
+const COLUMNAS_DOCENTE = "lg:grid-cols-[minmax(0,1.4fr)_minmax(0,3fr)]";
 
 function TablaEstudiantes({ dependencia, filas, ahora }: { dependencia: Dependencia; filas: FilaEstudiante[]; ahora: Date }) {
+  // El docente solo ve sus expedientes (RLS): una celda por módulo dejaría huecos
+  // que no sabría leer ("¿no existe o no es mío?"). Ve solo las casillas de los suyos.
+  const soloSuyos = dependencia === "docente";
+  const columnas = soloSuyos ? COLUMNAS_DOCENTE : COLUMNAS_ESTUDIANTES;
   return (
     <>
       <div
-        className={`hidden gap-3 border-b border-line px-5 py-3 text-[11px] font-semibold tracking-wide text-muted uppercase lg:grid ${COLUMNAS_ESTUDIANTES}`}
+        className={`hidden gap-3 border-b border-line px-5 py-3 text-[11px] font-semibold tracking-wide text-muted uppercase lg:grid ${columnas}`}
       >
         <span>Estudiante</span>
-        {MODULOS.map((modulo) => (
-          <span key={modulo}>Módulo {modulo}</span>
-        ))}
+        {soloSuyos ? <span>Tus expedientes</span> : MODULOS.map((modulo) => <span key={modulo}>Módulo {modulo}</span>)}
       </div>
       <ul className="divide-y divide-line">
         {filas.map(({ estudiante, modulos }) => (
-          <li
-            key={estudiante.id}
-            className={`flex flex-col gap-3 px-5 py-4 lg:grid lg:items-center lg:gap-3 lg:py-3 ${COLUMNAS_ESTUDIANTES}`}
-          >
+          <li key={estudiante.id} className={`flex flex-col gap-3 px-5 py-4 lg:grid lg:items-center lg:gap-3 lg:py-3 ${columnas}`}>
             <span className="flex min-w-0 flex-col gap-0.5">
               <span className="truncate text-sm font-semibold">{estudiante.nombre}</span>
               <span className="font-mono text-[11px] text-muted">{estudiante.documento}</span>
             </span>
-            <span className="grid grid-cols-3 gap-2 lg:contents">
-              {MODULOS.map((modulo) => (
-                <CeldaModulo key={modulo} dependencia={dependencia} modulo={modulo} fila={modulos[modulo]} ahora={ahora} />
-              ))}
-            </span>
+            {soloSuyos ? (
+              <span className="grid grid-cols-3 gap-2 lg:flex lg:flex-wrap">
+                {MODULOS.filter((modulo) => modulos[modulo]).map((modulo) => (
+                  <CeldaModulo
+                    key={modulo}
+                    dependencia={dependencia}
+                    modulo={modulo}
+                    fila={modulos[modulo]}
+                    ahora={ahora}
+                    sinColumnas
+                  />
+                ))}
+              </span>
+            ) : (
+              <span className="grid grid-cols-3 gap-2 lg:contents">
+                {MODULOS.map((modulo) => (
+                  <CeldaModulo key={modulo} dependencia={dependencia} modulo={modulo} fila={modulos[modulo]} ahora={ahora} />
+                ))}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -254,28 +282,31 @@ function CeldaModulo({
   modulo,
   fila,
   ahora,
+  sinColumnas = false,
 }: {
   dependencia: Dependencia;
   modulo: Modulo;
   fila: FilaBandeja | null;
   ahora: Date;
+  /** Fuera de las columnas "Módulo I/II/III" (docente): de un tercio del ancho y con el módulo escrito en PC. */
+  sinColumnas?: boolean;
 }) {
-  const base =
-    "flex min-h-14 flex-col items-stretch gap-1 rounded-xl border px-2.5 py-2 text-left lg:min-h-11 lg:flex-row lg:items-center lg:gap-2 lg:px-3";
+  const base = `flex min-h-14 flex-col items-stretch gap-1 rounded-xl border px-2.5 py-2 text-left lg:min-h-11 lg:flex-row lg:items-center lg:gap-2 lg:px-3 ${
+    sinColumnas ? "lg:w-[calc((100%-1rem)/3)]" : ""
+  }`;
   const rotulo = (
     <span className="font-mono text-[10px] font-semibold whitespace-nowrap text-muted lg:hidden">Mód. {modulo}</span>
   );
 
   if (!fila) {
-    // El docente solo ve sus expedientes (RLS): de los demás módulos no sabe si existen.
-    const texto = dependencia === "docente" ? null : "Sin expediente";
+    // (El docente no usa esta tabla: él no sabe si existen los módulos que no son suyos.)
     return (
       <span className={`${base} border-dashed border-line text-xs text-muted`}>
         {rotulo}
-        <span aria-hidden="true" className={texto ? "lg:hidden" : undefined}>
+        <span aria-hidden="true" className="lg:hidden">
           —
         </span>
-        <span className={texto ? "sr-only lg:not-sr-only" : "sr-only"}>{texto ?? "Sin datos"}</span>
+        <span className="sr-only lg:not-sr-only">Sin expediente</span>
       </span>
     );
   }
@@ -284,7 +315,8 @@ function CeldaModulo({
   const borde = tipo === "observacion" ? BORDE_CELDA.observado : tipo === "final" ? BORDE_CELDA.conforme : BORDE_CELDA.normal;
   // Dónde está para mostrarlo (D56): en 03 ya está en Coordinación.
   const lugar = dondeEsta(fila.estado);
-  const detalle = tipo === "final" ? momento(fila.ultimoCambio, ahora) : DEPENDENCIAS[lugar].nombreCorto;
+  const dato = tipo === "final" ? momento(fila.ultimoCambio, ahora) : DEPENDENCIAS[lugar].nombreCorto;
+  const detalle = sinColumnas ? `Mód. ${modulo} · ${dato}` : dato;
   return (
     <Link
       href={RUTAS_OFICINA.expediente(dependencia, fila.expedienteId)}

@@ -1,19 +1,30 @@
 // Layout de las cuatro oficinas: barra lateral en PC y barra superior oscura en
 // celular. No decide el acceso: cada página exige su rol (D46). Mesa de
-// Partes suma "Registrar recepción" (D52).
+// Partes suma "Registrar recepción" (D52). La campana (D58) va en la barra
+// superior en celular y arriba a la derecha en PC, salvo en Mesa de Partes.
 import { Suspense, type ReactNode } from "react";
 import { BotonCerrarSesion, obtenerUsuarioActual } from "@/modules/auth";
 import {
+  CODIGOS_ESTADO,
   DEPENDENCIAS,
   ESTADO_INICIAL,
   RUTAS_OFICINA,
   RUTAS_RECEPCION,
+  pasaA,
   puedeRegistrar,
   type Dependencia,
 } from "@/modules/tramitacion";
-import { Avatar, BarraLateral, IconoBandeja, IconoCarpeta, Logo, NavegacionLateral, type ItemNavegacion } from "@/shared";
+import { Avatar, BarraLateral, BarraSuperior, IconoBandeja, IconoCarpeta, NavegacionLateral, type ItemNavegacion } from "@/shared";
+import { CampanaDeSesion } from "../_campana/CampanaDeSesion";
 
 type Props = { dependencia: Dependencia; children: ReactNode };
+
+/**
+ * D58: tiene campana la oficina a la que "pasa" algún estado (Coordinación con
+ * el 03, el docente con el 06, Bienestar con el 09). A Mesa de Partes no le
+ * llega nada de otra oficina.
+ */
+const recibeAvisos = (dependencia: Dependencia) => CODIGOS_ESTADO.some((codigo) => pasaA(codigo) === dependencia);
 
 function navegacion(dependencia: Dependencia): ItemNavegacion[] {
   const bandeja: ItemNavegacion = { href: RUTAS_OFICINA.bandeja(dependencia), etiqueta: "Bandeja", icono: <IconoBandeja /> };
@@ -44,6 +55,7 @@ async function TarjetaUsuario({ dependencia }: { dependencia: Dependencia }) {
 }
 
 export function LayoutOficina({ dependencia, children }: Props) {
+  const campana = recibeAvisos(dependencia);
   return (
     <div className="flex min-h-dvh">
       <BarraLateral
@@ -56,14 +68,18 @@ export function LayoutOficina({ dependencia, children }: Props) {
         <NavegacionLateral items={navegacion(dependencia)} />
       </BarraLateral>
       <div className="flex min-w-0 grow flex-col">
-        <header className="sticky top-0 z-10 flex items-center gap-2.5 bg-ink px-5 py-2.5 text-white lg:hidden">
-          <Logo tamano={32} />
-          <span className="flex min-w-0 grow flex-col">
-            <span className="font-display text-sm font-extrabold">EFSRT Seguimiento</span>
-            <span className="truncate text-[11px] text-on-ink-muted">{DEPENDENCIAS[dependencia].nombre}</span>
-          </span>
+        <BarraSuperior subtitulo={DEPENDENCIAS[dependencia].nombre}>
+          {campana && <CampanaDeSesion enBarra />}
           <BotonCerrarSesion variante="barra" />
-        </header>
+        </BarraSuperior>
+        {campana && (
+          // PC: arriba a la derecha del contenido y fija al desplazarse (altura 0: no empuja la página).
+          <div className="pointer-events-none sticky top-0 z-20 hidden h-0 lg:block">
+            <div className="pointer-events-auto absolute top-8 right-10">
+              <CampanaDeSesion />
+            </div>
+          </div>
+        )}
         <div className="grow">{children}</div>
       </div>
     </div>

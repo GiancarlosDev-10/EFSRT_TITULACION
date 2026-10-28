@@ -37,6 +37,6 @@ export {
   registrarCambioEstado,
   registrarEstudiante,
   registrarRecepcion,
-  suscribirseACambiosDeEstado,
+  suscribirseAEventos,
 } from "./infrastructure/contenedor";
 export * from "./ui";

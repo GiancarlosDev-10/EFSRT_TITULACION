@@ -1,5 +1,5 @@
 // Dependencias falsas para probar los casos de uso. No se exporta en index.ts.
-import type { Expediente, ExpedienteCambioDeEstado } from "../domain";
+import type { EventoTramitacion, Expediente } from "../domain";
 import { DOCENTES } from "../domain/ayudas-prueba";
 import { crearConsultasEnMemoria } from "../infrastructure/consultas-en-memoria";
 import { crearDirectorioEnMemoria } from "../infrastructure/directorio-en-memoria";
@@ -32,7 +32,7 @@ export function crearDependenciasDePrueba(
   iniciales: readonly Expediente[] = [],
   estudiantes: readonly FichaEstudiante[] = [FICHA_DE_PRUEBA],
 ) {
-  const eventosPublicados: ExpedienteCambioDeEstado[] = [];
+  const eventosPublicados: EventoTramitacion[] = [];
   let contador = 0;
   const repositorio = crearRepositorioEnMemoria(iniciales);
 

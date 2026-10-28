@@ -5,8 +5,8 @@ import type {
   CambioDocente,
   DatosEstudiante,
   DocenteAsignado,
+  EventoTramitacion,
   Expediente,
-  ExpedienteCambioDeEstado,
   RegistroHistorial,
   Resultado,
 } from "../domain";
@@ -91,7 +91,7 @@ export interface DirectorioDocentes {
 }
 
 export interface PublicadorDeEventos {
-  publicar(evento: ExpedienteCambioDeEstado): Promise<void>;
+  publicar(evento: EventoTramitacion): Promise<void>;
 }
 
 export interface Reloj {

@@ -23,6 +23,8 @@ en Next.js + Tailwind.
 mismos tokens de `globals.css`. La barra superior elige la oficina y la vista; la
 variante `@5xl:` hace de `lg:`. Se puede abrir en una pantalla concreta con la
 dirección, p. ej. `Oficinas.html#oficina=docente&vista=celular&exp=x7`.
+Desde la Fase 10 incluye la campana de notificaciones de Coordinación, Docente y
+Bienestar (Mesa de Partes no la tiene); `&campana=1` la abre al cargar.
 
 `canvas.json` solo describe cómo estaban ordenadas las pantallas en el lienzo.
 

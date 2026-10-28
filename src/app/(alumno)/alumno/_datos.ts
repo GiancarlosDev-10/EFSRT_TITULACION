@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { RUTAS_AUTH, exigirRol } from "@/modules/auth";
-import { nombresDeModulos, obtenerEstudianteDeUsuario, obtenerSeguimientoDelEstudiante } from "@/modules/tramitacion";
+import { nombreDeCarrera, nombresDeModulos, obtenerEstudianteDeUsuario, obtenerSeguimientoDelEstudiante } from "@/modules/tramitacion";
 
 /**
  * Lo que necesitan todas las páginas del estudiante con datos personales. Exige
@@ -16,7 +16,7 @@ export const datosDelEstudiante = cache(async () => {
 
   const seguimiento = await obtenerSeguimientoDelEstudiante(estudiante.id);
   return {
-    usuario: { nombre: estudiante.nombre, correo: usuario.correo },
+    usuario: { nombre: estudiante.nombre, correo: usuario.correo, carrera: nombreDeCarrera(estudiante.carrera) },
     seguimiento,
     nombresModulo: nombresDeModulos(estudiante.carrera),
     ahora: new Date(),

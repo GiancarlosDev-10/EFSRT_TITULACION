@@ -23,6 +23,10 @@ export type DatosAviso = {
   subsanar: { indicacion: string; entregarA: string } | null;
   /** Solo en el estado final: dónde y cuándo recoger la constancia física. */
   constancia: { lugar: string; ubicacion: string; horario: string; queLlevar: string } | null;
+  /** Solo en la asignación (06): quién lo supervisará. */
+  docenteAsignado: string | null;
+  /** Solo si Coordinación cambió al docente (D58); el estado no cambió. */
+  cambioDeDocente: { nuevo: string; anterior: string } | null;
   fecha: Date;
   /** Dirección completa del seguimiento del módulo. */
   enlace: string;
@@ -60,6 +64,7 @@ const moduloConNombre = ({ modulo, nombreModulo }: DatosAviso) =>
 
 function asunto(datos: DatosAviso): string {
   const { modulo, estado } = datos;
+  if (datos.cambioDeDocente) return `Cambió tu Docente Supervisor del Módulo ${modulo}`;
   if (estado.tipo === "observacion") return `Tu expediente del Módulo ${modulo} tiene una observación`;
   if (estado.tipo === "final") return `Tu constancia del Módulo ${modulo} está lista para recoger`;
   if (datos.apertura) return `Recibimos tu expediente del Módulo ${modulo}`;
@@ -70,10 +75,15 @@ function asunto(datos: DatosAviso): string {
 function resumen(datos: DatosAviso): string {
   const { estado } = datos;
   const modulo = moduloConNombre(datos);
+  if (datos.cambioDeDocente) {
+    const { nuevo, anterior } = datos.cambioDeDocente;
+    return `Coordinación de Carrera cambió tu Docente Supervisor del ${modulo}: ahora es ${nuevo} (antes, ${anterior}). Tu expediente sigue en el mismo estado: ${estado.codigo} · ${estado.nombre}.`;
+  }
   if (estado.tipo === "observacion") return `Tu expediente del ${modulo} tiene una observación: ${estado.nombre}.`;
   if (estado.tipo === "final") return `Tu constancia del ${modulo} está lista para recoger.`;
   if (datos.apertura) return `Mesa de Partes recibió la carpeta de tu ${modulo}. Desde ahora puedes seguirla en el sistema.`;
-  return `Tu expediente del ${modulo} avanzó: ${estado.codigo} · ${estado.nombre}. Ahora ${datos.ahora}.`;
+  const docente = datos.docenteAsignado ? ` Tu Docente Supervisor es ${datos.docenteAsignado}.` : "";
+  return `Tu expediente del ${modulo} avanzó: ${estado.codigo} · ${estado.nombre}. Ahora ${datos.ahora}.${docente}`;
 }
 
 export function redactarAviso(datos: DatosAviso): AvisoRedactado {
@@ -123,7 +133,8 @@ function html(datos: DatosAviso): string {
     `<p style="margin:0 0 16px;font-size:15px;line-height:1.5;">${escapar(resumen(datos))}</p>`,
   );
 
-  if (estado.tipo === "observacion") {
+  // Un cambio de docente en 08 no repite la observación: solo informa del cambio.
+  if (estado.tipo === "observacion" && !datos.cambioDeDocente) {
     const motivoHtml = motivo ? `<b>Motivo:</b> ${escapar(motivo)}` : "";
     const queHacer = subsanar
       ? `<br><br><b>Qué hacer:</b> ${escapar(subsanar.indicacion)} Luego entrega tu corrección ${escapar(subsanar.entregarA)}.`
