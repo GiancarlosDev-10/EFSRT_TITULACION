@@ -18,6 +18,7 @@ bitácora (`docs/decisiones.md`, D01…).
 | 8. Vistas de las oficinas | Bandeja y detalle comunes, recepción en Mesa de Partes, asignación y cambio de Docente Supervisor, prueba de ataque a las Server Actions | D49–D54 |
 | 9. Notificaciones por correo | Aviso al estudiante en cada cambio de estado (Gmail), bandeja de salida con reintento, "pasó a…" en 03/06/09, limpieza de los datos de prueba | D55–D57 |
 | 10. Campana de notificaciones | Avisos dentro del sistema para el estudiante, Coordinación, el Docente Supervisor y Bienestar; correo del cambio de docente; carrera en la vista del estudiante; barra superior del estudiante en celular | D58 |
+| Despliegue | Vercel (Hobby), funciones en São Paulo (gru1), sobre el mismo Supabase `efsrt-dev`: https://efsrt-titulacion.vercel.app (08-11-2026). Probado en producción: ingreso con Google y con enlace al correo, 07 y 09 con correo enviado y avisos en la campana | — |
 
 ### Fase 8 por partes
 
@@ -55,10 +56,12 @@ bitácora (`docs/decisiones.md`, D01…).
 | Fase | Qué falta |
 |---|---|
 | 11. Reportes (opcional) | Módulo `reportes`: tiempos por oficina, expedientes detenidos (según el alcance de la tesis) |
-| Entrevistas | Validar con los actores los nombres de estados y transiciones, la regla del estado destino, el límite de 150 caracteres, si el estudiante conserva al docente en los 3 módulos y si los docentes pertenecen a una carrera (preguntas en `decisiones.md`) |
+| Validación con la asesora | Entrevistas a los actores y encuesta ya registradas (preguntas en `decisiones.md`). Quedan para la demostración: nombres de los estados, el límite de 150 caracteres, horario y lugar de Mesa de Partes y Bienestar, y si el turno del docente es criterio estricto |
 | Proveedor de correo | Definitivo si el sistema se implanta (hoy Gmail, D48 y D55) |
 | Video de demostración | Entrar con cada perfil usando las cuentas reales (D48) |
-| Revisión de la interfaz en celular | Al terminar todas las fases, el usuario revisa y mejora la interfaz en celular || Capturas de evidencia | Repetir el ataque (`bun run seguridad:acciones` y el `curl` con sesión de estudiante) y guardar las capturas en `docs/evidencias/` (D54); figuras de las pantallas para la tesis en `docs/diseno/capturas/` |
+| Reintento automático de correos | Solo si el sistema se implanta: programar el reintento de los correos fallidos. Hoy se reenvían a mano con `bun run notificaciones:reintentar` |
+| Revisión de la interfaz en celular | Al terminar todas las fases, el usuario revisa y mejora la interfaz en celular |
+| Capturas de evidencia | Repetir el ataque (`bun run seguridad:acciones` y el `curl` con sesión de estudiante) y guardar las capturas en `docs/evidencias/` (D54). Las figuras y capturas de pantalla de la tesis ya están en `docs/tesis/` (no se versiona) |
 
 ## Cómo verificar cada fase
 
