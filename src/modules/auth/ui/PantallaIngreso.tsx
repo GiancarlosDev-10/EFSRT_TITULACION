@@ -62,7 +62,7 @@ export function PantallaIngreso({ aviso, vistaPrevia }: Props) {
 
         <div className="flex flex-col gap-3">
           <h1 className="font-display text-[28px] leading-tight font-extrabold lg:text-[34px]">
-            Tu trámite avanza. Tú lo ves en tiempo real.
+            Tu trámite avanza. <br /> Tú lo ves en tiempo real.
           </h1>
           <p className="text-sm leading-relaxed text-text-soft">
             Tu carpeta sigue su recorrido en físico. Aquí ves en qué oficina está, en qué estado y qué te observaron.
